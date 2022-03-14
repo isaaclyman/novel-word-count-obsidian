@@ -154,7 +154,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			case CountType.Word:
 				return `${counts.wordCount.toLocaleString()} words`;
 			case CountType.Page:
-				return `${counts.pageCount.toFixed(1)} pages`;
+				return `${counts.pageCount.toFixed(1)} p.`;
 		}
 	}
 
