@@ -24,10 +24,12 @@ const countTypes = [
 
 interface NovelWordCountSettings {
 	countType: CountType;
+	abbreviateDescriptions: boolean;
 }
 
 const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	countType: CountType.Word,
+	abbreviateDescriptions: false,
 };
 
 interface NovelWordCountSavedData {
@@ -175,21 +177,33 @@ export default class NovelWordCountPlugin extends Plugin {
 
 		switch (this.settings.countType) {
 			case CountType.Word:
-				return `${counts.wordCount.toLocaleString()} words`;
+				return this.settings.abbreviateDescriptions ?
+					`${counts.wordCount.toLocaleString()}w` :
+					`${counts.wordCount.toLocaleString()} word${
+						counts.wordCount === 1 ? "" : "s"
+					}`;
 			case CountType.Page:
-				return `${counts.pageCount.toLocaleString()} pages`;
+				return this.settings.abbreviateDescriptions ?
+					`${counts.pageCount.toLocaleString()}p` :
+					`${counts.pageCount.toLocaleString()} page${
+						counts.pageCount === 1 ? "" : "s"
+					}`;
 			case CountType.Created:
-				return counts.createdDate === 0
-					? ""
-					: `Created ${new Date(
-							counts.createdDate
-					  ).toLocaleDateString()}`;
+				if (counts.createdDate === 0) {
+					return "";
+				}
+
+				return this.settings.abbreviateDescriptions ?
+					`${new Date(counts.createdDate).toLocaleDateString()}/c` :
+					`Created ${new Date(counts.createdDate).toLocaleDateString()}`;
 			case CountType.Modified:
-				return counts.modifiedDate === 0
-					? ""
-					: `Updated ${new Date(
-							counts.modifiedDate
-					  ).toLocaleDateString()}`;
+				if (counts.modifiedDate === 0) {
+					return "";
+				}
+
+				return this.settings.abbreviateDescriptions ?
+					`${new Date(counts.modifiedDate).toLocaleDateString()}/u` :
+					`Updated ${new Date(counts.modifiedDate).toLocaleDateString()}`;
 		}
 
 		return "";
@@ -237,9 +251,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Data to show")
-			.setDesc(
-				"Word count, page count, created date, or last updated date"
-			)
+			.setDesc("Word count, page count, created date, or last updated date")
 			.addDropdown((drop) =>
 				drop
 					.addOption(CountType.Word, "Word Count")
@@ -249,6 +261,19 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.countType)
 					.onChange(async (value: CountType) => {
 						this.plugin.settings.countType = value;
+						await this.plugin.saveSettings();
+						await this.plugin.updateDisplayedCounts();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Abbreviate descriptions")
+			.setDesc("E.g. show '120w' instead of '120 words'")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.abbreviateDescriptions)
+					.onChange(async (value) => {
+						this.plugin.settings.abbreviateDescriptions = value;
 						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 					})
