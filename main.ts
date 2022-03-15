@@ -11,7 +11,16 @@ import {
 enum CountType {
 	Word = "word",
 	Page = "page",
+	Created = "created",
+	Modified = "modified",
 }
+
+const countTypes = [
+	CountType.Word,
+	CountType.Page,
+	CountType.Created,
+	CountType.Modified,
+];
 
 interface NovelWordCountSettings {
 	countType: CountType;
@@ -50,9 +59,23 @@ export default class NovelWordCountPlugin extends Plugin {
 
 		this.addCommand({
 			id: "recount-vault",
-			name: "Recount all documents in vault",
+			name: "Reanalyze (recount) all documents in vault",
 			callback: async () => {
 				await this.initialize();
+			},
+		});
+
+		this.addCommand({
+			id: "cycle-count-type",
+			name: "Change data type to display",
+			callback: async () => {
+				this.settings.countType =
+					countTypes[
+						(countTypes.indexOf(this.settings.countType) + 1) %
+							countTypes.length
+					];
+				await this.saveSettings();
+				this.updateDisplayedCounts();
 			},
 		});
 
@@ -145,7 +168,7 @@ export default class NovelWordCountPlugin extends Plugin {
 		});
 	}
 
-	private getNodeLabel(counts: CountData): string | undefined {
+	private getNodeLabel(counts: CountData): string {
 		if (!counts || typeof counts.wordCount !== "number") {
 			return "";
 		}
@@ -155,7 +178,21 @@ export default class NovelWordCountPlugin extends Plugin {
 				return `${counts.wordCount.toLocaleString()} words`;
 			case CountType.Page:
 				return `${counts.pageCount.toLocaleString()} pages`;
+			case CountType.Created:
+				return counts.createdDate === 0
+					? ""
+					: `Created ${new Date(
+							counts.createdDate
+					  ).toLocaleDateString()}`;
+			case CountType.Modified:
+				return counts.modifiedDate === 0
+					? ""
+					: `Updated ${new Date(
+							counts.modifiedDate
+					  ).toLocaleDateString()}`;
 		}
+
+		return "";
 	}
 
 	private handleEvents(): void {
@@ -199,12 +236,16 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 		containerEl.createEl("h2", { text: "Novel word count settings" });
 
 		new Setting(containerEl)
-			.setName("Type of count to show")
-			.setDesc("Word count or page count")
+			.setName("Data to show")
+			.setDesc(
+				"Word count, page count, created date, or last updated date"
+			)
 			.addDropdown((drop) =>
 				drop
 					.addOption(CountType.Word, "Word Count")
 					.addOption(CountType.Page, "Page Count")
+					.addOption(CountType.Created, "Created Date")
+					.addOption(CountType.Modified, "Last Updated Date")
 					.setValue(this.plugin.settings.countType)
 					.onChange(async (value: CountType) => {
 						this.plugin.settings.countType = value;
@@ -214,13 +255,13 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Recount all documents")
+			.setName("Reanalyze all documents")
 			.setDesc(
-				"If changes have occurred outside of Obsidian, you may need to trigger a manual recount"
+				"If changes have occurred outside of Obsidian, you may need to trigger a manual analysis"
 			)
 			.addButton((button) =>
 				button
-					.setButtonText("Recount")
+					.setButtonText("Reanalyze")
 					.setCta()
 					.onClick(async () => {
 						button.disabled = true;
@@ -229,7 +270,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 						button.removeCta();
 
 						setTimeout(() => {
-							button.setButtonText("Recount");
+							button.setButtonText("Reanalyze");
 							button.setCta();
 							button.disabled = false;
 						}, 1000);

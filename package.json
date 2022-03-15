@@ -1,7 +1,7 @@
 {
 	"name": "novel-word-count",
 	"version": "2.0.0",
-	"description": "Displays a word or page count for each file, folder and vault in the file pane.",
+	"description": "Displays a word count, page count, created date, or last updated date for each file, folder and vault in the File Explorer pane.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

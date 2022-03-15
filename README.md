@@ -2,9 +2,9 @@
 
 ![A screenshot of the plugin, which shows slightly transparent word counts next to every document, folder, and vault in the File Explorer pane.](readme-screenshot-1.png)
 
-This plugin displays a word or page count next to every file, folder, and vault in the File Explorer pane. It updates as you write.
+This plugin displays a word count, page count, created date, or last updated date next to every file, folder, and vault in the File Explorer pane. It updates as you write.
 
-If you make changes to your files outside of Obsidian, you can trigger a recount of all files from the Command Palette (type "recount") or the plugin settings.
+If you make changes to your files outside of Obsidian, you can trigger a reanalysis of all files from the Command Palette (type "recount") or the plugin settings.
 
 ### Safety
 
