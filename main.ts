@@ -11,6 +11,7 @@ import {
 enum CountType {
 	Word = "word",
 	Page = "page",
+	Character = "character",
 	Created = "created",
 	Modified = "modified",
 }
@@ -18,6 +19,7 @@ enum CountType {
 const countTypes = [
 	CountType.Word,
 	CountType.Page,
+	CountType.Character,
 	CountType.Created,
 	CountType.Modified,
 ];
@@ -188,6 +190,12 @@ export default class NovelWordCountPlugin extends Plugin {
 					`${counts.pageCount.toLocaleString()} page${
 						counts.pageCount === 1 ? "" : "s"
 					}`;
+			case CountType.Character:
+				return this.settings.abbreviateDescriptions ?
+					`${counts.characterCount.toLocaleString()}ch` :
+					`${counts.characterCount.toLocaleString()} character${
+						counts.characterCount === 1 ? "" : "s"
+					}`
 			case CountType.Created:
 				if (counts.createdDate === 0) {
 					return "";
@@ -256,6 +264,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 				drop
 					.addOption(CountType.Word, "Word Count")
 					.addOption(CountType.Page, "Page Count")
+					.addOption(CountType.Character, "Character Count")
 					.addOption(CountType.Created, "Created Date")
 					.addOption(CountType.Modified, "Last Updated Date")
 					.setValue(this.plugin.settings.countType)

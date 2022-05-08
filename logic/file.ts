@@ -3,6 +3,7 @@ import { TAbstractFile, TFile, TFolder, Vault } from "obsidian";
 export interface CountData {
 	pageCount: number;
 	wordCount: number;
+	characterCount: number;
 	createdDate: number;
 	modifiedDate: number;
 }
@@ -21,7 +22,7 @@ export class FileHelper {
 		for (const file of files) {
 			const contents = await this.vault.cachedRead(file);
 			const wordCount = this.countWords(contents);
-			this.setCounts(counts, file, wordCount);
+			this.setCounts(counts, file, wordCount, contents);
 		}
 
 		return counts;
@@ -40,6 +41,7 @@ export class FileHelper {
 				const childCount = this.getCountDataForPath(counts, childPath);
 				total.wordCount += childCount.wordCount;
 				total.pageCount += childCount.pageCount;
+				total.characterCount += childCount.characterCount;
 				total.createdDate = total.createdDate === 0 ? childCount.createdDate : Math.min(total.createdDate, childCount.createdDate);
 				total.modifiedDate = Math.max(total.modifiedDate, childCount.modifiedDate);
 				return total;
@@ -47,6 +49,7 @@ export class FileHelper {
 			{
 				wordCount: 0,
 				pageCount: 0,
+				characterCount: 0,
 				createdDate: 0,
 				modifiedDate: 0,
 			} as CountData
@@ -65,7 +68,7 @@ export class FileHelper {
 		if (abstractFile instanceof TFile) {
 			const contents = await this.vault.cachedRead(abstractFile);
 			const wordCount = this.countWords(contents);
-			this.setCounts(counts, abstractFile, wordCount);
+			this.setCounts(counts, abstractFile, wordCount, contents);
 		}
 	}
 
@@ -76,11 +79,13 @@ export class FileHelper {
 	private setCounts(
 		counts: CountsByFile,
 		file: TFile,
-		wordCount: number
+		wordCount: number,
+		content: string
 	): void {
 		counts[file.path] = {
 			wordCount: wordCount,
 			pageCount: Math.ceil(wordCount / 300),
+			characterCount: content.length,
 			createdDate: file.stat.ctime,
 			modifiedDate: file.stat.mtime,
 		};
