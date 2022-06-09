@@ -1,3 +1,4 @@
+import { DebugHelper } from "logic/debug";
 import { CountData, CountsByFile, FileHelper } from "logic/file";
 import {
 	App,
@@ -6,6 +7,8 @@ import {
 	Setting,
 	PluginManifest,
 	WorkspaceLeaf,
+	TAbstractFile,
+	debounce,
 } from "obsidian";
 
 enum CountType {
@@ -27,11 +30,13 @@ const countTypes = [
 interface NovelWordCountSettings {
 	countType: CountType;
 	abbreviateDescriptions: boolean;
+	debugMode: boolean;
 }
 
 const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	countType: CountType.Word,
 	abbreviateDescriptions: false,
+	debugMode: false
 };
 
 interface NovelWordCountSavedData {
@@ -49,6 +54,7 @@ export default class NovelWordCountPlugin extends Plugin {
 		return this.savedData.settings;
 	}
 	fileHelper: FileHelper;
+	debugHelper = new DebugHelper();
 
 	constructor(app: App, manifest: PluginManifest) {
 		super(app, manifest);
@@ -59,12 +65,18 @@ export default class NovelWordCountPlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
+
+		this.fileHelper.setDebugMode(this.savedData.settings.debugMode);
+		this.debugHelper.setDebugMode(this.savedData.settings.debugMode);
+		this.debugHelper.debug('onload lifecycle hook');
+
 		this.addSettingTab(new NovelWordCountSettingTab(this.app, this));
 
 		this.addCommand({
 			id: "recount-vault",
 			name: "Reanalyze (recount) all documents in vault",
 			callback: async () => {
+				this.debugHelper.debug('[Reanalyze] command triggered')
 				await this.initialize();
 			},
 		});
@@ -73,6 +85,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			id: "cycle-count-type",
 			name: "Change data type to display",
 			callback: async () => {
+				this.debugHelper.debug('[Change data type] command triggered')
 				this.settings.countType =
 					countTypes[
 						(countTypes.indexOf(this.settings.countType) + 1) %
@@ -111,21 +124,28 @@ export default class NovelWordCountPlugin extends Plugin {
 
 	// PUBLIC
 
-	public async initialize() {
-		await this.refreshAllCounts();
+	public async initialize(refreshAllCounts = true) {
+		this.debugHelper.debug('initialize');
+
+		if (refreshAllCounts) {
+			await this.refreshAllCounts();
+		}
 
 		try {
 			await this.updateDisplayedCounts();
 		} catch (err) {
 			// File Explorer pane may not be loaded yet
 			setTimeout(() => {
-				this.updateDisplayedCounts();
+				this.initialize(false);
 			}, 1000);
 		}
 	}
 
-	public async updateDisplayedCounts() {
-		if (!this.savedData.cachedCounts.hasOwnProperty("/")) {
+	public async updateDisplayedCounts(file: TAbstractFile | null = null) {
+		const debugEnd = this.debugHelper.debugStart('updateDisplayedCounts')
+
+		if (!Object.keys(this.savedData.cachedCounts).length) {
+			this.debugHelper.debug('No cached data found; refreshing all counts.');
 			await this.refreshAllCounts();
 		}
 
@@ -134,7 +154,18 @@ export default class NovelWordCountPlugin extends Plugin {
 			fileExplorerLeaf.view as any
 		).fileItems;
 
+		if (file) {
+			const relevantItems = Object.keys(fileItems).filter(path => file.path.includes(path))
+			this.debugHelper.debug('Setting display counts for', relevantItems.length, 'fileItems matching path', file.path)
+		} else {
+			this.debugHelper.debug(`Setting display counts for ${Object.keys(fileItems).length} fileItems`)
+		}
+
 		for (const path in fileItems) {
+			if (file && !file.path.includes(path)) {
+				continue;
+			}
+
 			const counts = this.fileHelper.getCountDataForPath(
 				this.savedData.cachedCounts,
 				path
@@ -145,6 +176,8 @@ export default class NovelWordCountPlugin extends Plugin {
 				this.getNodeLabel(counts)
 			);
 		}
+
+		debugEnd();
 	}
 
 	// FUNCTIONALITY
@@ -219,24 +252,37 @@ export default class NovelWordCountPlugin extends Plugin {
 
 	private handleEvents(): void {
 		this.registerEvent(
-			this.app.vault.on("modify", async (file) => {
+			this.app.vault.on('modify', async (file) => {
+				this.debugHelper.debug('[modify] vault hook fired, recounting file', file.path);
 				await this.fileHelper.updateFileCounts(
 					file,
 					this.savedData.cachedCounts
 				);
-				await this.updateDisplayedCounts();
+				await this.updateDisplayedCounts(file);
 			})
+		);
+
+		async function recalculateAll(hookName: string, file: TAbstractFile) {
+			this.debugHelper.debug(`[${hookName}] vault hook fired by file`, file.path, 'recounting all files');
+			await this.refreshAllCounts();
+			await this.updateDisplayedCounts();
+		}
+
+		this.registerEvent(
+			this.app.vault.on('rename', debounce(recalculateAll.bind(this, 'rename'), 1000))
 		);
 
 		this.registerEvent(
-			this.app.vault.on("rename", async () => {
-				await this.refreshAllCounts();
-				await this.updateDisplayedCounts();
-			})
-		);
+			this.app.vault.on('create', debounce(recalculateAll.bind(this, 'create'), 1000))
+		)
+
+		this.registerEvent(
+			this.app.vault.on('delete', debounce(recalculateAll.bind(this, 'delete'), 1000))
+		)
 	}
 
 	private async refreshAllCounts() {
+		this.debugHelper.debug('refreshAllCounts')
 		this.savedData.cachedCounts = await this.fileHelper.getAllFileCounts();
 		await this.saveSettings();
 	}
@@ -308,6 +354,22 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 							button.setCta();
 							button.disabled = false;
 						}, 1000);
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Debug mode")
+			.setDesc(
+				"Log debugging information to the developer console"
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.debugMode)
+					.onChange(async (value) => {
+						this.plugin.settings.debugMode = value;
+						this.plugin.debugHelper.setDebugMode(value);
+						this.plugin.fileHelper.setDebugMode(value);
+						await this.plugin.saveSettings();
 					})
 			);
 	}

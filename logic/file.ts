@@ -1,4 +1,5 @@
 import { TAbstractFile, TFile, TFolder, Vault } from "obsidian";
+import { DebugHelper } from "./debug";
 
 export interface CountData {
 	pageCount: number;
@@ -13,9 +14,13 @@ export type CountsByFile = {
 };
 
 export class FileHelper {
+	private debugHelper = new DebugHelper();
+
 	constructor(private vault: Vault) {}
 
 	public async getAllFileCounts(): Promise<CountsByFile> {
+		const debugEnd = this.debugHelper.debugStart('getAllFileCounts')
+
 		const files = this.vault.getMarkdownFiles();
 		const counts: CountsByFile = {};
 
@@ -25,6 +30,7 @@ export class FileHelper {
 			this.setCounts(counts, file, wordCount, contents);
 		}
 
+		debugEnd();
 		return counts;
 	}
 
@@ -32,10 +38,11 @@ export class FileHelper {
 		if (counts.hasOwnProperty(path)) {
 			return counts[path];
 		}
-
+		
 		const childPaths = Object.keys(counts).filter(
 			(countPath) => path === "/" || countPath.startsWith(path + "/")
 		);
+
 		return childPaths.reduce(
 			(total, childPath) => {
 				const childCount = this.getCountDataForPath(counts, childPath);
@@ -56,11 +63,16 @@ export class FileHelper {
 		);
 	}
 
+	public setDebugMode(debug: boolean): void {
+		this.debugHelper.setDebugMode(debug);
+	}
+
 	public async updateFileCounts(
 		abstractFile: TAbstractFile,
 		counts: CountsByFile
 	): Promise<void> {
 		if (abstractFile instanceof TFolder) {
+			this.debugHelper.debug('updateFileCounts called on instance of TFolder')
 			Object.assign(counts, this.getAllFileCounts());
 			return;
 		}
