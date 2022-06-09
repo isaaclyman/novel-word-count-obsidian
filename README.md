@@ -16,6 +16,8 @@ This plugin displays a word count, page count, character count, created date, or
 - "Created 1/22/2022" => "1/22/2022/c"
 - "Updated 1/22/2022" => "1/22/2022/u"
 
+**Alignment.** Choose where data is displayed relative to file/folder names: inline, right-aligned, or below.
+
 **Reanalyze all documents.** Triggers a recount of all documents in the vault. Useful if you've made changes outside of Obsidian. (A hotkey binding is available for this command.)
 
 **Debug mode.** Enables debugging output to the developer console, which may be useful if you need to report an issue.
