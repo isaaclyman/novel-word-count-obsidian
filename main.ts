@@ -27,15 +27,29 @@ const countTypes = [
 	CountType.Modified,
 ];
 
+enum AlignmentType {
+	Inline = "inline",
+	Right = "right",
+	Below = "below"
+}
+
+const alignmentTypes = [
+	AlignmentType.Inline,
+	AlignmentType.Right,
+	AlignmentType.Below
+]
+
 interface NovelWordCountSettings {
 	countType: CountType;
 	abbreviateDescriptions: boolean;
+	alignment: AlignmentType;
 	debugMode: boolean;
-}
+};
 
 const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	countType: CountType.Word,
 	abbreviateDescriptions: false,
+	alignment: AlignmentType.Inline,
 	debugMode: false
 };
 
@@ -150,6 +164,7 @@ export default class NovelWordCountPlugin extends Plugin {
 		}
 
 		const fileExplorerLeaf = await this.getFileExplorerLeaf();
+		this.setContainerClass(fileExplorerLeaf);
 		const fileItems: { [path: string]: FileItem } = (
 			fileExplorerLeaf.view as any
 		).fileItems;
@@ -286,6 +301,18 @@ export default class NovelWordCountPlugin extends Plugin {
 		this.savedData.cachedCounts = await this.fileHelper.getAllFileCounts();
 		await this.saveSettings();
 	}
+
+	private setContainerClass(leaf: WorkspaceLeaf) {
+		const container = leaf.view.containerEl;
+		const prefix = `novel-word-count--`;
+		const alignmentClasses = alignmentTypes.map(at => prefix + at);
+
+		for (const ac of alignmentClasses) {
+			container.toggleClass(ac, false);
+		}
+
+		container.toggleClass(prefix + this.settings.alignment, true);
+	}
 }
 
 class NovelWordCountSettingTab extends PluginSettingTab {
@@ -305,7 +332,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Data to show")
-			.setDesc("Word count, page count, created date, or last updated date")
+			.setDesc("What to show next to each file and folder")
 			.addDropdown((drop) =>
 				drop
 					.addOption(CountType.Word, "Word Count")
@@ -333,6 +360,22 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 						await this.plugin.updateDisplayedCounts();
 					})
 			);
+
+		new Setting(containerEl)
+			.setName("Alignment")
+			.setDesc("Show data inline with file/folder names, right-aligned, or underneath")
+			.addDropdown((drop) => {
+				drop
+					.addOption(AlignmentType.Inline, "Inline")
+					.addOption(AlignmentType.Right, "Right-aligned")
+					.addOption(AlignmentType.Below, "Below")
+					.setValue(this.plugin.settings.alignment)
+					.onChange(async (value: AlignmentType) => {
+						this.plugin.settings.alignment = value;
+						await this.plugin.saveSettings();
+						await this.plugin.updateDisplayedCounts();
+					})
+			})
 
 		new Setting(containerEl)
 			.setName("Reanalyze all documents")
