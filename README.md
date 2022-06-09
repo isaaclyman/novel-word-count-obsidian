@@ -4,7 +4,21 @@
 
 This plugin displays a word count, page count, character count, created date, or last updated date next to every file, folder, and vault in the File Explorer pane. It updates in real time as you write.
 
-If you make changes to your files outside of Obsidian, you can trigger a reanalysis of all files from the Command Palette (type "recount") or the plugin settings.
+### Settings
+
+**Data to show.** Choose word count, page count, character count, created date, or last updated date. (A hotkey binding is available to cycle through these options.)
+
+**Abbreviate descriptions.** Enable to show shortened counts:
+
+- "3,250 words" => "3,250w"
+- "30 pages" => "30p"
+- "23,800 characters" => "23,800ch"
+- "Created 1/22/2022" => "1/22/2022/c"
+- "Updated 1/22/2022" => "1/22/2022/u"
+
+**Reanalyze all documents.** Triggers a recount of all documents in the vault. Useful if you've made changes outside of Obsidian. (A hotkey binding is available for this command.)
+
+**Debug mode.** Enables debugging output to the developer console, which may be useful if you need to report an issue.
 
 ### Safety
 
@@ -34,4 +48,4 @@ Search "novel word count" in the community plugin browser, or use [this link](ht
 
 ### Installing the plugin manually
 
-- Visit the [Releases page](https://github.com/isaaclyman/novel-word-count-obsidian/releases). Download `main.js`, `styles.css`, and `manifest.json` to your vault at `VaultFolder/.obsidian/plugins/novel-word-count/`.
+Visit the [Releases page](https://github.com/isaaclyman/novel-word-count-obsidian/releases). Download `main.js`, `styles.css`, and `manifest.json` to your vault at `VaultFolder/.obsidian/plugins/novel-word-count/`.
