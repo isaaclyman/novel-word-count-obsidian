@@ -20,6 +20,18 @@ This plugin's effect on the File Explorer DOM is extremely minimal. It adds a `[
 - `npm i` or `yarn` to install dependencies
 - `npm run dev` to start compilation in watch mode.
 
-### Manually installing the plugin
+### Creating a new release
+
+- Commit changes.
+- Run `npm version {major|minor|patch}` to update the manifest and package.json.
+- Push commits to the remote.
+- Run `npm run build` to make sure main.js is up to date.
+- Create a new release and tag in GitHub, both named after the version number e.g. `2.4.1` without a "v". Attach the files main.js, styles.css, and manifest.json.
+
+### Installing the plugin automatically
+
+Search "novel word count" in the community plugin browser, or use [this link](https://obsidian.md/plugins?id=novel-word-count).
+
+### Installing the plugin manually
 
 - Visit the [Releases page](https://github.com/isaaclyman/novel-word-count-obsidian/releases). Download `main.js`, `styles.css`, and `manifest.json` to your vault at `VaultFolder/.obsidian/plugins/novel-word-count/`.
