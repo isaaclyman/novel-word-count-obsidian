@@ -277,8 +277,12 @@ export default class NovelWordCountPlugin extends Plugin {
 			})
 		);
 
-		async function recalculateAll(hookName: string, file: TAbstractFile) {
-			this.debugHelper.debug(`[${hookName}] vault hook fired by file`, file.path, 'recounting all files');
+		async function recalculateAll(hookName: string, file?: TAbstractFile) {
+			if (file) {
+				this.debugHelper.debug(`[${hookName}] vault hook fired by file`, file.path, 'recounting all files');
+			} else {
+				this.debugHelper.debug(`[${hookName}] hook fired`, 'recounting all files');
+			}
 			await this.refreshAllCounts();
 			await this.updateDisplayedCounts();
 		}
@@ -289,11 +293,15 @@ export default class NovelWordCountPlugin extends Plugin {
 
 		this.registerEvent(
 			this.app.vault.on('create', debounce(recalculateAll.bind(this, 'create'), 1000))
-		)
+		);
 
 		this.registerEvent(
 			this.app.vault.on('delete', debounce(recalculateAll.bind(this, 'delete'), 1000))
-		)
+		);
+
+		this.registerEvent(
+			this.app.workspace.on('layout-change', debounce(recalculateAll.bind(this, 'layout-change'), 1000))
+		);
 	}
 
 	private async refreshAllCounts() {
