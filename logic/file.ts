@@ -1,3 +1,4 @@
+import NovelWordCountPlugin from "main";
 import { TAbstractFile, TFile, TFolder, Vault } from "obsidian";
 import { DebugHelper } from "./debug";
 
@@ -16,7 +17,7 @@ export type CountsByFile = {
 export class FileHelper {
 	private debugHelper = new DebugHelper();
 
-	constructor(private vault: Vault) {}
+	constructor(private vault: Vault, private plugin: NovelWordCountPlugin) {}
 
 	public async getAllFileCounts(): Promise<CountsByFile> {
 		const debugEnd = this.debugHelper.debugStart('getAllFileCounts')
@@ -94,9 +95,12 @@ export class FileHelper {
 		wordCount: number,
 		content: string
 	): void {
+		const wordsPerPage = Number(this.plugin.settings.wordsPerPage);
+		const wordsPerPageValid = !isNaN(wordsPerPage) && wordsPerPage > 0;
+
 		counts[file.path] = {
 			wordCount: wordCount,
-			pageCount: Math.ceil(wordCount / 300),
+			pageCount: Math.ceil(wordCount / (wordsPerPageValid ? wordsPerPage : 300)),
 			characterCount: content.length,
 			createdDate: file.stat.ctime,
 			modifiedDate: file.stat.mtime,

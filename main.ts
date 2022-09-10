@@ -9,6 +9,7 @@ import {
 	WorkspaceLeaf,
 	TAbstractFile,
 	debounce,
+	TextComponent,
 } from "obsidian";
 
 enum CountType {
@@ -44,13 +45,15 @@ interface NovelWordCountSettings {
 	abbreviateDescriptions: boolean;
 	alignment: AlignmentType;
 	debugMode: boolean;
+	wordsPerPage: number;
 };
 
 const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	countType: CountType.Word,
 	abbreviateDescriptions: false,
 	alignment: AlignmentType.Inline,
-	debugMode: false
+	debugMode: false,
+	wordsPerPage: 300
 };
 
 interface NovelWordCountSavedData {
@@ -72,7 +75,7 @@ export default class NovelWordCountPlugin extends Plugin {
 
 	constructor(app: App, manifest: PluginManifest) {
 		super(app, manifest);
-		this.fileHelper = new FileHelper(this.app.vault);
+		this.fileHelper = new FileHelper(this.app.vault, this);
 	}
 
 	// LIFECYCLE
@@ -383,6 +386,26 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 					})
+			});
+
+		const wordsPerPageChanged = async (txt: TextComponent, value: string) => {
+			const asNumber = Number(value);
+			const isValid = !isNaN(asNumber) && asNumber > 0;
+
+			txt.inputEl.style.borderColor = isValid ? null : 'red';
+
+			this.plugin.settings.wordsPerPage = isValid ? Number(value) : 300;
+			await this.plugin.saveSettings();
+			await this.plugin.initialize();
+		};
+		new Setting(containerEl)
+			.setName("Words per page")
+			.setDesc("Used for page count. 300 is standard in the publishing industry.")
+			.addText((txt) => {
+				txt
+					.setPlaceholder('300')
+					.setValue(this.plugin.settings.wordsPerPage.toString())
+					.onChange(debounce(wordsPerPageChanged.bind(this, txt), 1000));
 			})
 
 		new Setting(containerEl)
