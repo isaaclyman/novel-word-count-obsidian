@@ -16,19 +16,33 @@ enum CountType {
 	Word = "word",
 	Page = "page",
 	Character = "character",
-	PageWord = "page|word",
-	PageWordChar = "page|word|char",
+	PageWord = "page_word",
+	PageWordChar = "page_word_char",
 	Created = "created",
 	Modified = "modified",
-	CreatedModified = "created|modified",
+	CreatedModified = "created_modified",
 }
+
+const countTypeDisplayStrings: { [countType: string]: string } = {
+	[CountType.Word]: "Word Count",
+	[CountType.Page]: "Page Count",
+	[CountType.Character]: "Character Count",
+	[CountType.PageWord]: "Pages | Words",
+	[CountType.PageWordChar]: "Pages | Words | Characters",
+	[CountType.Created]: "Created Date",
+	[CountType.Modified]: "Last Updated Date",
+	[CountType.CreatedModified]: "Created | Updated",
+};
 
 const countTypes = [
 	CountType.Word,
 	CountType.Page,
 	CountType.Character,
+	CountType.PageWord,
+	CountType.PageWordChar,
 	CountType.Created,
 	CountType.Modified,
+	CountType.CreatedModified,
 ];
 
 enum AlignmentType {
@@ -103,9 +117,9 @@ export default class NovelWordCountPlugin extends Plugin {
 
 		this.addCommand({
 			id: "cycle-count-type",
-			name: "Change data type to display",
+			name: "Cycle to next data type",
 			callback: async () => {
-				this.debugHelper.debug("[Change data type] command triggered");
+				this.debugHelper.debug("[Cycle next data type] command triggered");
 				this.settings.countType =
 					countTypes[
 						(countTypes.indexOf(this.settings.countType) + 1) %
@@ -115,6 +129,32 @@ export default class NovelWordCountPlugin extends Plugin {
 				this.updateDisplayedCounts();
 			},
 		});
+
+		this.addCommand({
+			id: "toggle-abbreviate",
+			name: "Toggle abbreviation",
+			callback: async () => {
+				this.debugHelper.debug("[Toggle abbrevation] command triggered");
+				this.settings.abbreviateDescriptions = !this.settings.abbreviateDescriptions;
+				await this.saveSettings();
+				this.updateDisplayedCounts();
+			}
+		})
+
+		for (const countType of countTypes) {
+			this.addCommand({
+				id: `set-count-type-${countType}`,
+				name: `Show ${countTypeDisplayStrings[countType]}`,
+				callback: async () => {
+					this.debugHelper.debug(
+						`[Set count type to ${countType}] command triggered`
+					);
+					this.settings.countType = countType;
+					await this.saveSettings();
+					this.updateDisplayedCounts();
+				},
+			});
+		}
 
 		this.handleEvents();
 		this.initialize();
@@ -296,8 +336,16 @@ export default class NovelWordCountPlugin extends Plugin {
 				}
 
 				return this.settings.abbreviateDescriptions
-					? `${new Date(counts.createdDate).toLocaleDateString()}/c | ${new Date(counts.modifiedDate).toLocaleDateString()}/u`
-					: `Created ${new Date(counts.createdDate).toLocaleDateString()} | Updated ${new Date(counts.modifiedDate).toLocaleDateString()}`;
+					? `${new Date(
+							counts.createdDate
+					  ).toLocaleDateString()}/c | ${new Date(
+							counts.modifiedDate
+					  ).toLocaleDateString()}/u`
+					: `Created ${new Date(
+							counts.createdDate
+					  ).toLocaleDateString()} | Updated ${new Date(
+							counts.modifiedDate
+					  ).toLocaleDateString()}`;
 		}
 
 		return "";
@@ -401,23 +449,19 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Data to show")
 			.setDesc("What to show next to each file and folder")
-			.addDropdown((drop) =>
+			.addDropdown((drop) => {
+				for (const countType of countTypes) {
+					drop.addOption(countType, countTypeDisplayStrings[countType]);
+				}
+
 				drop
-					.addOption(CountType.Word, "Word Count")
-					.addOption(CountType.Page, "Page Count")
-					.addOption(CountType.Character, "Character Count")
-					.addOption(CountType.PageWord, "Pages | Words")
-					.addOption(CountType.PageWordChar, "Pages | Words | Characters")
-					.addOption(CountType.Created, "Created Date")
-					.addOption(CountType.Modified, "Last Updated Date")
-					.addOption(CountType.CreatedModified, "Created | Updated")
 					.setValue(this.plugin.settings.countType)
 					.onChange(async (value: CountType) => {
 						this.plugin.settings.countType = value;
 						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
-					})
-			);
+					});
+			});
 
 		new Setting(containerEl)
 			.setName("Abbreviate descriptions")
