@@ -6,7 +6,7 @@ This plugin displays a word count, page count, character count, created date, or
 
 ### Settings
 
-**Data to show.** Choose word count, page count, character count, created date, or last updated date. A few combinations of these are also available. (A hotkey binding is available to cycle through these options.)
+**Data to show.** Choose word count, page count, character count, created date, or last updated date. A few combinations of these are also available. (Hotkey bindings are available for each option.)
 
 **Abbreviate descriptions.** Enable to show shortened counts:
 
