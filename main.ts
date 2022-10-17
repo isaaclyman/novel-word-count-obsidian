@@ -16,8 +16,11 @@ enum CountType {
 	Word = "word",
 	Page = "page",
 	Character = "character",
+	PageWord = "page|word",
+	PageWordChar = "page|word|char",
 	Created = "created",
 	Modified = "modified",
+	CreatedModified = "created|modified",
 }
 
 const countTypes = [
@@ -31,14 +34,14 @@ const countTypes = [
 enum AlignmentType {
 	Inline = "inline",
 	Right = "right",
-	Below = "below"
+	Below = "below",
 }
 
 const alignmentTypes = [
 	AlignmentType.Inline,
 	AlignmentType.Right,
-	AlignmentType.Below
-]
+	AlignmentType.Below,
+];
 
 interface NovelWordCountSettings {
 	countType: CountType;
@@ -46,14 +49,14 @@ interface NovelWordCountSettings {
 	alignment: AlignmentType;
 	debugMode: boolean;
 	wordsPerPage: number;
-};
+}
 
 const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	countType: CountType.Word,
 	abbreviateDescriptions: false,
 	alignment: AlignmentType.Inline,
 	debugMode: false,
-	wordsPerPage: 300
+	wordsPerPage: 300,
 };
 
 interface NovelWordCountSavedData {
@@ -85,7 +88,7 @@ export default class NovelWordCountPlugin extends Plugin {
 
 		this.fileHelper.setDebugMode(this.savedData.settings.debugMode);
 		this.debugHelper.setDebugMode(this.savedData.settings.debugMode);
-		this.debugHelper.debug('onload lifecycle hook');
+		this.debugHelper.debug("onload lifecycle hook");
 
 		this.addSettingTab(new NovelWordCountSettingTab(this.app, this));
 
@@ -93,7 +96,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			id: "recount-vault",
 			name: "Reanalyze (recount) all documents in vault",
 			callback: async () => {
-				this.debugHelper.debug('[Reanalyze] command triggered')
+				this.debugHelper.debug("[Reanalyze] command triggered");
 				await this.initialize();
 			},
 		});
@@ -102,7 +105,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			id: "cycle-count-type",
 			name: "Change data type to display",
 			callback: async () => {
-				this.debugHelper.debug('[Change data type] command triggered')
+				this.debugHelper.debug("[Change data type] command triggered");
 				this.settings.countType =
 					countTypes[
 						(countTypes.indexOf(this.settings.countType) + 1) %
@@ -142,7 +145,7 @@ export default class NovelWordCountPlugin extends Plugin {
 	// PUBLIC
 
 	public async initialize(refreshAllCounts = true) {
-		this.debugHelper.debug('initialize');
+		this.debugHelper.debug("initialize");
 
 		if (refreshAllCounts) {
 			await this.refreshAllCounts();
@@ -159,10 +162,10 @@ export default class NovelWordCountPlugin extends Plugin {
 	}
 
 	public async updateDisplayedCounts(file: TAbstractFile | null = null) {
-		const debugEnd = this.debugHelper.debugStart('updateDisplayedCounts')
+		const debugEnd = this.debugHelper.debugStart("updateDisplayedCounts");
 
 		if (!Object.keys(this.savedData.cachedCounts).length) {
-			this.debugHelper.debug('No cached data found; refreshing all counts.');
+			this.debugHelper.debug("No cached data found; refreshing all counts.");
 			await this.refreshAllCounts();
 		}
 
@@ -173,10 +176,19 @@ export default class NovelWordCountPlugin extends Plugin {
 		).fileItems;
 
 		if (file) {
-			const relevantItems = Object.keys(fileItems).filter(path => file.path.includes(path))
-			this.debugHelper.debug('Setting display counts for', relevantItems.length, 'fileItems matching path', file.path)
+			const relevantItems = Object.keys(fileItems).filter((path) =>
+				file.path.includes(path)
+			);
+			this.debugHelper.debug(
+				"Setting display counts for",
+				relevantItems.length,
+				"fileItems matching path",
+				file.path
+			);
 		} else {
-			this.debugHelper.debug(`Setting display counts for ${Object.keys(fileItems).length} fileItems`)
+			this.debugHelper.debug(
+				`Setting display counts for ${Object.keys(fileItems).length} fileItems`
+			);
 		}
 
 		for (const path in fileItems) {
@@ -228,41 +240,64 @@ export default class NovelWordCountPlugin extends Plugin {
 			return "";
 		}
 
+		const getPluralizedCount = function (noun: string, count: number) {
+			return `${count.toLocaleString()} ${noun}${count == 1 ? "" : "s"}`;
+		};
+
 		switch (this.settings.countType) {
 			case CountType.Word:
-				return this.settings.abbreviateDescriptions ?
-					`${counts.wordCount.toLocaleString()}w` :
-					`${counts.wordCount.toLocaleString()} word${
-						counts.wordCount === 1 ? "" : "s"
-					}`;
+				return this.settings.abbreviateDescriptions
+					? `${counts.wordCount.toLocaleString()}w`
+					: getPluralizedCount("word", counts.wordCount);
 			case CountType.Page:
-				return this.settings.abbreviateDescriptions ?
-					`${counts.pageCount.toLocaleString()}p` :
-					`${counts.pageCount.toLocaleString()} page${
-						counts.pageCount === 1 ? "" : "s"
-					}`;
+				return this.settings.abbreviateDescriptions
+					? `${counts.pageCount.toLocaleString()}p`
+					: getPluralizedCount("page", counts.pageCount);
 			case CountType.Character:
-				return this.settings.abbreviateDescriptions ?
-					`${counts.characterCount.toLocaleString()}ch` :
-					`${counts.characterCount.toLocaleString()} character${
-						counts.characterCount === 1 ? "" : "s"
-					}`
+				return this.settings.abbreviateDescriptions
+					? `${counts.characterCount.toLocaleString()}ch`
+					: getPluralizedCount("character", counts.characterCount);
+			case CountType.PageWord:
+				return this.settings.abbreviateDescriptions
+					? `${counts.pageCount.toLocaleString()}p | ${counts.wordCount.toLocaleString()}w`
+					: `${getPluralizedCount(
+							"page",
+							counts.pageCount
+					  )} | ${getPluralizedCount("word", counts.wordCount)}`;
+			case CountType.PageWordChar:
+				return this.settings.abbreviateDescriptions
+					? `${counts.pageCount.toLocaleString()}p | ${counts.wordCount.toLocaleString()}w | ${counts.characterCount.toLocaleString()}ch`
+					: `${getPluralizedCount(
+							"page",
+							counts.pageCount
+					  )} | ${getPluralizedCount(
+							"word",
+							counts.wordCount
+					  )} | ${getPluralizedCount("character", counts.characterCount)}`;
 			case CountType.Created:
 				if (counts.createdDate === 0) {
 					return "";
 				}
 
-				return this.settings.abbreviateDescriptions ?
-					`${new Date(counts.createdDate).toLocaleDateString()}/c` :
-					`Created ${new Date(counts.createdDate).toLocaleDateString()}`;
+				return this.settings.abbreviateDescriptions
+					? `${new Date(counts.createdDate).toLocaleDateString()}/c`
+					: `Created ${new Date(counts.createdDate).toLocaleDateString()}`;
 			case CountType.Modified:
 				if (counts.modifiedDate === 0) {
 					return "";
 				}
 
-				return this.settings.abbreviateDescriptions ?
-					`${new Date(counts.modifiedDate).toLocaleDateString()}/u` :
-					`Updated ${new Date(counts.modifiedDate).toLocaleDateString()}`;
+				return this.settings.abbreviateDescriptions
+					? `${new Date(counts.modifiedDate).toLocaleDateString()}/u`
+					: `Updated ${new Date(counts.modifiedDate).toLocaleDateString()}`;
+			case CountType.CreatedModified:
+				if (counts.createdDate == 0 || counts.modifiedDate === 0) {
+					return "";
+				}
+
+				return this.settings.abbreviateDescriptions
+					? `${new Date(counts.createdDate).toLocaleDateString()}/c | ${new Date(counts.modifiedDate).toLocaleDateString()}/u`
+					: `Created ${new Date(counts.createdDate).toLocaleDateString()} | Updated ${new Date(counts.modifiedDate).toLocaleDateString()}`;
 		}
 
 		return "";
@@ -270,8 +305,11 @@ export default class NovelWordCountPlugin extends Plugin {
 
 	private handleEvents(): void {
 		this.registerEvent(
-			this.app.vault.on('modify', async (file) => {
-				this.debugHelper.debug('[modify] vault hook fired, recounting file', file.path);
+			this.app.vault.on("modify", async (file) => {
+				this.debugHelper.debug(
+					"[modify] vault hook fired, recounting file",
+					file.path
+				);
 				await this.fileHelper.updateFileCounts(
 					file,
 					this.savedData.cachedCounts
@@ -282,33 +320,52 @@ export default class NovelWordCountPlugin extends Plugin {
 
 		async function recalculateAll(hookName: string, file?: TAbstractFile) {
 			if (file) {
-				this.debugHelper.debug(`[${hookName}] vault hook fired by file`, file.path, 'recounting all files');
+				this.debugHelper.debug(
+					`[${hookName}] vault hook fired by file`,
+					file.path,
+					"recounting all files"
+				);
 			} else {
-				this.debugHelper.debug(`[${hookName}] hook fired`, 'recounting all files');
+				this.debugHelper.debug(
+					`[${hookName}] hook fired`,
+					"recounting all files"
+				);
 			}
 			await this.refreshAllCounts();
 			await this.updateDisplayedCounts();
 		}
 
 		this.registerEvent(
-			this.app.vault.on('rename', debounce(recalculateAll.bind(this, 'rename'), 1000))
+			this.app.vault.on(
+				"rename",
+				debounce(recalculateAll.bind(this, "rename"), 1000)
+			)
 		);
 
 		this.registerEvent(
-			this.app.vault.on('create', debounce(recalculateAll.bind(this, 'create'), 1000))
+			this.app.vault.on(
+				"create",
+				debounce(recalculateAll.bind(this, "create"), 1000)
+			)
 		);
 
 		this.registerEvent(
-			this.app.vault.on('delete', debounce(recalculateAll.bind(this, 'delete'), 1000))
+			this.app.vault.on(
+				"delete",
+				debounce(recalculateAll.bind(this, "delete"), 1000)
+			)
 		);
 
 		this.registerEvent(
-			this.app.workspace.on('layout-change', debounce(recalculateAll.bind(this, 'layout-change'), 1000))
+			this.app.workspace.on(
+				"layout-change",
+				debounce(recalculateAll.bind(this, "layout-change"), 1000)
+			)
 		);
 	}
 
 	private async refreshAllCounts() {
-		this.debugHelper.debug('refreshAllCounts')
+		this.debugHelper.debug("refreshAllCounts");
 		this.savedData.cachedCounts = await this.fileHelper.getAllFileCounts();
 		await this.saveSettings();
 	}
@@ -316,7 +373,7 @@ export default class NovelWordCountPlugin extends Plugin {
 	private setContainerClass(leaf: WorkspaceLeaf) {
 		const container = leaf.view.containerEl;
 		const prefix = `novel-word-count--`;
-		const alignmentClasses = alignmentTypes.map(at => prefix + at);
+		const alignmentClasses = alignmentTypes.map((at) => prefix + at);
 
 		for (const ac of alignmentClasses) {
 			container.toggleClass(ac, false);
@@ -349,8 +406,11 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 					.addOption(CountType.Word, "Word Count")
 					.addOption(CountType.Page, "Page Count")
 					.addOption(CountType.Character, "Character Count")
+					.addOption(CountType.PageWord, "Pages | Words")
+					.addOption(CountType.PageWordChar, "Pages | Words | Characters")
 					.addOption(CountType.Created, "Created Date")
 					.addOption(CountType.Modified, "Last Updated Date")
+					.addOption(CountType.CreatedModified, "Created | Updated")
 					.setValue(this.plugin.settings.countType)
 					.onChange(async (value: CountType) => {
 						this.plugin.settings.countType = value;
@@ -374,7 +434,9 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Alignment")
-			.setDesc("Show data inline with file/folder names, right-aligned, or underneath")
+			.setDesc(
+				"Show data inline with file/folder names, right-aligned, or underneath"
+			)
 			.addDropdown((drop) => {
 				drop
 					.addOption(AlignmentType.Inline, "Inline")
@@ -385,14 +447,14 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 						this.plugin.settings.alignment = value;
 						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
-					})
+					});
 			});
 
 		const wordsPerPageChanged = async (txt: TextComponent, value: string) => {
 			const asNumber = Number(value);
 			const isValid = !isNaN(asNumber) && asNumber > 0;
 
-			txt.inputEl.style.borderColor = isValid ? null : 'red';
+			txt.inputEl.style.borderColor = isValid ? null : "red";
 
 			this.plugin.settings.wordsPerPage = isValid ? Number(value) : 300;
 			await this.plugin.saveSettings();
@@ -400,13 +462,15 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 		};
 		new Setting(containerEl)
 			.setName("Words per page")
-			.setDesc("Used for page count. 300 is standard in the publishing industry.")
+			.setDesc(
+				"Used for page count. 300 is standard in the publishing industry."
+			)
 			.addText((txt) => {
 				txt
-					.setPlaceholder('300')
+					.setPlaceholder("300")
 					.setValue(this.plugin.settings.wordsPerPage.toString())
 					.onChange(debounce(wordsPerPageChanged.bind(this, txt), 1000));
-			})
+			});
 
 		new Setting(containerEl)
 			.setName("Reanalyze all documents")
@@ -433,9 +497,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Debug mode")
-			.setDesc(
-				"Log debugging information to the developer console"
-			)
+			.setDesc("Log debugging information to the developer console")
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.debugMode)
