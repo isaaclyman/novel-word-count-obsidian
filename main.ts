@@ -18,11 +18,8 @@ enum CountType {
 	Page = "page",
 	Note = "note",
 	Character = "character",
-	PageWord = "page_word",
-	PageWordChar = "page_word_char",
 	Created = "created",
 	Modified = "modified",
-	CreatedModified = "created_modified",
 }
 
 const countTypeDisplayStrings: { [countType: string]: string } = {
@@ -31,11 +28,8 @@ const countTypeDisplayStrings: { [countType: string]: string } = {
 	[CountType.Page]: "Page Count",
 	[CountType.Note]: "Note Count",
 	[CountType.Character]: "Character Count",
-	[CountType.PageWord]: "Pages | Words",
-	[CountType.PageWordChar]: "Pages | Words | Characters",
 	[CountType.Created]: "Created Date",
 	[CountType.Modified]: "Last Updated Date",
-	[CountType.CreatedModified]: "Created | Updated",
 };
 
 const countTypes = [
@@ -44,11 +38,8 @@ const countTypes = [
 	CountType.Page,
 	CountType.Note,
 	CountType.Character,
-	CountType.PageWord,
-	CountType.PageWordChar,
 	CountType.Created,
 	CountType.Modified,
-	CountType.CreatedModified,
 ];
 
 enum AlignmentType {
@@ -65,6 +56,8 @@ const alignmentTypes = [
 
 interface NovelWordCountSettings {
 	countType: CountType;
+	countType2: CountType;
+	countType3: CountType;
 	abbreviateDescriptions: boolean;
 	alignment: AlignmentType;
 	debugMode: boolean;
@@ -73,6 +66,8 @@ interface NovelWordCountSettings {
 
 const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	countType: CountType.Word,
+	countType2: CountType.None,
+	countType3: CountType.None,
 	abbreviateDescriptions: false,
 	alignment: AlignmentType.Inline,
 	debugMode: false,
@@ -123,7 +118,7 @@ export default class NovelWordCountPlugin extends Plugin {
 
 		this.addCommand({
 			id: "cycle-count-type",
-			name: "Cycle to next data type",
+			name: "Show next data type (1st position)",
 			callback: async () => {
 				this.debugHelper.debug("[Cycle next data type] command triggered");
 				this.settings.countType =
@@ -141,16 +136,17 @@ export default class NovelWordCountPlugin extends Plugin {
 			name: "Toggle abbreviation",
 			callback: async () => {
 				this.debugHelper.debug("[Toggle abbrevation] command triggered");
-				this.settings.abbreviateDescriptions = !this.settings.abbreviateDescriptions;
+				this.settings.abbreviateDescriptions =
+					!this.settings.abbreviateDescriptions;
 				await this.saveSettings();
 				this.updateDisplayedCounts();
-			}
-		})
+			},
+		});
 
 		for (const countType of countTypes) {
 			this.addCommand({
 				id: `set-count-type-${countType}`,
-				name: `Show ${countTypeDisplayStrings[countType]}`,
+				name: `Show ${countTypeDisplayStrings[countType]} (1st position)`,
 				callback: async () => {
 					this.debugHelper.debug(
 						`[Set count type to ${countType}] command triggered`
@@ -173,10 +169,19 @@ export default class NovelWordCountPlugin extends Plugin {
 	// SETTINGS
 
 	async loadSettings() {
-		this.savedData = Object.assign(
-			{},
-			await this.loadData()
-		) as NovelWordCountSavedData;
+		const loaded: NovelWordCountSavedData = await this.loadData();
+
+		if (
+			loaded &&
+			loaded.settings &&
+			loaded.settings.countType &&
+			!countTypes.includes(loaded.settings.countType)
+		) {
+			loaded.settings.countType = CountType.Word;
+		}
+
+		this.savedData = Object.assign({}, loaded);
+
 		this.savedData.settings = Object.assign(
 			{},
 			DEFAULT_SETTINGS,
@@ -249,7 +254,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			const item = fileItems[path];
 			item.titleEl.setAttribute(
 				"data-novel-word-count-plugin",
-				this.getNodeLabel(counts, this.settings.countType, this.settings.abbreviateDescriptions)
+				this.getNodeLabel(counts)
 			);
 		}
 
@@ -281,7 +286,11 @@ export default class NovelWordCountPlugin extends Plugin {
 		});
 	}
 
-	private getNodeLabel(counts: CountData, countType: CountType, abbreviateDescriptions: boolean): string {
+	private getDataTypeLabel(
+		counts: CountData,
+		countType: CountType,
+		abbreviateDescriptions: boolean
+	): string {
 		if (!counts || typeof counts.wordCount !== "number") {
 			return "";
 		}
@@ -292,7 +301,7 @@ export default class NovelWordCountPlugin extends Plugin {
 
 		switch (countType) {
 			case CountType.None:
-				return '';
+				return "";
 			case CountType.Word:
 				return abbreviateDescriptions
 					? `${counts.wordCount.toLocaleString()}w`
@@ -309,23 +318,6 @@ export default class NovelWordCountPlugin extends Plugin {
 				return abbreviateDescriptions
 					? `${counts.characterCount.toLocaleString()}ch`
 					: getPluralizedCount("character", counts.characterCount);
-			case CountType.PageWord:
-				return abbreviateDescriptions
-					? `${counts.pageCount.toLocaleString()}p | ${counts.wordCount.toLocaleString()}w`
-					: `${getPluralizedCount(
-							"page",
-							counts.pageCount
-					  )} | ${getPluralizedCount("word", counts.wordCount)}`;
-			case CountType.PageWordChar:
-				return abbreviateDescriptions
-					? `${counts.pageCount.toLocaleString()}p | ${counts.wordCount.toLocaleString()}w | ${counts.characterCount.toLocaleString()}ch`
-					: `${getPluralizedCount(
-							"page",
-							counts.pageCount
-					  )} | ${getPluralizedCount(
-							"word",
-							counts.wordCount
-					  )} | ${getPluralizedCount("character", counts.characterCount)}`;
 			case CountType.Created:
 				if (counts.createdDate === 0) {
 					return "";
@@ -342,25 +334,22 @@ export default class NovelWordCountPlugin extends Plugin {
 				return abbreviateDescriptions
 					? `${new Date(counts.modifiedDate).toLocaleDateString()}/u`
 					: `Updated ${new Date(counts.modifiedDate).toLocaleDateString()}`;
-			case CountType.CreatedModified:
-				if (counts.createdDate == 0 || counts.modifiedDate === 0) {
-					return "";
-				}
-
-				return abbreviateDescriptions
-					? `${new Date(
-							counts.createdDate
-					  ).toLocaleDateString()}/c | ${new Date(
-							counts.modifiedDate
-					  ).toLocaleDateString()}/u`
-					: `Created ${new Date(
-							counts.createdDate
-					  ).toLocaleDateString()} | Updated ${new Date(
-							counts.modifiedDate
-					  ).toLocaleDateString()}`;
 		}
 
 		return "";
+	}
+
+	private getNodeLabel(counts: CountData): string {
+		return [
+			this.settings.countType,
+			this.settings.countType2,
+			this.settings.countType3,
+		]
+			.filter((ct) => ct !== CountType.None)
+			.map((ct) =>
+				this.getDataTypeLabel(counts, ct, this.settings.abbreviateDescriptions)
+			)
+			.join(" | ");
 	}
 
 	private handleEvents(): void {
@@ -457,10 +446,13 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		containerEl.createEl("h2", { text: "Novel word count settings" });
+		containerEl.createEl("p", {
+			text: "You can display up to three data types side by side.",
+		});
 
 		new Setting(containerEl)
-			.setName("Data to show")
-			.setDesc("What to show next to each file and folder")
+			.setName("1st data type to show")
+			.setDesc("Ex: 10,000 words")
 			.addDropdown((drop) => {
 				for (const countType of countTypes) {
 					drop.addOption(countType, countTypeDisplayStrings[countType]);
@@ -470,6 +462,40 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.countType)
 					.onChange(async (value: CountType) => {
 						this.plugin.settings.countType = value;
+						await this.plugin.saveSettings();
+						await this.plugin.updateDisplayedCounts();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("2nd data type to show")
+			.setDesc("Ex: 10,000 words | 33 pages")
+			.addDropdown((drop) => {
+				for (const countType of countTypes) {
+					drop.addOption(countType, countTypeDisplayStrings[countType]);
+				}
+
+				drop
+					.setValue(this.plugin.settings.countType2)
+					.onChange(async (value: CountType) => {
+						this.plugin.settings.countType2 = value;
+						await this.plugin.saveSettings();
+						await this.plugin.updateDisplayedCounts();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("3rd data type to show")
+			.setDesc("Ex: 10,000 words | 33 pages | Created 10/27/2022")
+			.addDropdown((drop) => {
+				for (const countType of countTypes) {
+					drop.addOption(countType, countTypeDisplayStrings[countType]);
+				}
+
+				drop
+					.setValue(this.plugin.settings.countType3)
+					.onChange(async (value: CountType) => {
+						this.plugin.settings.countType3 = value;
 						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 					});
