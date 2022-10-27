@@ -13,6 +13,7 @@ import {
 } from "obsidian";
 
 enum CountType {
+	None = "none",
 	Word = "word",
 	Page = "page",
 	Note = "note",
@@ -25,6 +26,7 @@ enum CountType {
 }
 
 const countTypeDisplayStrings: { [countType: string]: string } = {
+	[CountType.None]: "None",
 	[CountType.Word]: "Word Count",
 	[CountType.Page]: "Page Count",
 	[CountType.Note]: "Note Count",
@@ -37,6 +39,7 @@ const countTypeDisplayStrings: { [countType: string]: string } = {
 };
 
 const countTypes = [
+	CountType.None,
 	CountType.Word,
 	CountType.Page,
 	CountType.Note,
@@ -246,7 +249,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			const item = fileItems[path];
 			item.titleEl.setAttribute(
 				"data-novel-word-count-plugin",
-				this.getNodeLabel(counts)
+				this.getNodeLabel(counts, this.settings.countType, this.settings.abbreviateDescriptions)
 			);
 		}
 
@@ -278,7 +281,7 @@ export default class NovelWordCountPlugin extends Plugin {
 		});
 	}
 
-	private getNodeLabel(counts: CountData): string {
+	private getNodeLabel(counts: CountData, countType: CountType, abbreviateDescriptions: boolean): string {
 		if (!counts || typeof counts.wordCount !== "number") {
 			return "";
 		}
@@ -287,32 +290,34 @@ export default class NovelWordCountPlugin extends Plugin {
 			return `${count.toLocaleString()} ${noun}${count == 1 ? "" : "s"}`;
 		};
 
-		switch (this.settings.countType) {
+		switch (countType) {
+			case CountType.None:
+				return '';
 			case CountType.Word:
-				return this.settings.abbreviateDescriptions
+				return abbreviateDescriptions
 					? `${counts.wordCount.toLocaleString()}w`
 					: getPluralizedCount("word", counts.wordCount);
 			case CountType.Page:
-				return this.settings.abbreviateDescriptions
+				return abbreviateDescriptions
 					? `${counts.pageCount.toLocaleString()}p`
 					: getPluralizedCount("page", counts.pageCount);
 			case CountType.Note:
-				return this.settings.abbreviateDescriptions
+				return abbreviateDescriptions
 					? `${counts.noteCount.toLocaleString()}n`
 					: getPluralizedCount("note", counts.noteCount);
 			case CountType.Character:
-				return this.settings.abbreviateDescriptions
+				return abbreviateDescriptions
 					? `${counts.characterCount.toLocaleString()}ch`
 					: getPluralizedCount("character", counts.characterCount);
 			case CountType.PageWord:
-				return this.settings.abbreviateDescriptions
+				return abbreviateDescriptions
 					? `${counts.pageCount.toLocaleString()}p | ${counts.wordCount.toLocaleString()}w`
 					: `${getPluralizedCount(
 							"page",
 							counts.pageCount
 					  )} | ${getPluralizedCount("word", counts.wordCount)}`;
 			case CountType.PageWordChar:
-				return this.settings.abbreviateDescriptions
+				return abbreviateDescriptions
 					? `${counts.pageCount.toLocaleString()}p | ${counts.wordCount.toLocaleString()}w | ${counts.characterCount.toLocaleString()}ch`
 					: `${getPluralizedCount(
 							"page",
@@ -326,7 +331,7 @@ export default class NovelWordCountPlugin extends Plugin {
 					return "";
 				}
 
-				return this.settings.abbreviateDescriptions
+				return abbreviateDescriptions
 					? `${new Date(counts.createdDate).toLocaleDateString()}/c`
 					: `Created ${new Date(counts.createdDate).toLocaleDateString()}`;
 			case CountType.Modified:
@@ -334,7 +339,7 @@ export default class NovelWordCountPlugin extends Plugin {
 					return "";
 				}
 
-				return this.settings.abbreviateDescriptions
+				return abbreviateDescriptions
 					? `${new Date(counts.modifiedDate).toLocaleDateString()}/u`
 					: `Updated ${new Date(counts.modifiedDate).toLocaleDateString()}`;
 			case CountType.CreatedModified:
@@ -342,7 +347,7 @@ export default class NovelWordCountPlugin extends Plugin {
 					return "";
 				}
 
-				return this.settings.abbreviateDescriptions
+				return abbreviateDescriptions
 					? `${new Date(
 							counts.createdDate
 					  ).toLocaleDateString()}/c | ${new Date(
