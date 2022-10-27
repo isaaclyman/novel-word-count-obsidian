@@ -15,6 +15,7 @@ import {
 enum CountType {
 	Word = "word",
 	Page = "page",
+	Note = "note",
 	Character = "character",
 	PageWord = "page_word",
 	PageWordChar = "page_word_char",
@@ -26,6 +27,7 @@ enum CountType {
 const countTypeDisplayStrings: { [countType: string]: string } = {
 	[CountType.Word]: "Word Count",
 	[CountType.Page]: "Page Count",
+	[CountType.Note]: "Note Count",
 	[CountType.Character]: "Character Count",
 	[CountType.PageWord]: "Pages | Words",
 	[CountType.PageWordChar]: "Pages | Words | Characters",
@@ -37,6 +39,7 @@ const countTypeDisplayStrings: { [countType: string]: string } = {
 const countTypes = [
 	CountType.Word,
 	CountType.Page,
+	CountType.Note,
 	CountType.Character,
 	CountType.PageWord,
 	CountType.PageWordChar,
@@ -293,6 +296,10 @@ export default class NovelWordCountPlugin extends Plugin {
 				return this.settings.abbreviateDescriptions
 					? `${counts.pageCount.toLocaleString()}p`
 					: getPluralizedCount("page", counts.pageCount);
+			case CountType.Note:
+				return this.settings.abbreviateDescriptions
+					? `${counts.noteCount.toLocaleString()}n`
+					: getPluralizedCount("note", counts.noteCount);
 			case CountType.Character:
 				return this.settings.abbreviateDescriptions
 					? `${counts.characterCount.toLocaleString()}ch`

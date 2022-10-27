@@ -3,6 +3,7 @@ import { TAbstractFile, TFile, TFolder, Vault } from "obsidian";
 import { DebugHelper } from "./debug";
 
 export interface CountData {
+	noteCount: number;
 	pageCount: number;
 	wordCount: number;
 	characterCount: number;
@@ -47,6 +48,7 @@ export class FileHelper {
 		return childPaths.reduce(
 			(total, childPath) => {
 				const childCount = this.getCountDataForPath(counts, childPath);
+				total.noteCount += childCount.noteCount;
 				total.wordCount += childCount.wordCount;
 				total.pageCount += childCount.pageCount;
 				total.characterCount += childCount.characterCount;
@@ -55,6 +57,7 @@ export class FileHelper {
 				return total;
 			},
 			{
+				noteCount: 0,
 				wordCount: 0,
 				pageCount: 0,
 				characterCount: 0,
@@ -99,6 +102,7 @@ export class FileHelper {
 		const wordsPerPageValid = !isNaN(wordsPerPage) && wordsPerPage > 0;
 
 		counts[file.path] = {
+			noteCount: 1,
 			wordCount: wordCount,
 			pageCount: Math.ceil(wordCount / (wordsPerPageValid ? wordsPerPage : 300)),
 			characterCount: content.length,
