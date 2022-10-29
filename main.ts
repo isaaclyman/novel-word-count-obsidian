@@ -1,6 +1,16 @@
 import { DebugHelper } from "logic/debug";
 import { CountData, CountsByFile, FileHelper } from "logic/file";
 import {
+	AlignmentType,
+	alignmentTypes,
+	CountType,
+	countTypeDisplayStrings,
+	countTypes,
+	DEFAULT_SETTINGS,
+	NovelWordCountSettings,
+	PageCountType,
+} from "logic/settings";
+import {
 	App,
 	Plugin,
 	PluginSettingTab,
@@ -11,68 +21,6 @@ import {
 	debounce,
 	TextComponent,
 } from "obsidian";
-
-enum CountType {
-	None = "none",
-	Word = "word",
-	Page = "page",
-	Note = "note",
-	Character = "character",
-	Created = "created",
-	Modified = "modified",
-}
-
-const countTypeDisplayStrings: { [countType: string]: string } = {
-	[CountType.None]: "None",
-	[CountType.Word]: "Word Count",
-	[CountType.Page]: "Page Count",
-	[CountType.Note]: "Note Count",
-	[CountType.Character]: "Character Count",
-	[CountType.Created]: "Created Date",
-	[CountType.Modified]: "Last Updated Date",
-};
-
-const countTypes = [
-	CountType.None,
-	CountType.Word,
-	CountType.Page,
-	CountType.Note,
-	CountType.Character,
-	CountType.Created,
-	CountType.Modified,
-];
-
-enum AlignmentType {
-	Inline = "inline",
-	Right = "right",
-	Below = "below",
-}
-
-const alignmentTypes = [
-	AlignmentType.Inline,
-	AlignmentType.Right,
-	AlignmentType.Below,
-];
-
-interface NovelWordCountSettings {
-	countType: CountType;
-	countType2: CountType;
-	countType3: CountType;
-	abbreviateDescriptions: boolean;
-	alignment: AlignmentType;
-	debugMode: boolean;
-	wordsPerPage: number;
-}
-
-const DEFAULT_SETTINGS: NovelWordCountSettings = {
-	countType: CountType.Word,
-	countType2: CountType.None,
-	countType3: CountType.None,
-	abbreviateDescriptions: false,
-	alignment: AlignmentType.Inline,
-	debugMode: false,
-	wordsPerPage: 300,
-};
 
 interface NovelWordCountSavedData {
 	cachedCounts: CountsByFile;
@@ -296,7 +244,8 @@ export default class NovelWordCountPlugin extends Plugin {
 		}
 
 		const getPluralizedCount = function (noun: string, count: number) {
-			return `${count.toLocaleString()} ${noun}${count == 1 ? "" : "s"}`;
+			const roundedCount = Math.ceil(count);
+			return `${roundedCount.toLocaleString()} ${noun}${roundedCount == 1 ? "" : "s"}`;
 		};
 
 		switch (countType) {
@@ -304,11 +253,11 @@ export default class NovelWordCountPlugin extends Plugin {
 				return "";
 			case CountType.Word:
 				return abbreviateDescriptions
-					? `${counts.wordCount.toLocaleString()}w`
+					? `${Math.ceil(counts.wordCount).toLocaleString()}w`
 					: getPluralizedCount("word", counts.wordCount);
 			case CountType.Page:
 				return abbreviateDescriptions
-					? `${counts.pageCount.toLocaleString()}p`
+					? `${Math.ceil(counts.pageCount).toLocaleString()}p`
 					: getPluralizedCount("page", counts.pageCount);
 			case CountType.Note:
 				return abbreviateDescriptions
@@ -445,9 +394,21 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: "Novel word count settings" });
-		containerEl.createEl("p", {
+		/*
+		 * GENERAL
+		 */
+
+		const mainHeader = containerEl.createEl("div", {
+			cls: [
+				"setting-item",
+				"setting-item-heading",
+				"novel-word-count-settings-header",
+			],
+		});
+		mainHeader.createEl("div", { text: "General" });
+		mainHeader.createEl("div", {
 			text: "You can display up to three data types side by side.",
+			cls: "setting-item-description",
 		});
 
 		new Setting(containerEl)
@@ -532,27 +493,76 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 					});
 			});
 
-		const wordsPerPageChanged = async (txt: TextComponent, value: string) => {
-			const asNumber = Number(value);
-			const isValid = !isNaN(asNumber) && asNumber > 0;
+		/*
+		 *	ADVANCED
+		 */
 
-			txt.inputEl.style.borderColor = isValid ? null : "red";
+		containerEl
+			.createEl("div", { text: "Advanced" })
+			.addClasses(["setting-item", "setting-item-heading"]);
 
-			this.plugin.settings.wordsPerPage = isValid ? Number(value) : 300;
-			await this.plugin.saveSettings();
-			await this.plugin.initialize();
-		};
 		new Setting(containerEl)
-			.setName("Words per page")
-			.setDesc(
-				"Used for page count. 300 is standard in the publishing industry."
-			)
-			.addText((txt) => {
-				txt
-					.setPlaceholder("300")
-					.setValue(this.plugin.settings.wordsPerPage.toString())
-					.onChange(debounce(wordsPerPageChanged.bind(this, txt), 1000));
+			.setName("Page count method")
+			.setDesc("For language compatibility")
+			.addDropdown((drop) => {
+				drop
+					.addOption(PageCountType.ByWords, "Words per page")
+					.addOption(PageCountType.ByChars, "Characters per page")
+					.setValue(this.plugin.settings.pageCountType)
+					.onChange(async (value: PageCountType) => {
+						this.plugin.settings.pageCountType = value;
+						await this.plugin.saveSettings();
+						await this.plugin.updateDisplayedCounts();
+
+						this.display();
+					});
 			});
+
+		if (this.plugin.settings.pageCountType === PageCountType.ByWords) {
+			const wordsPerPageChanged = async (txt: TextComponent, value: string) => {
+				const asNumber = Number(value);
+				const isValid = !isNaN(asNumber) && asNumber > 0;
+
+				txt.inputEl.style.borderColor = isValid ? null : "red";
+
+				this.plugin.settings.wordsPerPage = isValid ? Number(value) : 300;
+				await this.plugin.saveSettings();
+				await this.plugin.initialize();
+			};
+			new Setting(containerEl)
+				.setName("Words per page")
+				.setDesc(
+					"Used for page count. 300 is standard in English language publishing."
+				)
+				.addText((txt) => {
+					txt
+						.setPlaceholder("300")
+						.setValue(this.plugin.settings.wordsPerPage.toString())
+						.onChange(debounce(wordsPerPageChanged.bind(this, txt), 1000));
+				});
+		}
+
+		if (this.plugin.settings.pageCountType === PageCountType.ByChars) {
+			const charsPerPageChanged = async (txt: TextComponent, value: string) => {
+				const asNumber = Number(value);
+				const isValid = !isNaN(asNumber) && asNumber > 0;
+
+				txt.inputEl.style.borderColor = isValid ? null : "red";
+
+				this.plugin.settings.charsPerPage = isValid ? Number(value) : 1500;
+				await this.plugin.saveSettings();
+				await this.plugin.initialize();
+			};
+			new Setting(containerEl)
+				.setName("Characters per page (not counting whitespace)")
+				.setDesc("Used for page count. 1500 is common in German (Normseite).")
+				.addText((txt) => {
+					txt
+						.setPlaceholder("1500")
+						.setValue(this.plugin.settings.charsPerPage.toString())
+						.onChange(debounce(charsPerPageChanged.bind(this, txt), 1000));
+				});
+		}
 
 		new Setting(containerEl)
 			.setName("Reanalyze all documents")
