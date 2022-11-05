@@ -301,7 +301,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			.join(" | ");
 	}
 
-	private handleEvents(): void {
+	private async handleEvents(): Promise<void> {
 		this.registerEvent(
 			this.app.vault.on("modify", async (file) => {
 				this.debugHelper.debug(
@@ -316,7 +316,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			})
 		);
 
-		async function recalculateAll(hookName: string, file?: TAbstractFile) {
+		const recalculateAll = async (hookName: string, file?: TAbstractFile) => {
 			if (file) {
 				this.debugHelper.debug(
 					`[${hookName}] vault hook fired by file`,
@@ -354,12 +354,30 @@ export default class NovelWordCountPlugin extends Plugin {
 			)
 		);
 
+		const reshowCountsIfNeeded = async (hookName: string) => {
+			this.debugHelper.debug(`[${hookName}] hook fired`);
+			
+			const fileExplorerLeaf = await this.getFileExplorerLeaf();
+			if (this.isContainerTouched(fileExplorerLeaf)) {
+				this.debugHelper.debug('container already touched, skipping display update');
+				return;
+			}
+
+			this.debugHelper.debug('container is clean, updating display');
+			await this.updateDisplayedCounts();
+		}
+
 		this.registerEvent(
 			this.app.workspace.on(
 				"layout-change",
-				debounce(recalculateAll.bind(this, "layout-change"), 1000)
+				debounce(reshowCountsIfNeeded.bind(this, 'layout-change'), 1000)
 			)
 		);
+	}
+
+	private isContainerTouched(leaf: WorkspaceLeaf): boolean {
+		const container = leaf.view.containerEl;
+		return container.className.includes('novel-word-count--');
 	}
 
 	private async refreshAllCounts() {
