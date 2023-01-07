@@ -20,8 +20,8 @@
   flex: 100%;
 }
 .novel-word-count--below .nav-files-container .nav-folder-title::after, .novel-word-count--below .nav-files-container .nav-file-title::after {
-  padding-left: 5px;
-  margin-top: -3px;
+  margin-top: -2px;
+  padding: 0;
 }
 
 .novel-word-count-settings-header {

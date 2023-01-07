@@ -1,5 +1,7 @@
 .nav-files-container {
   .nav-folder-title, .nav-file-title {
+    // align-items: baseline;
+
     &::after {
       align-items: center;
       content: attr(data-novel-word-count-plugin);
@@ -26,8 +28,8 @@
     }
 
     .novel-word-count--below &::after {
-      padding-left: 5px;
-      margin-top: -3px;
+      margin-top: -2px;
+      padding: 0;
     }
   }
 }
