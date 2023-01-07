@@ -1,6 +1,6 @@
 ## Novel word count plugin
 
-![A screenshot showing slightly transparent word counts next to every document, folder, and vault in the File Explorer pane.](readme-screenshot-1.png)
+![A screenshot showing slightly transparent word counts next to every document, folder, and vault in the File Explorer pane.](readme-screenshot-2.png)
 
 This plugin displays statistics of your choice next to every file, folder, and vault in the File Explorer pane. It updates in real time as you write.
 
