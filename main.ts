@@ -257,7 +257,7 @@ export default class NovelWordCountPlugin extends Plugin {
 					: getPluralizedCount("word", counts.wordCount);
 			case CountType.Page:
 				return abbreviateDescriptions
-					? `${Math.ceil(counts.pageCount).toLocaleString()}p`
+					? `${(counts.pageCount).toFixed(1)}p`
 					: getPluralizedCount("page", counts.pageCount);
 			case CountType.Note:
 				return abbreviateDescriptions
