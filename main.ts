@@ -243,9 +243,10 @@ export default class NovelWordCountPlugin extends Plugin {
 			return "";
 		}
 
-		const getPluralizedCount = function (noun: string, count: number) {
-			const roundedCount = Math.ceil(count);
-			return `${roundedCount.toLocaleString()} ${noun}${roundedCount == 1 ? "" : "s"}`;
+		const getPluralizedCount = function (noun: string, count: number, round: boolean = true) {
+			const roundedCount = round ? Math.ceil(count) : count;
+			const displayCount = round ? roundedCount.toLocaleString() : roundedCount.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 2});
+			return `${displayCount} ${noun}${roundedCount == 1 ? "" : "s"}`;
 		};
 
 		switch (countType) {
@@ -259,6 +260,10 @@ export default class NovelWordCountPlugin extends Plugin {
 				return abbreviateDescriptions
 					? `${Math.ceil(counts.pageCount).toLocaleString()}p`
 					: getPluralizedCount("page", counts.pageCount);
+			case CountType.PageDecimal:
+				return abbreviateDescriptions
+					? `${counts.pageCount.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 2})}p`
+					: getPluralizedCount("page", counts.pageCount, false);
 			case CountType.Note:
 				return abbreviateDescriptions
 					? `${counts.noteCount.toLocaleString()}n`
