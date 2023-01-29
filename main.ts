@@ -238,7 +238,7 @@ export default class NovelWordCountPlugin extends Plugin {
 		counts: CountData,
 		countType: CountType,
 		abbreviateDescriptions: boolean
-	): string {
+	): string | null {
 		if (!counts || typeof counts.wordCount !== "number") {
 			return "";
 		}
@@ -265,6 +265,14 @@ export default class NovelWordCountPlugin extends Plugin {
 					? `${counts.pageCount.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 2})}p`
 					: getPluralizedCount("page", counts.pageCount, false);
 			case CountType.Note:
+				return abbreviateDescriptions
+					? `${counts.noteCount.toLocaleString()}n`
+					: getPluralizedCount("note", counts.noteCount);
+			case CountType.NoteFolderOnly:
+				if (!counts.isDirectory) {
+					return null;
+				}
+
 				return abbreviateDescriptions
 					? `${counts.noteCount.toLocaleString()}n`
 					: getPluralizedCount("note", counts.noteCount);
@@ -303,6 +311,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			.map((ct) =>
 				this.getDataTypeLabel(counts, ct, this.settings.abbreviateDescriptions)
 			)
+			.filter((display) => display !== null)
 			.join(" | ");
 	}
 

@@ -6,5 +6,6 @@
 	"description": "Displays a word count (and more!) for each file, folder and vault in the File Explorer pane.",
 	"author": "Isaac Lyman",
 	"authorUrl": "https://isaaclyman.com",
-	"isDesktopOnly": false
+	"isDesktopOnly": false,
+	"fundingUrl": "https://paypal.me/isaaclyman"
 }

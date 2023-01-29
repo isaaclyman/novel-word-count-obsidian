@@ -4,6 +4,7 @@ import { DebugHelper } from "./debug";
 import { NovelWordCountSettings, PageCountType } from "./settings";
 
 export interface CountData {
+	isDirectory: boolean;
 	noteCount: number;
 	pageCount: number;
 	wordCount: number;
@@ -52,6 +53,7 @@ export class FileHelper {
 		return childPaths.reduce(
 			(total, childPath) => {
 				const childCount = this.getCountDataForPath(counts, childPath);
+				total.isDirectory = true;
 				total.noteCount += childCount.noteCount;
 				total.wordCount += childCount.wordCount;
 				total.pageCount += childCount.pageCount;
@@ -69,6 +71,7 @@ export class FileHelper {
 				return total;
 			},
 			{
+				isDirectory: true,
 				noteCount: 0,
 				wordCount: 0,
 				pageCount: 0,
@@ -126,6 +129,7 @@ export class FileHelper {
 		}
 
 		counts[file.path] = {
+			isDirectory: false,
 			noteCount: 1,
 			wordCount,
 			pageCount,
