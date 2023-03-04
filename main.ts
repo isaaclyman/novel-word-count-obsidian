@@ -9,6 +9,7 @@ import {
 	DEFAULT_SETTINGS,
 	NovelWordCountSettings,
 	PageCountType,
+	WordCountType,
 } from "logic/settings";
 import {
 	App,
@@ -243,9 +244,18 @@ export default class NovelWordCountPlugin extends Plugin {
 			return "";
 		}
 
-		const getPluralizedCount = function (noun: string, count: number, round: boolean = true) {
+		const getPluralizedCount = function (
+			noun: string,
+			count: number,
+			round: boolean = true
+		) {
 			const roundedCount = round ? Math.ceil(count) : count;
-			const displayCount = round ? roundedCount.toLocaleString() : roundedCount.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 2});
+			const displayCount = round
+				? roundedCount.toLocaleString()
+				: roundedCount.toLocaleString(undefined, {
+						minimumFractionDigits: 1,
+						maximumFractionDigits: 2,
+				  });
 			return `${displayCount} ${noun}${roundedCount == 1 ? "" : "s"}`;
 		};
 
@@ -262,7 +272,10 @@ export default class NovelWordCountPlugin extends Plugin {
 					: getPluralizedCount("page", counts.pageCount);
 			case CountType.PageDecimal:
 				return abbreviateDescriptions
-					? `${counts.pageCount.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 2})}p`
+					? `${counts.pageCount.toLocaleString(undefined, {
+							minimumFractionDigits: 1,
+							maximumFractionDigits: 2,
+					  })}p`
 					: getPluralizedCount("page", counts.pageCount, false);
 			case CountType.Note:
 				return abbreviateDescriptions
@@ -324,7 +337,8 @@ export default class NovelWordCountPlugin extends Plugin {
 				);
 				await this.fileHelper.updateFileCounts(
 					file,
-					this.savedData.cachedCounts
+					this.savedData.cachedCounts,
+					this.settings.wordCountType
 				);
 				await this.updateDisplayedCounts(file);
 			})
@@ -345,7 +359,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			}
 			await this.refreshAllCounts();
 			await this.updateDisplayedCounts();
-		}
+		};
 
 		this.registerEvent(
 			this.app.vault.on(
@@ -370,33 +384,37 @@ export default class NovelWordCountPlugin extends Plugin {
 
 		const reshowCountsIfNeeded = async (hookName: string) => {
 			this.debugHelper.debug(`[${hookName}] hook fired`);
-			
+
 			const fileExplorerLeaf = await this.getFileExplorerLeaf();
 			if (this.isContainerTouched(fileExplorerLeaf)) {
-				this.debugHelper.debug('container already touched, skipping display update');
+				this.debugHelper.debug(
+					"container already touched, skipping display update"
+				);
 				return;
 			}
 
-			this.debugHelper.debug('container is clean, updating display');
+			this.debugHelper.debug("container is clean, updating display");
 			await this.updateDisplayedCounts();
-		}
+		};
 
 		this.registerEvent(
 			this.app.workspace.on(
 				"layout-change",
-				debounce(reshowCountsIfNeeded.bind(this, 'layout-change'), 1000)
+				debounce(reshowCountsIfNeeded.bind(this, "layout-change"), 1000)
 			)
 		);
 	}
 
 	private isContainerTouched(leaf: WorkspaceLeaf): boolean {
 		const container = leaf.view.containerEl;
-		return container.className.includes('novel-word-count--');
+		return container.className.includes("novel-word-count--");
 	}
 
 	private async refreshAllCounts() {
 		this.debugHelper.debug("refreshAllCounts");
-		this.savedData.cachedCounts = await this.fileHelper.getAllFileCounts();
+		this.savedData.cachedCounts = await this.fileHelper.getAllFileCounts(
+			this.settings.wordCountType
+		);
 		await this.saveSettings();
 	}
 
@@ -532,6 +550,25 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 		containerEl
 			.createEl("div", { text: "Advanced" })
 			.addClasses(["setting-item", "setting-item-heading"]);
+
+		new Setting(containerEl)
+			.setName("Word count method")
+			.setDesc("For language compatibility")
+			.addDropdown((drop) => {
+				drop
+					.addOption(
+						WordCountType.SpaceDelimited,
+						"Space-delimited (European languages)"
+					)
+					.addOption(WordCountType.CJK, "Han/Kana/Hangul (CJK)")
+					.addOption(WordCountType.AutoDetect, "Auto-detect by file")
+					.setValue(this.plugin.settings.wordCountType)
+					.onChange(async (value: WordCountType) => {
+						this.plugin.settings.wordCountType = value;
+						await this.plugin.saveSettings();
+						await this.plugin.initialize();
+					});
+			});
 
 		new Setting(containerEl)
 			.setName("Page count method")

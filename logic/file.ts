@@ -1,7 +1,7 @@
 import NovelWordCountPlugin from "main";
 import { TAbstractFile, TFile, TFolder, Vault } from "obsidian";
 import { DebugHelper } from "./debug";
-import { NovelWordCountSettings, PageCountType } from "./settings";
+import { NovelWordCountSettings, PageCountType, WordCountType } from "./settings";
 
 export interface CountData {
 	isDirectory: boolean;
@@ -26,7 +26,7 @@ export class FileHelper {
 
 	constructor(private vault: Vault, private plugin: NovelWordCountPlugin) {}
 
-	public async getAllFileCounts(): Promise<CountsByFile> {
+	public async getAllFileCounts(wordCountType: WordCountType): Promise<CountsByFile> {
 		const debugEnd = this.debugHelper.debugStart("getAllFileCounts");
 
 		const files = this.vault.getMarkdownFiles();
@@ -34,7 +34,7 @@ export class FileHelper {
 
 		for (const file of files) {
 			const contents = await this.vault.cachedRead(file);
-			this.setCounts(counts, file, contents);
+			this.setCounts(counts, file, contents, wordCountType);
 		}
 
 		debugEnd();
@@ -89,30 +89,43 @@ export class FileHelper {
 
 	public async updateFileCounts(
 		abstractFile: TAbstractFile,
-		counts: CountsByFile
+		counts: CountsByFile,
+		wordCountType: WordCountType
 	): Promise<void> {
 		if (abstractFile instanceof TFolder) {
 			this.debugHelper.debug("updateFileCounts called on instance of TFolder");
-			Object.assign(counts, this.getAllFileCounts());
+			Object.assign(counts, this.getAllFileCounts(wordCountType));
 			return;
 		}
 
 		if (abstractFile instanceof TFile) {
 			const contents = await this.vault.cachedRead(abstractFile);
-			this.setCounts(counts, abstractFile, contents);
+			this.setCounts(counts, abstractFile, contents, wordCountType);
 		}
 	}
 
-	private countWords(content: string): number {
-		return (content.match(/[^\s]+/g) || []).length;
+	private cjkRegex = /\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}|[0-9]+/ug;
+
+	private countWords(content: string, wordCountType: WordCountType): number {
+		switch (wordCountType) {
+			case WordCountType.CJK:
+				return (content.match(this.cjkRegex) || []).length;
+			case WordCountType.AutoDetect:
+				const cjkLength = (content.match(this.cjkRegex) || []).length;
+				const spaceDelimitedLength = (content.match(/[^\s]+/g) || []).length;
+				return Math.max(cjkLength, spaceDelimitedLength);
+			case WordCountType.SpaceDelimited:
+			default:
+				return (content.match(/[^\s]+/g) || []).length;
+		}
 	}
 
 	private countNonWhitespaceCharacters(content: string): number {
 		return (content.replace(/\s+/g, "") || []).length;
 	}
 
-	private setCounts(counts: CountsByFile, file: TFile, content: string): void {
-		const wordCount = this.countWords(content);
+	private setCounts(counts: CountsByFile, file: TFile, content: string, wordCountType: WordCountType): void {
+		const wordCount = this.countWords(content, wordCountType);
 		const nonWhitespaceCharacterCount =
 			this.countNonWhitespaceCharacters(content);
 

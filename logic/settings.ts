@@ -47,6 +47,12 @@ export const alignmentTypes = [
 	AlignmentType.Below,
 ];
 
+export enum WordCountType {
+	SpaceDelimited = "SpaceDelimited",
+	CJK = "CJK",
+	AutoDetect = "AutoDetect"
+}
+
 export enum PageCountType {
   ByWords = 'ByWords',
   ByChars = 'ByChars'
@@ -61,6 +67,7 @@ export interface NovelWordCountSettings {
 	debugMode: boolean;
 	wordsPerPage: number;
   charsPerPage: number;
+	wordCountType: WordCountType;
   pageCountType: PageCountType;
 }
 
@@ -73,5 +80,6 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	debugMode: false,
 	wordsPerPage: 300,
   charsPerPage: 1500,
+	wordCountType: WordCountType.SpaceDelimited,
   pageCountType: PageCountType.ByWords
 };
