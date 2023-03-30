@@ -156,7 +156,7 @@ export default class NovelWordCountPlugin extends Plugin {
 		} catch (err) {
 			this.debugHelper.debug("Error while updating displayed counts");
 			console.error(err);
-			
+
 			// File Explorer pane may not be loaded yet
 			setTimeout(() => {
 				this.initialize(false);
@@ -281,14 +281,6 @@ export default class NovelWordCountPlugin extends Plugin {
 					  })}p`
 					: getPluralizedCount("page", counts.pageCount, false);
 			case CountType.Note:
-				return abbreviateDescriptions
-					? `${counts.noteCount.toLocaleString()}n`
-					: getPluralizedCount("note", counts.noteCount);
-			case CountType.NoteFolderOnly:
-				if (!counts.isDirectory) {
-					return null;
-				}
-
 				return abbreviateDescriptions
 					? `${counts.noteCount.toLocaleString()}n`
 					: getPluralizedCount("note", counts.noteCount);
