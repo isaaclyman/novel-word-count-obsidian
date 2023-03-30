@@ -62,6 +62,10 @@ export interface NovelWordCountSettings {
 	countType: CountType;
 	countType2: CountType;
 	countType3: CountType;
+	showSameCountsOnFolders: boolean;
+	folderCountType: CountType;
+	folderCountType2: CountType;
+	folderCountType3: CountType;
 	abbreviateDescriptions: boolean;
 	alignment: AlignmentType;
 	debugMode: boolean;
@@ -75,6 +79,10 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	countType: CountType.Word,
 	countType2: CountType.None,
 	countType3: CountType.None,
+	showSameCountsOnFolders: true,
+	folderCountType: CountType.Word,
+	folderCountType2: CountType.None,
+	folderCountType3: CountType.None,
 	abbreviateDescriptions: false,
 	alignment: AlignmentType.Inline,
 	debugMode: false,

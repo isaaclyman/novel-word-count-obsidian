@@ -154,6 +154,9 @@ export default class NovelWordCountPlugin extends Plugin {
 		try {
 			await this.updateDisplayedCounts();
 		} catch (err) {
+			this.debugHelper.debug("Error while updating displayed counts");
+			console.error(err);
+			
 			// File Explorer pane may not be loaded yet
 			setTimeout(() => {
 				this.initialize(false);
@@ -315,11 +318,11 @@ export default class NovelWordCountPlugin extends Plugin {
 	}
 
 	private getNodeLabel(counts: CountData): string {
-		return [
-			this.settings.countType,
-			this.settings.countType2,
-			this.settings.countType3,
-		]
+		const countTypes = counts.isDirectory && !this.settings.showSameCountsOnFolders ? 
+			[this.settings.folderCountType, this.settings.folderCountType2, this.settings.folderCountType3] :
+			[this.settings.countType, this.settings.countType2, this.settings.countType3];
+
+		return countTypes
 			.filter((ct) => ct !== CountType.None)
 			.map((ct) =>
 				this.getDataTypeLabel(counts, ct, this.settings.abbreviateDescriptions)
@@ -455,7 +458,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 				"novel-word-count-settings-header",
 			],
 		});
-		mainHeader.createEl("div", { text: "General" });
+		mainHeader.createEl("div", { text: "Notes" });
 		mainHeader.createEl("div", {
 			text: "You can display up to three data types side by side.",
 			cls: "setting-item-description",
@@ -542,6 +545,78 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 						await this.plugin.updateDisplayedCounts();
 					});
 			});
+
+		/*
+		 *  FOLDER COUNTS
+		 */
+
+		containerEl
+			.createEl("div", { text: "Folders" })
+			.addClasses(["setting-item", "setting-item-heading"]);
+		
+		new Setting(containerEl)
+			.setName("Show same data on folders")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.showSameCountsOnFolders)
+					.onChange(async (value) => {
+						this.plugin.settings.showSameCountsOnFolders = value;
+						await this.plugin.saveSettings();
+						await this.plugin.updateDisplayedCounts();
+
+						this.display();
+					})
+			);
+
+		if (!this.plugin.settings.showSameCountsOnFolders) {
+			new Setting(containerEl)
+			.setName("1st data type to show")
+			.addDropdown((drop) => {
+				for (const countType of countTypes) {
+					drop.addOption(countType, countTypeDisplayStrings[countType]);
+				}
+
+				drop
+					.setValue(this.plugin.settings.folderCountType)
+					.onChange(async (value: CountType) => {
+						this.plugin.settings.folderCountType = value;
+						await this.plugin.saveSettings();
+						await this.plugin.updateDisplayedCounts();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("2nd data type to show")
+			.addDropdown((drop) => {
+				for (const countType of countTypes) {
+					drop.addOption(countType, countTypeDisplayStrings[countType]);
+				}
+
+				drop
+					.setValue(this.plugin.settings.folderCountType2)
+					.onChange(async (value: CountType) => {
+						this.plugin.settings.folderCountType2 = value;
+						await this.plugin.saveSettings();
+						await this.plugin.updateDisplayedCounts();
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("3rd data type to show")
+			.addDropdown((drop) => {
+				for (const countType of countTypes) {
+					drop.addOption(countType, countTypeDisplayStrings[countType]);
+				}
+
+				drop
+					.setValue(this.plugin.settings.folderCountType3)
+					.onChange(async (value: CountType) => {
+						this.plugin.settings.folderCountType3 = value;
+						await this.plugin.saveSettings();
+						await this.plugin.updateDisplayedCounts();
+					});
+			});
+		}
 
 		/*
 		 *	ADVANCED
