@@ -13,6 +13,14 @@ export class DebugHelper {
 		console.log('novel-word-count:', ...args);
 	}
 
+	public error(message: any): void {
+		if (!this.debugMode) {
+			return;
+		}
+
+		console.error(message);
+	}
+
 	public debugStart(name: string): () => void {
 		if (!this.debugMode) {
 			return () => {}

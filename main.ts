@@ -29,7 +29,8 @@ interface NovelWordCountSavedData {
 }
 
 interface FileItem {
-	titleEl: HTMLElement;
+	titleEl?: HTMLElement;
+	selfEl: HTMLElement;
 }
 
 export default class NovelWordCountPlugin extends Plugin {
@@ -155,7 +156,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			await this.updateDisplayedCounts();
 		} catch (err) {
 			this.debugHelper.debug("Error while updating displayed counts");
-			console.error(err);
+			this.debugHelper.error(err);
 
 			// File Explorer pane may not be loaded yet
 			setTimeout(() => {
@@ -204,7 +205,7 @@ export default class NovelWordCountPlugin extends Plugin {
 				path
 			);
 			const item = fileItems[path];
-			item.titleEl.setAttribute(
+			(item.titleEl ?? item.selfEl).setAttribute(
 				"data-novel-word-count-plugin",
 				this.getNodeLabel(counts)
 			);
