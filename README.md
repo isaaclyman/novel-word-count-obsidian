@@ -6,7 +6,18 @@ This plugin displays statistics of your choice next to every file, folder, and v
 
 ### Settings
 
-**Data to show.** Choose word count, page count, character count, note count, created date, or last updated date. You can choose up to three data types to display side by side.
+**Data to show.** Choose from the following:
+
+- Word count
+- Page count
+- Page count (decimal)
+- Character count
+- Note count
+- Created date
+- Last updated date
+- File size
+
+You can choose up to three data types to display side by side.
 
 **Abbreviate descriptions.** Enable to show shortened counts:
 
@@ -16,12 +27,17 @@ This plugin displays statistics of your choice next to every file, folder, and v
 - "12 notes" => "12n"
 - "Created 1/22/2022" => "1/22/2022/c"
 - "Updated 1/22/2022" => "1/22/2022/u"
+- "13.39 KB" => "13.39kb"
 
 **Alignment.** Choose where data is displayed relative to file/folder names: Inline, Right-aligned, or Below. All alignments work well with vanilla Obsidian, but Inline has the greatest compatibility with custom themes and plugins.
+
+**Show same data on folders.** By default, the same data types are shown on notes and folders. You can toggle this setting off to choose different data types to show on folders only.
 
 **Word count method.** Choose whether to count words using a space-delimited strategy (for English and other European languages) or by Han, Kana, and Hangul characters (for Chinese, Japanese, and Korean). The Auto-detect setting will count each file both ways, then return the larger result.
 
 **Page count method.** Choose whether pages are counted by number of words (default: 300) or number of characters (default: 1500). You can change the number of words/characters used.
+
+**Words per page/Characters per page.** Sets the number of words or characters per page, depending on the selected _Page count method._
 
 **Reanalyze all documents.** Triggers a recount of all documents in the vault. Useful if you've made changes outside of Obsidian. (A hotkey binding is available for this command.)
 

@@ -8,6 +8,7 @@ export enum CountType {
 	Character = "character",
 	Created = "created",
 	Modified = "modified",
+	FileSize = "filesize"
 }
 
 export const countTypeDisplayStrings: { [countType: string]: string } = {
@@ -19,6 +20,7 @@ export const countTypeDisplayStrings: { [countType: string]: string } = {
 	[CountType.Character]: "Character Count",
 	[CountType.Created]: "Created Date",
 	[CountType.Modified]: "Last Updated Date",
+	[CountType.FileSize]: "File Size"
 };
 
 export const countTypes = [
@@ -30,6 +32,7 @@ export const countTypes = [
 	CountType.Character,
 	CountType.Created,
 	CountType.Modified,
+	CountType.FileSize
 ];
 
 export enum AlignmentType {

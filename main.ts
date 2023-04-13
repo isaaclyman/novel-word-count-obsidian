@@ -1,5 +1,6 @@
 import { DebugHelper } from "logic/debug";
 import { CountData, CountsByFile, FileHelper } from "logic/file";
+import { FileSizeHelper } from "logic/filesize";
 import {
 	AlignmentType,
 	alignmentTypes,
@@ -40,6 +41,7 @@ export default class NovelWordCountPlugin extends Plugin {
 	}
 	fileHelper: FileHelper;
 	debugHelper = new DebugHelper();
+	fileSizeHelper = new FileSizeHelper();
 
 	constructor(app: App, manifest: PluginManifest) {
 		super(app, manifest);
@@ -305,6 +307,8 @@ export default class NovelWordCountPlugin extends Plugin {
 				return abbreviateDescriptions
 					? `${new Date(counts.modifiedDate).toLocaleDateString()}/u`
 					: `Updated ${new Date(counts.modifiedDate).toLocaleDateString()}`;
+			case CountType.FileSize:
+				return this.fileSizeHelper.formatFileSize(counts.sizeInBytes, abbreviateDescriptions);
 		}
 
 		return "";

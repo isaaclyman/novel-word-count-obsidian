@@ -8,6 +8,7 @@ export interface CountData {
 	noteCount: number;
 	pageCount: number;
 	wordCount: number;
+	sizeInBytes: number;
 	characterCount: number;
 	nonWhitespaceCharacterCount: number;
 	createdDate: number;
@@ -68,6 +69,7 @@ export class FileHelper {
 					total.modifiedDate,
 					childCount.modifiedDate
 				);
+				total.sizeInBytes += childCount.sizeInBytes;
 				return total;
 			},
 			{
@@ -79,6 +81,7 @@ export class FileHelper {
 				nonWhitespaceCharacterCount: 0,
 				createdDate: 0,
 				modifiedDate: 0,
+				sizeInBytes: 0
 			} as CountData
 		);
 	}
@@ -150,6 +153,7 @@ export class FileHelper {
 			nonWhitespaceCharacterCount,
 			createdDate: file.stat.ctime,
 			modifiedDate: file.stat.mtime,
+			sizeInBytes: file.stat.size
 		};
 	}
 }
