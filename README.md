@@ -13,6 +13,8 @@ This plugin displays statistics of your choice next to every file, folder, and v
 - Page count (decimal)
 - Character count
 - Note count
+- Link count
+- Embed count
 - Created date
 - Last updated date
 - File size
@@ -25,6 +27,8 @@ You can choose up to three data types to display side by side.
 - "30 pages" => "30p"
 - "23,800 characters" => "23,800ch"
 - "12 notes" => "12n"
+- "3 links" => "3x"
+- "5 embeds" => "5em"
 - "Created 1/22/2022" => "1/22/2022/c"
 - "Updated 1/22/2022" => "1/22/2022/u"
 - "13.39 KB" => "13.39kb"
@@ -49,7 +53,7 @@ Novel Word Count is fully compatible with Obsidian 1.0.
 
 This plugin treats your vault as read-only. It never modifies, deletes, or renames any file or folder. It uses cached reads of all files for better performance.
 
-Obsidian's API does not provide contractual access to the File Explorer pane, so this plugin uses duck typing to find it. This is technically undocumented, so future updates of Obsidian could break functionality. If and when that happens, this plugin is designed to fail gracefully. In this unlikely scenario you may wish to disable the plugin until it can be updated.
+Obsidian's API does not provide contractual access to the File Explorer pane, so this plugin uses duck typing to find it. This is technically undocumented, so there is a possibility that major updates of Obsidian will temporarily cause errors. If and when that happens, this plugin is designed to fail gracefully. In this unlikely scenario you may wish to disable the plugin until it can be updated.
 
 This plugin's effect on the File Explorer DOM is extremely minimal, consisting of a custom HTML attribute and a few CSS rules. Style modifications are only active when the plugin is turned on.
 

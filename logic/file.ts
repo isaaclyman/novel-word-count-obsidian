@@ -1,6 +1,7 @@
 import NovelWordCountPlugin from "main";
 import {
 	App,
+	CachedMetadata,
 	TAbstractFile,
 	TFile,
 	TFolder,
@@ -19,9 +20,11 @@ export interface CountData {
 	noteCount: number;
 	pageCount: number;
 	wordCount: number;
-	sizeInBytes: number;
 	characterCount: number;
 	nonWhitespaceCharacterCount: number;
+	linkCount: number;
+	embedCount: number;
+	sizeInBytes: number;
 	createdDate: number;
 	modifiedDate: number;
 }
@@ -67,39 +70,40 @@ export class FileHelper {
 			(countPath) => path === "/" || countPath.startsWith(path + "/")
 		);
 
-		return childPaths.reduce(
-			(total, childPath) => {
-				const childCount = this.getCountDataForPath(counts, childPath);
-				total.isDirectory = true;
-				total.noteCount += childCount.noteCount;
-				total.wordCount += childCount.wordCount;
-				total.pageCount += childCount.pageCount;
-				total.characterCount += childCount.characterCount;
-				total.nonWhitespaceCharacterCount +=
-					childCount.nonWhitespaceCharacterCount;
-				total.createdDate =
-					total.createdDate === 0
-						? childCount.createdDate
-						: Math.min(total.createdDate, childCount.createdDate);
-				total.modifiedDate = Math.max(
-					total.modifiedDate,
-					childCount.modifiedDate
-				);
-				total.sizeInBytes += childCount.sizeInBytes;
-				return total;
-			},
-			{
-				isDirectory: true,
-				noteCount: 0,
-				wordCount: 0,
-				pageCount: 0,
-				characterCount: 0,
-				nonWhitespaceCharacterCount: 0,
-				createdDate: 0,
-				modifiedDate: 0,
-				sizeInBytes: 0,
-			} as CountData
-		);
+		const directoryDefault: CountData = {
+			isDirectory: true,
+			noteCount: 0,
+			wordCount: 0,
+			pageCount: 0,
+			characterCount: 0,
+			nonWhitespaceCharacterCount: 0,
+			linkCount: 0,
+			embedCount: 0,
+			createdDate: 0,
+			modifiedDate: 0,
+			sizeInBytes: 0,
+		};
+
+		return childPaths.reduce((total, childPath): CountData => {
+			const childCount = this.getCountDataForPath(counts, childPath);
+			total.isDirectory = true;
+			total.noteCount += childCount.noteCount;
+			total.wordCount += childCount.wordCount;
+			total.pageCount += childCount.pageCount;
+			total.characterCount += childCount.characterCount;
+			total.nonWhitespaceCharacterCount +=
+				childCount.nonWhitespaceCharacterCount;
+			total.createdDate =
+				total.createdDate === 0
+					? childCount.createdDate
+					: Math.min(total.createdDate, childCount.createdDate);
+			total.modifiedDate = Math.max(
+				total.modifiedDate,
+				childCount.modifiedDate
+			);
+			total.sizeInBytes += childCount.sizeInBytes;
+			return total;
+		}, directoryDefault);
 	}
 
 	public setDebugMode(debug: boolean): void {
@@ -123,6 +127,18 @@ export class FileHelper {
 		}
 	}
 
+	private countEmbeds(metadata: CachedMetadata): number {
+		return metadata.embeds?.length ?? 0;
+	}
+
+	private countLinks(metadata: CachedMetadata): number {
+		return metadata.links?.length ?? 0;
+	}
+
+	private countNonWhitespaceCharacters(content: string): number {
+		return (content.replace(/\s+/g, "") || []).length;
+	}
+
 	private cjkRegex =
 		/\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}|[0-9]+/gu;
 
@@ -140,10 +156,6 @@ export class FileHelper {
 		}
 	}
 
-	private countNonWhitespaceCharacters(content: string): number {
-		return (content.replace(/\s+/g, "") || []).length;
-	}
-
 	private setCounts(
 		counts: CountsByFile,
 		file: TFile,
@@ -157,12 +169,15 @@ export class FileHelper {
 			pageCount: 0,
 			characterCount: 0,
 			nonWhitespaceCharacterCount: 0,
+			linkCount: 0,
+			embedCount: 0,
 			createdDate: file.stat.ctime,
 			modifiedDate: file.stat.mtime,
 			sizeInBytes: file.stat.size,
 		};
-
-		if (!this.shouldCountFile(file)) {
+		
+		const metadata = this.app.metadataCache.getFileCache(file);
+		if (!this.shouldCountFile(metadata)) {
 			return;
 		}
 
@@ -187,11 +202,12 @@ export class FileHelper {
 			pageCount,
 			characterCount: content.length,
 			nonWhitespaceCharacterCount,
-		});
+			linkCount: this.countLinks(metadata),
+			embedCount: this.countEmbeds(metadata)
+		} as CountData);
 	}
 
-	private shouldCountFile(file: TFile): boolean {
-		const metadata = this.app.metadataCache.getFileCache(file);
+	private shouldCountFile(metadata: CachedMetadata): boolean {
 		const tags = getAllTags(metadata);
 		return !tags.includes("#excalidraw");
 	}

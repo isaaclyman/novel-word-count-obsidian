@@ -291,6 +291,14 @@ export default class NovelWordCountPlugin extends Plugin {
 				return abbreviateDescriptions
 					? `${counts.characterCount.toLocaleString()}ch`
 					: getPluralizedCount("character", counts.characterCount);
+			case CountType.Link:
+				return abbreviateDescriptions
+					? `${counts.linkCount.toLocaleString()}x`
+					: getPluralizedCount("link", counts.linkCount);
+			case CountType.Embed:
+				return abbreviateDescriptions
+					? `${counts.embedCount.toLocaleString()}em`
+					: getPluralizedCount("embed", counts.embedCount);
 			case CountType.Created:
 				if (counts.createdDate === 0) {
 					return "";
@@ -343,6 +351,21 @@ export default class NovelWordCountPlugin extends Plugin {
 				await this.updateDisplayedCounts(file);
 			})
 		);
+		
+		this.registerEvent(
+			this.app.metadataCache.on("changed", async (file) => {
+				this.debugHelper.debug(
+					"[changed] metadataCache hook fired, recounting file",
+					file.path
+				);
+				await this.fileHelper.updateFileCounts(
+					file,
+					this.savedData.cachedCounts,
+					this.settings.wordCountType
+				);
+				await this.updateDisplayedCounts(file);
+			})
+		)
 
 		const recalculateAll = async (hookName: string, file?: TAbstractFile) => {
 			if (file) {

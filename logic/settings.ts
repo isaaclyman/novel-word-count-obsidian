@@ -6,6 +6,8 @@ export enum CountType {
 	PageDecimal = "pagedecimal",
 	Note = "note",
 	Character = "character",
+	Link = "link",
+	Embed = "embed",
 	Created = "created",
 	Modified = "modified",
 	FileSize = "filesize"
@@ -18,6 +20,8 @@ export const countTypeDisplayStrings: { [countType: string]: string } = {
 	[CountType.PageDecimal]: "Page Count (decimal)",
 	[CountType.Note]: "Note Count",
 	[CountType.Character]: "Character Count",
+	[CountType.Link]: "Link Count",
+	[CountType.Embed]: "Embed Count",
 	[CountType.Created]: "Created Date",
 	[CountType.Modified]: "Last Updated Date",
 	[CountType.FileSize]: "File Size"
@@ -30,6 +34,8 @@ export const countTypes = [
 	CountType.PageDecimal,
 	CountType.Note,
 	CountType.Character,
+	CountType.Link,
+	CountType.Embed,
 	CountType.Created,
 	CountType.Modified,
 	CountType.FileSize
