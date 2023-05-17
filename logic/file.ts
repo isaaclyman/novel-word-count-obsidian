@@ -1,7 +1,18 @@
 import NovelWordCountPlugin from "main";
-import { TAbstractFile, TFile, TFolder, Vault } from "obsidian";
+import {
+	App,
+	TAbstractFile,
+	TFile,
+	TFolder,
+	Vault,
+	getAllTags,
+} from "obsidian";
 import { DebugHelper } from "./debug";
-import { NovelWordCountSettings, PageCountType, WordCountType } from "./settings";
+import {
+	NovelWordCountSettings,
+	PageCountType,
+	WordCountType,
+} from "./settings";
 
 export interface CountData {
 	isDirectory: boolean;
@@ -24,10 +35,15 @@ export class FileHelper {
 	private get settings(): NovelWordCountSettings {
 		return this.plugin.settings;
 	}
+	private get vault(): Vault {
+		return this.app.vault;
+	}
 
-	constructor(private vault: Vault, private plugin: NovelWordCountPlugin) {}
+	constructor(private app: App, private plugin: NovelWordCountPlugin) {}
 
-	public async getAllFileCounts(wordCountType: WordCountType): Promise<CountsByFile> {
+	public async getAllFileCounts(
+		wordCountType: WordCountType
+	): Promise<CountsByFile> {
 		const debugEnd = this.debugHelper.debugStart("getAllFileCounts");
 
 		const files = this.vault.getMarkdownFiles();
@@ -81,7 +97,7 @@ export class FileHelper {
 				nonWhitespaceCharacterCount: 0,
 				createdDate: 0,
 				modifiedDate: 0,
-				sizeInBytes: 0
+				sizeInBytes: 0,
 			} as CountData
 		);
 	}
@@ -107,7 +123,8 @@ export class FileHelper {
 		}
 	}
 
-	private cjkRegex = /\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}|[0-9]+/ug;
+	private cjkRegex =
+		/\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}|[0-9]+/gu;
 
 	private countWords(content: string, wordCountType: WordCountType): number {
 		switch (wordCountType) {
@@ -127,7 +144,28 @@ export class FileHelper {
 		return (content.replace(/\s+/g, "") || []).length;
 	}
 
-	private setCounts(counts: CountsByFile, file: TFile, content: string, wordCountType: WordCountType): void {
+	private setCounts(
+		counts: CountsByFile,
+		file: TFile,
+		content: string,
+		wordCountType: WordCountType
+	): void {
+		counts[file.path] = {
+			isDirectory: false,
+			noteCount: 1,
+			wordCount: 0,
+			pageCount: 0,
+			characterCount: 0,
+			nonWhitespaceCharacterCount: 0,
+			createdDate: file.stat.ctime,
+			modifiedDate: file.stat.mtime,
+			sizeInBytes: file.stat.size,
+		};
+
+		if (!this.shouldCountFile(file)) {
+			return;
+		}
+
 		const wordCount = this.countWords(content, wordCountType);
 		const nonWhitespaceCharacterCount =
 			this.countNonWhitespaceCharacters(content);
@@ -144,16 +182,17 @@ export class FileHelper {
 				nonWhitespaceCharacterCount / (charsPerPageValid ? charsPerPage : 1500);
 		}
 
-		counts[file.path] = {
-			isDirectory: false,
-			noteCount: 1,
+		Object.assign(counts[file.path], {
 			wordCount,
 			pageCount,
 			characterCount: content.length,
 			nonWhitespaceCharacterCount,
-			createdDate: file.stat.ctime,
-			modifiedDate: file.stat.mtime,
-			sizeInBytes: file.stat.size
-		};
+		});
+	}
+
+	private shouldCountFile(file: TFile): boolean {
+		const metadata = this.app.metadataCache.getFileCache(file);
+		const tags = getAllTags(metadata);
+		return !tags.includes("#excalidraw");
 	}
 }

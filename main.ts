@@ -45,7 +45,7 @@ export default class NovelWordCountPlugin extends Plugin {
 
 	constructor(app: App, manifest: PluginManifest) {
 		super(app, manifest);
-		this.fileHelper = new FileHelper(this.app.vault, this);
+		this.fileHelper = new FileHelper(this.app, this);
 	}
 
 	// LIFECYCLE
