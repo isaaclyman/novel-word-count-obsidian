@@ -175,13 +175,14 @@ export class FileHelper {
 			modifiedDate: file.stat.mtime,
 			sizeInBytes: file.stat.size,
 		};
-		
+
 		const metadata = this.app.metadataCache.getFileCache(file);
 		if (!this.shouldCountFile(metadata)) {
 			return;
 		}
 
 		const wordCount = this.countWords(content, wordCountType);
+		const characterCount = content.length;
 		const nonWhitespaceCharacterCount =
 			this.countNonWhitespaceCharacters(content);
 
@@ -190,20 +191,30 @@ export class FileHelper {
 			const wordsPerPage = Number(this.settings.wordsPerPage);
 			const wordsPerPageValid = !isNaN(wordsPerPage) && wordsPerPage > 0;
 			pageCount = wordCount / (wordsPerPageValid ? wordsPerPage : 300);
-		} else if (this.settings.pageCountType === PageCountType.ByChars) {
+		} else if (
+			this.settings.pageCountType === PageCountType.ByChars &&
+			!this.settings.charsPerPageIncludesWhitespace
+		) {
 			const charsPerPage = Number(this.settings.charsPerPage);
 			const charsPerPageValid = !isNaN(charsPerPage) && charsPerPage > 0;
 			pageCount =
 				nonWhitespaceCharacterCount / (charsPerPageValid ? charsPerPage : 1500);
+		} else if (
+			this.settings.pageCountType === PageCountType.ByChars &&
+			this.settings.charsPerPageIncludesWhitespace
+		) {
+			const charsPerPage = Number(this.settings.charsPerPage);
+			const charsPerPageValid = !isNaN(charsPerPage) && charsPerPage > 0;
+			pageCount = characterCount / (charsPerPageValid ? charsPerPage : 1500);
 		}
 
 		Object.assign(counts[file.path], {
 			wordCount,
 			pageCount,
-			characterCount: content.length,
+			characterCount,
 			nonWhitespaceCharacterCount,
 			linkCount: this.countLinks(metadata),
-			embedCount: this.countEmbeds(metadata)
+			embedCount: this.countEmbeds(metadata),
 		} as CountData);
 	}
 

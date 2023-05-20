@@ -1,4 +1,3 @@
-
 export enum CountType {
 	None = "none",
 	Word = "word",
@@ -10,7 +9,7 @@ export enum CountType {
 	Embed = "embed",
 	Created = "created",
 	Modified = "modified",
-	FileSize = "filesize"
+	FileSize = "filesize",
 }
 
 export const countTypeDisplayStrings: { [countType: string]: string } = {
@@ -24,7 +23,7 @@ export const countTypeDisplayStrings: { [countType: string]: string } = {
 	[CountType.Embed]: "Embed Count",
 	[CountType.Created]: "Created Date",
 	[CountType.Modified]: "Last Updated Date",
-	[CountType.FileSize]: "File Size"
+	[CountType.FileSize]: "File Size",
 };
 
 export const countTypes = [
@@ -38,7 +37,7 @@ export const countTypes = [
 	CountType.Embed,
 	CountType.Created,
 	CountType.Modified,
-	CountType.FileSize
+	CountType.FileSize,
 ];
 
 export enum AlignmentType {
@@ -56,12 +55,12 @@ export const alignmentTypes = [
 export enum WordCountType {
 	SpaceDelimited = "SpaceDelimited",
 	CJK = "CJK",
-	AutoDetect = "AutoDetect"
+	AutoDetect = "AutoDetect",
 }
 
 export enum PageCountType {
-  ByWords = 'ByWords',
-  ByChars = 'ByChars'
+	ByWords = "ByWords",
+	ByChars = "ByChars",
 }
 
 export interface NovelWordCountSettings {
@@ -76,9 +75,10 @@ export interface NovelWordCountSettings {
 	alignment: AlignmentType;
 	debugMode: boolean;
 	wordsPerPage: number;
-  charsPerPage: number;
+	charsPerPage: number;
+	charsPerPageIncludesWhitespace: boolean;
 	wordCountType: WordCountType;
-  pageCountType: PageCountType;
+	pageCountType: PageCountType;
 }
 
 export const DEFAULT_SETTINGS: NovelWordCountSettings = {
@@ -93,7 +93,8 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	alignment: AlignmentType.Inline,
 	debugMode: false,
 	wordsPerPage: 300,
-  charsPerPage: 1500,
+	charsPerPage: 1500,
+	charsPerPageIncludesWhitespace: false,
 	wordCountType: WordCountType.SpaceDelimited,
-  pageCountType: PageCountType.ByWords
+	pageCountType: PageCountType.ByWords,
 };

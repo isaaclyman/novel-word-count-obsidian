@@ -316,16 +316,28 @@ export default class NovelWordCountPlugin extends Plugin {
 					? `${new Date(counts.modifiedDate).toLocaleDateString()}/u`
 					: `Updated ${new Date(counts.modifiedDate).toLocaleDateString()}`;
 			case CountType.FileSize:
-				return this.fileSizeHelper.formatFileSize(counts.sizeInBytes, abbreviateDescriptions);
+				return this.fileSizeHelper.formatFileSize(
+					counts.sizeInBytes,
+					abbreviateDescriptions
+				);
 		}
 
 		return "";
 	}
 
 	private getNodeLabel(counts: CountData): string {
-		const countTypes = counts.isDirectory && !this.settings.showSameCountsOnFolders ? 
-			[this.settings.folderCountType, this.settings.folderCountType2, this.settings.folderCountType3] :
-			[this.settings.countType, this.settings.countType2, this.settings.countType3];
+		const countTypes =
+			counts.isDirectory && !this.settings.showSameCountsOnFolders
+				? [
+						this.settings.folderCountType,
+						this.settings.folderCountType2,
+						this.settings.folderCountType3,
+				  ]
+				: [
+						this.settings.countType,
+						this.settings.countType2,
+						this.settings.countType3,
+				  ];
 
 		return countTypes
 			.filter((ct) => ct !== CountType.None)
@@ -351,7 +363,7 @@ export default class NovelWordCountPlugin extends Plugin {
 				await this.updateDisplayedCounts(file);
 			})
 		);
-		
+
 		this.registerEvent(
 			this.app.metadataCache.on("changed", async (file) => {
 				this.debugHelper.debug(
@@ -365,7 +377,7 @@ export default class NovelWordCountPlugin extends Plugin {
 				);
 				await this.updateDisplayedCounts(file);
 			})
-		)
+		);
 
 		const recalculateAll = async (hookName: string, file?: TAbstractFile) => {
 			if (file) {
@@ -573,7 +585,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 		containerEl
 			.createEl("div", { text: "Folders" })
 			.addClasses(["setting-item", "setting-item-heading"]);
-		
+
 		new Setting(containerEl)
 			.setName("Show same data on folders")
 			.addToggle((toggle) =>
@@ -590,52 +602,52 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 
 		if (!this.plugin.settings.showSameCountsOnFolders) {
 			new Setting(containerEl)
-			.setName("1st data type to show")
-			.addDropdown((drop) => {
-				for (const countType of countTypes) {
-					drop.addOption(countType, countTypeDisplayStrings[countType]);
-				}
+				.setName("1st data type to show")
+				.addDropdown((drop) => {
+					for (const countType of countTypes) {
+						drop.addOption(countType, countTypeDisplayStrings[countType]);
+					}
 
-				drop
-					.setValue(this.plugin.settings.folderCountType)
-					.onChange(async (value: CountType) => {
-						this.plugin.settings.folderCountType = value;
-						await this.plugin.saveSettings();
-						await this.plugin.updateDisplayedCounts();
-					});
-			});
+					drop
+						.setValue(this.plugin.settings.folderCountType)
+						.onChange(async (value: CountType) => {
+							this.plugin.settings.folderCountType = value;
+							await this.plugin.saveSettings();
+							await this.plugin.updateDisplayedCounts();
+						});
+				});
 
-		new Setting(containerEl)
-			.setName("2nd data type to show")
-			.addDropdown((drop) => {
-				for (const countType of countTypes) {
-					drop.addOption(countType, countTypeDisplayStrings[countType]);
-				}
+			new Setting(containerEl)
+				.setName("2nd data type to show")
+				.addDropdown((drop) => {
+					for (const countType of countTypes) {
+						drop.addOption(countType, countTypeDisplayStrings[countType]);
+					}
 
-				drop
-					.setValue(this.plugin.settings.folderCountType2)
-					.onChange(async (value: CountType) => {
-						this.plugin.settings.folderCountType2 = value;
-						await this.plugin.saveSettings();
-						await this.plugin.updateDisplayedCounts();
-					});
-			});
+					drop
+						.setValue(this.plugin.settings.folderCountType2)
+						.onChange(async (value: CountType) => {
+							this.plugin.settings.folderCountType2 = value;
+							await this.plugin.saveSettings();
+							await this.plugin.updateDisplayedCounts();
+						});
+				});
 
-		new Setting(containerEl)
-			.setName("3rd data type to show")
-			.addDropdown((drop) => {
-				for (const countType of countTypes) {
-					drop.addOption(countType, countTypeDisplayStrings[countType]);
-				}
+			new Setting(containerEl)
+				.setName("3rd data type to show")
+				.addDropdown((drop) => {
+					for (const countType of countTypes) {
+						drop.addOption(countType, countTypeDisplayStrings[countType]);
+					}
 
-				drop
-					.setValue(this.plugin.settings.folderCountType3)
-					.onChange(async (value: CountType) => {
-						this.plugin.settings.folderCountType3 = value;
-						await this.plugin.saveSettings();
-						await this.plugin.updateDisplayedCounts();
-					});
-			});
+					drop
+						.setValue(this.plugin.settings.folderCountType3)
+						.onChange(async (value: CountType) => {
+							this.plugin.settings.folderCountType3 = value;
+							await this.plugin.saveSettings();
+							await this.plugin.updateDisplayedCounts();
+						});
+				});
 		}
 
 		/*
@@ -707,19 +719,42 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 		}
 
 		if (this.plugin.settings.pageCountType === PageCountType.ByChars) {
+			new Setting(containerEl)
+				.setName("Include whitespace characters in page count")
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.charsPerPageIncludesWhitespace)
+						.onChange(async (value) => {
+							this.plugin.settings.charsPerPageIncludesWhitespace = value;
+							await this.plugin.saveSettings();
+							await this.plugin.initialize();
+
+							this.display();
+						})
+				);
+
 			const charsPerPageChanged = async (txt: TextComponent, value: string) => {
 				const asNumber = Number(value);
 				const isValid = !isNaN(asNumber) && asNumber > 0;
 
 				txt.inputEl.style.borderColor = isValid ? null : "red";
 
-				this.plugin.settings.charsPerPage = isValid ? Number(value) : 1500;
+				const defaultCharsPerPage = 1500;
+				this.plugin.settings.charsPerPage = isValid
+					? Number(value)
+					: defaultCharsPerPage;
 				await this.plugin.saveSettings();
 				await this.plugin.initialize();
 			};
 			new Setting(containerEl)
-				.setName("Characters per page (not counting whitespace)")
-				.setDesc("Used for page count. 1500 is common in German (Normseite).")
+				.setName("Characters per page")
+				.setDesc(
+					`Used for page count. ${
+						this.plugin.settings.charsPerPageIncludesWhitespace
+							? "2400 is common in Danish."
+							: "1500 is common in German (Normseite)."
+					}`
+				)
 				.addText((txt) => {
 					txt
 						.setPlaceholder("1500")
