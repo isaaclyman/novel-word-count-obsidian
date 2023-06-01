@@ -24,16 +24,18 @@ You can choose up to three data types to display side by side.
 
 **Abbreviate descriptions.** Enable to show shortened counts:
 
-- "3,250 words" => "3,250w"
-- "30 pages" => "30p"
-- "23,800 characters" => "23,800ch"
-- "12 notes" => "12n"
-- "3 links" => "3x"
-- "5 embeds" => "5em"
-- "alias: july +3" => "july"
-- "Created 1/22/2022" => "1/22/2022/c"
-- "Updated 1/22/2022" => "1/22/2022/u"
-- "13.39 KB" => "13.39kb"
+| Full description | Abbreviated |
+| ---------------- | ----------- |
+| 3,250 words | 3,250w |
+| 30 pages | 30p |
+| 23,800 characters | 23,800ch |
+| 12 notes | 12n |
+| 3 links | 3x |
+| 5 embeds | 5em |
+| alias: july +3 | july |
+| Created 1/22/2022 | 1/22/2022/c |
+| Updated 1/22/2022 | 1/22/2022/u |
+| 13.39 KB | 13.39kb |
 
 **Alignment.** Choose where data is displayed relative to file/folder names: Inline, Right-aligned, or Below. All alignments work well with vanilla Obsidian, but Inline has the greatest compatibility with custom themes and plugins.
 
