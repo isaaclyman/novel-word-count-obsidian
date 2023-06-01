@@ -7,6 +7,7 @@ import {
 	TFolder,
 	Vault,
 	getAllTags,
+	parseFrontMatterAliases,
 } from "obsidian";
 import { DebugHelper } from "./debug";
 import {
@@ -24,6 +25,7 @@ export interface CountData {
 	nonWhitespaceCharacterCount: number;
 	linkCount: number;
 	embedCount: number;
+	aliases: string[] | null;
 	sizeInBytes: number;
 	createdDate: number;
 	modifiedDate: number;
@@ -79,6 +81,7 @@ export class FileHelper {
 			nonWhitespaceCharacterCount: 0,
 			linkCount: 0,
 			embedCount: 0,
+			aliases: null,
 			createdDate: 0,
 			modifiedDate: 0,
 			sizeInBytes: 0,
@@ -171,6 +174,7 @@ export class FileHelper {
 			nonWhitespaceCharacterCount: 0,
 			linkCount: 0,
 			embedCount: 0,
+			aliases: [],
 			createdDate: file.stat.ctime,
 			modifiedDate: file.stat.mtime,
 			sizeInBytes: file.stat.size,
@@ -215,6 +219,7 @@ export class FileHelper {
 			nonWhitespaceCharacterCount,
 			linkCount: this.countLinks(metadata),
 			embedCount: this.countEmbeds(metadata),
+			aliases: parseFrontMatterAliases(metadata.frontmatter)
 		} as CountData);
 	}
 

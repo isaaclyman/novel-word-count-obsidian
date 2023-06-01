@@ -299,6 +299,13 @@ export default class NovelWordCountPlugin extends Plugin {
 				return abbreviateDescriptions
 					? `${counts.embedCount.toLocaleString()}em`
 					: getPluralizedCount("embed", counts.embedCount);
+			case CountType.Alias:
+				if (!counts.aliases || !Array.isArray(counts.aliases) || !counts.aliases.length) {
+					return null;
+				}
+				return abbreviateDescriptions
+					? `${counts.aliases[0]}`
+					: `alias: ${counts.aliases[0]}${counts.aliases.length > 1 ? ` +${counts.aliases.length - 1}` : ''}`
 			case CountType.Created:
 				if (counts.createdDate === 0) {
 					return "";

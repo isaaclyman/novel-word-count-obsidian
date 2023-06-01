@@ -8,16 +8,17 @@ This plugin displays statistics of your choice next to every file, folder, and v
 
 **Data to show.** Choose from the following:
 
-- Word count
-- Page count
-- Page count (decimal)
-- Character count
-- Note count
-- Link count
-- Embed count
-- Created date
-- Last updated date
-- File size
+- **Word count:** Total words. By default, a "word" is any sequence of non-whitespace characters. To change this, see Advanced > Word Count Method.
+- **Page count:** Total pages, rounded up. By default, a page is 300 words. To change this, see Advanced > Page Count Method.
+- **Page count (decimal):** Total pages, precise to 2 decimal points. Any settings that would apply to Page Count also apply to Page Count (decimal).
+- **Character count:** Total characters (letters, symbols, numbers, and spaces).
+- **Note count:** Total notes. Many people prefer to show this information on folders only; to do so, untoggle "Show same data on folders" and configure it as a data type there.
+- **Link count:** Total *outbound* [links](https://help.obsidian.md/Getting+started/Link+notes).
+- **Embed count:** Total [embedded](https://help.obsidian.md/Linking+notes+and+files/Embedding+files) images, files, and notes.
+- **First alias:** The first [alias](https://help.obsidian.md/Linking+notes+and+files/Aliases) of each note. If a note has no alias, nothing is shown. Since folders don't have aliases, they also show nothing.
+- **Created date:** The date the note was created. On a folder, this shows the earliest creation date of all notes in the folder.
+- **Last updated date:** The date the note was last updated. On a folder, this shows the latest edit date of all notes in the folder.
+- **File size:** Total size on your hard drive.
 
 You can choose up to three data types to display side by side.
 
@@ -29,6 +30,7 @@ You can choose up to three data types to display side by side.
 - "12 notes" => "12n"
 - "3 links" => "3x"
 - "5 embeds" => "5em"
+- "alias: july +3" => "july"
 - "Created 1/22/2022" => "1/22/2022/c"
 - "Updated 1/22/2022" => "1/22/2022/u"
 - "13.39 KB" => "13.39kb"
@@ -56,6 +58,8 @@ This plugin treats your vault as read-only. It never modifies, deletes, or renam
 Obsidian's API does not provide contractual access to the File Explorer pane, so this plugin uses duck typing to find it. This is technically undocumented, so there is a possibility that major updates of Obsidian will temporarily cause errors. If and when that happens, this plugin is designed to fail gracefully. In this unlikely scenario you may wish to disable the plugin until it can be updated.
 
 This plugin's effect on the File Explorer DOM is extremely minimal, consisting of a custom HTML attribute and a few CSS rules. Style modifications are only active when the plugin is turned on.
+
+Novel Word Count does not transmit any data over the Internet. All data is stored locally.
 
 ### Development
 
