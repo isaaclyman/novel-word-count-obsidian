@@ -185,10 +185,15 @@ export class FileHelper {
 			return;
 		}
 
-		const wordCount = this.countWords(content, wordCountType);
-		const characterCount = content.length;
+		const hasFrontmatter = !!metadata.frontmatter;
+		const frontmatterPos = metadata.frontmatter?.position;
+		const meaningfulContent = hasFrontmatter ?
+			content.slice(0, frontmatterPos.start.offset) +
+			content.slice(frontmatterPos.end.offset) : content;
+		const wordCount = this.countWords(meaningfulContent, wordCountType);
+		const characterCount = meaningfulContent.length;
 		const nonWhitespaceCharacterCount =
-			this.countNonWhitespaceCharacters(content);
+			this.countNonWhitespaceCharacters(meaningfulContent);
 
 		let pageCount = 0;
 		if (this.settings.pageCountType === PageCountType.ByWords) {
@@ -219,7 +224,7 @@ export class FileHelper {
 			nonWhitespaceCharacterCount,
 			linkCount: this.countLinks(metadata),
 			embedCount: this.countEmbeds(metadata),
-			aliases: parseFrontMatterAliases(metadata.frontmatter)
+			aliases: parseFrontMatterAliases(metadata.frontmatter),
 		} as CountData);
 	}
 
