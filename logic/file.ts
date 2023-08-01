@@ -2,6 +2,7 @@ import NovelWordCountPlugin from "main";
 import {
 	App,
 	CachedMetadata,
+	Pos,
 	TAbstractFile,
 	TFile,
 	TFolder,
@@ -186,10 +187,13 @@ export class FileHelper {
 		}
 
 		const hasFrontmatter = !!metadata.frontmatter;
-		const frontmatterPos = metadata.frontmatter?.position;
-		const meaningfulContent = hasFrontmatter ?
-			content.slice(0, frontmatterPos.start.offset) +
-			content.slice(frontmatterPos.end.offset) : content;
+		const frontmatterPos = metadata.frontmatter
+			?.position;
+		const meaningfulContent =
+			hasFrontmatter && !!frontmatterPos
+				? content.slice(0, frontmatterPos.start.offset) +
+				  content.slice(frontmatterPos.end.offset)
+				: content;
 		const wordCount = this.countWords(meaningfulContent, wordCountType);
 		const characterCount = meaningfulContent.length;
 		const nonWhitespaceCharacterCount =
