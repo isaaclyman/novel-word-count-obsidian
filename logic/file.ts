@@ -187,9 +187,13 @@ export class FileHelper {
 		}
 
 		const hasFrontmatter = !!metadata.frontmatter;
-		const frontmatterPos = (metadata as any).frontmatterPosition;
+		const frontmatterPos =
+			(metadata as any).frontmatterPosition || metadata.frontmatter.position;
 		const meaningfulContent =
-			hasFrontmatter && !!frontmatterPos
+			hasFrontmatter &&
+			frontmatterPos &&
+			frontmatterPos.start &&
+			frontmatterPos.end
 				? content.slice(0, frontmatterPos.start.offset) +
 				  content.slice(frontmatterPos.end.offset)
 				: content;
