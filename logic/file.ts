@@ -2,7 +2,6 @@ import NovelWordCountPlugin from "main";
 import {
 	App,
 	CachedMetadata,
-	Pos,
 	TAbstractFile,
 	TFile,
 	TFolder,
@@ -182,13 +181,13 @@ export class FileHelper {
 		};
 
 		const metadata = this.app.metadataCache.getFileCache(file);
-		if (!this.shouldCountFile(metadata)) {
+		if (!this.shouldCountFile(file, metadata)) {
 			return;
 		}
 
 		const hasFrontmatter = !!metadata.frontmatter;
 		const frontmatterPos =
-			(metadata as any).frontmatterPosition || metadata.frontmatter.position;
+			(metadata as any).frontmatterPosition || (metadata.frontmatter && metadata.frontmatter.position);
 		const meaningfulContent =
 			hasFrontmatter &&
 			frontmatterPos &&
@@ -235,8 +234,10 @@ export class FileHelper {
 		} as CountData);
 	}
 
-	private shouldCountFile(metadata: CachedMetadata): boolean {
+	private shouldCountFile(file: TFile, metadata: CachedMetadata): boolean {
 		const tags = getAllTags(metadata);
-		return !tags.includes("#excalidraw");
+		const excludedFileTypes = ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'heic'];
+		const extension = file.extension.toLowerCase();
+		return !tags.includes("#excalidraw") && !excludedFileTypes.includes(extension);
 	}
 }
