@@ -185,18 +185,7 @@ export class FileHelper {
 			return;
 		}
 
-		const hasFrontmatter = !!metadata.frontmatter;
-		const frontmatterPos =
-			(metadata as any).frontmatterPosition ||
-			(metadata.frontmatter && metadata.frontmatter.position);
-		const meaningfulContent =
-			hasFrontmatter &&
-			frontmatterPos &&
-			frontmatterPos.start &&
-			frontmatterPos.end
-				? content.slice(0, frontmatterPos.start.offset) +
-				  content.slice(frontmatterPos.end.offset)
-				: content;
+		const meaningfulContent = this.getMeaningfulContent(content, metadata);
 		const wordCount = this.countWords(meaningfulContent, wordCountType);
 		const characterCount = meaningfulContent.length;
 		const nonWhitespaceCharacterCount =
@@ -235,6 +224,34 @@ export class FileHelper {
 		} as CountData);
 	}
 
+	private getMeaningfulContent(
+		content: string,
+		metadata: CachedMetadata
+	): string {
+		let meaningfulContent = content;
+
+		const hasFrontmatter = !!metadata.frontmatter;
+		if (hasFrontmatter) {
+			const frontmatterPos =
+				(metadata as any).frontmatterPosition || metadata.frontmatter.position;
+			meaningfulContent =
+				frontmatterPos && frontmatterPos.start && frontmatterPos.end
+					? meaningfulContent.slice(0, frontmatterPos.start.offset) +
+						meaningfulContent.slice(frontmatterPos.end.offset)
+					: meaningfulContent;
+		}
+
+		if (this.settings.excludeComments) {
+			const hasComments = meaningfulContent.includes("%%");
+			if (hasComments) {
+				const splitByComments = meaningfulContent.split("%%");
+				meaningfulContent = splitByComments.filter((_, ix) => ix % 2 == 0).join("");
+			}
+		}
+
+		return meaningfulContent;
+	}
+
 	private readonly ExcludedFileTypes = new Set([
 		"pdf",
 		"jpg",
@@ -252,7 +269,7 @@ export class FileHelper {
 
 		if (
 			metadata.frontmatter &&
-			metadata.frontmatter.hasOwnProperty('wordcount') &&
+			metadata.frontmatter.hasOwnProperty("wordcount") &&
 			(metadata.frontmatter.wordcount === null ||
 				metadata.frontmatter.wordcount === false ||
 				metadata.frontmatter.wordcount === "false")

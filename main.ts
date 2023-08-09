@@ -666,6 +666,19 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 			.addClasses(["setting-item", "setting-item-heading"]);
 
 		new Setting(containerEl)
+			.setName("Exclude comments")
+			.setDesc("Exclude %%comments%% from all counts. May affect performance.")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.excludeComments)
+					.onChange(async (value) => {
+						this.plugin.settings.excludeComments = value;
+						await this.plugin.saveSettings();
+						await this.plugin.initialize();
+					})
+			);
+
+		new Setting(containerEl)
 			.setName("Word count method")
 			.setDesc("For language compatibility")
 			.addDropdown((drop) => {

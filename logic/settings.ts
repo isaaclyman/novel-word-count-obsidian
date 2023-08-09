@@ -82,6 +82,7 @@ export interface NovelWordCountSettings {
 	charsPerPageIncludesWhitespace: boolean;
 	wordCountType: WordCountType;
 	pageCountType: PageCountType;
+	excludeComments: boolean;
 }
 
 export const DEFAULT_SETTINGS: NovelWordCountSettings = {
@@ -100,4 +101,5 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	charsPerPageIncludesWhitespace: false,
 	wordCountType: WordCountType.SpaceDelimited,
 	pageCountType: PageCountType.ByWords,
+	excludeComments: false,
 };
