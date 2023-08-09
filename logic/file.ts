@@ -250,6 +250,17 @@ export class FileHelper {
 			return false;
 		}
 
+		console.log(metadata.frontmatter);
+		if (
+			metadata.frontmatter &&
+			metadata.frontmatter.hasOwnProperty('wordcount') &&
+			(metadata.frontmatter.wordcount === null ||
+				metadata.frontmatter.wordcount === false ||
+				metadata.frontmatter.wordcount === "false")
+		) {
+			return false;
+		}
+
 		const tags = getAllTags(metadata).map((tag) => tag.toLowerCase());
 		if (
 			tags.length &&

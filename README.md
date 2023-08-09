@@ -53,7 +53,27 @@ You can choose up to three data types to display side by side.
 
 ### Excluding notes
 
-To exclude a note from all counts _except_ note count, created date, last updated date, and file size, add the `exclude-from-word-count` [tag](https://help.obsidian.md/Editing+and+formatting/Tags) to the [properties](https://help.obsidian.md/Editing+and+formatting/Properties). (The plugin will recognize the tag in any case and with or without hyphens/underscores, so you can follow your preferred tagging syntax, e.g. `ExcludeFromWordCount`, `Exclude_from_word_count`, and so on.)
+To exclude a note from all counts _except_ note count, created date, last updated date, and file size, add the `exclude-from-word-count` [tag](https://help.obsidian.md/Editing+and+formatting/Tags) to the [properties](https://help.obsidian.md/Editing+and+formatting/Properties).
+
+```md
+---
+
+tags: exclude-from-word-count
+
+---
+```
+
+(The plugin will recognize the tag in any case and with or without hyphens/underscores, so you can follow your preferred tagging syntax, e.g. `ExcludeFromWordCount`, `Exclude_from_word_count`, and so on.)
+
+Alternately, you can set the `wordcount` property to `false`. This property must always be lowercase and may not contain hyphens or underscores.
+
+```md
+---
+
+wordcount: false
+
+---
+```
 
 ### Safety
 
