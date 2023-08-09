@@ -368,6 +368,7 @@ export default class NovelWordCountPlugin extends Plugin {
 					this.settings.wordCountType
 				);
 				await this.updateDisplayedCounts(file);
+				await this.saveSettings();
 			})
 		);
 
@@ -383,6 +384,7 @@ export default class NovelWordCountPlugin extends Plugin {
 					this.settings.wordCountType
 				);
 				await this.updateDisplayedCounts(file);
+				await this.saveSettings();
 			})
 		);
 
