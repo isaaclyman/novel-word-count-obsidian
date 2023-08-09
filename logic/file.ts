@@ -187,7 +187,8 @@ export class FileHelper {
 
 		const hasFrontmatter = !!metadata.frontmatter;
 		const frontmatterPos =
-			(metadata as any).frontmatterPosition || (metadata.frontmatter && metadata.frontmatter.position);
+			(metadata as any).frontmatterPosition ||
+			(metadata.frontmatter && metadata.frontmatter.position);
 		const meaningfulContent =
 			hasFrontmatter &&
 			frontmatterPos &&
@@ -234,10 +235,33 @@ export class FileHelper {
 		} as CountData);
 	}
 
+	private readonly ExcludedFileTypes = new Set([
+		"pdf",
+		"jpg",
+		"jpeg",
+		"png",
+		"webp",
+		"gif",
+		"avif",
+		"heic",
+	]);
 	private shouldCountFile(file: TFile, metadata: CachedMetadata): boolean {
-		const tags = getAllTags(metadata);
-		const excludedFileTypes = ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'heic'];
-		const extension = file.extension.toLowerCase();
-		return !tags.includes("#excalidraw") && !excludedFileTypes.includes(extension);
+		if (this.ExcludedFileTypes.has(file.extension.toLowerCase())) {
+			return false;
+		}
+
+		const tags = getAllTags(metadata).map((tag) => tag.toLowerCase());
+		if (
+			tags.length &&
+			(tags.includes("#excalidraw") ||
+				tags
+					.filter((tag) => tag.startsWith("#exclude"))
+					.map((tag) => tag.replace(/[-_]/g, ""))
+					.includes("#excludefromwordcount"))
+		) {
+			return false;
+		}
+
+		return true;
 	}
 }

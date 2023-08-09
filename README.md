@@ -51,6 +51,10 @@ You can choose up to three data types to display side by side.
 
 **Debug mode.** Enables debugging output to the developer console, which may be useful if you need to report an issue.
 
+### Excluding notes
+
+To exclude a note from all counts _except_ note count, created date, last updated date, and file size, add the `exclude-from-word-count` tag to frontmatter. (The plugin will recognize the tag in any case and with or without hyphens/underscores, so you can follow your preferred tagging syntax e.g. `ExcludeFromWordCount`, `Exclude_from_word_count`, and so on.)
+
 ### Safety
 
 Novel Word Count is fully compatible with Obsidian 1.0.
