@@ -250,7 +250,6 @@ export class FileHelper {
 			return false;
 		}
 
-		console.log(metadata.frontmatter);
 		if (
 			metadata.frontmatter &&
 			metadata.frontmatter.hasOwnProperty('wordcount') &&
