@@ -21,6 +21,8 @@ export interface CountData {
 	noteCount: number;
 	pageCount: number;
 	wordCount: number;
+	wordCountTowardGoal: number;
+	wordGoal: number | null;
 	characterCount: number;
 	nonWhitespaceCharacterCount: number;
 	linkCount: number;
@@ -76,6 +78,8 @@ export class FileHelper {
 			isDirectory: true,
 			noteCount: 0,
 			wordCount: 0,
+			wordCountTowardGoal: 0,
+			wordGoal: 0,
 			pageCount: 0,
 			characterCount: 0,
 			nonWhitespaceCharacterCount: 0,
@@ -92,6 +96,8 @@ export class FileHelper {
 			total.isDirectory = true;
 			total.noteCount += childCount.noteCount;
 			total.wordCount += childCount.wordCount;
+			total.wordCountTowardGoal += childCount.wordCountTowardGoal;
+			total.wordGoal += childCount.wordGoal;
 			total.pageCount += childCount.pageCount;
 			total.characterCount += childCount.characterCount;
 			total.nonWhitespaceCharacterCount +=
@@ -169,6 +175,8 @@ export class FileHelper {
 			isDirectory: false,
 			noteCount: 1,
 			wordCount: 0,
+			wordCountTowardGoal: 0,
+			wordGoal: 0,
 			pageCount: 0,
 			characterCount: 0,
 			nonWhitespaceCharacterCount: 0,
@@ -187,6 +195,7 @@ export class FileHelper {
 
 		const meaningfulContent = this.getMeaningfulContent(content, metadata);
 		const wordCount = this.countWords(meaningfulContent, wordCountType);
+		const wordGoal: number = this.getWordGoal(metadata);
 		const characterCount = meaningfulContent.length;
 		const nonWhitespaceCharacterCount =
 			this.countNonWhitespaceCharacters(meaningfulContent);
@@ -215,6 +224,8 @@ export class FileHelper {
 
 		Object.assign(counts[file.path], {
 			wordCount,
+			wordCountTowardGoal: wordGoal !== null ? wordCount : 0,
+			wordGoal,
 			pageCount,
 			characterCount,
 			nonWhitespaceCharacterCount,
@@ -222,6 +233,15 @@ export class FileHelper {
 			embedCount: this.countEmbeds(metadata),
 			aliases: parseFrontMatterAliases(metadata.frontmatter),
 		} as CountData);
+	}
+
+	private getWordGoal(metadata: CachedMetadata): number | null {
+		const goal = metadata.frontmatter && metadata.frontmatter['wordcount-goal'];
+		if (!goal || isNaN(Number(goal))) {
+			return null;
+		}
+
+		return Number(goal);
 	}
 
 	private getMeaningfulContent(
@@ -237,7 +257,7 @@ export class FileHelper {
 			meaningfulContent =
 				frontmatterPos && frontmatterPos.start && frontmatterPos.end
 					? meaningfulContent.slice(0, frontmatterPos.start.offset) +
-						meaningfulContent.slice(frontmatterPos.end.offset)
+					  meaningfulContent.slice(frontmatterPos.end.offset)
 					: meaningfulContent;
 		}
 
@@ -245,7 +265,9 @@ export class FileHelper {
 			const hasComments = meaningfulContent.includes("%%");
 			if (hasComments) {
 				const splitByComments = meaningfulContent.split("%%");
-				meaningfulContent = splitByComments.filter((_, ix) => ix % 2 == 0).join("");
+				meaningfulContent = splitByComments
+					.filter((_, ix) => ix % 2 == 0)
+					.join("");
 			}
 		}
 

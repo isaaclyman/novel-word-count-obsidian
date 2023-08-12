@@ -247,7 +247,7 @@ export default class NovelWordCountPlugin extends Plugin {
 		abbreviateDescriptions: boolean
 	): string | null {
 		if (!counts || typeof counts.wordCount !== "number") {
-			return "";
+			return null;
 		}
 
 		const getPluralizedCount = function (
@@ -255,19 +255,18 @@ export default class NovelWordCountPlugin extends Plugin {
 			count: number,
 			round: boolean = true
 		) {
-			const roundedCount = round ? Math.ceil(count) : count;
 			const displayCount = round
-				? roundedCount.toLocaleString()
-				: roundedCount.toLocaleString(undefined, {
+				? Math.ceil(count)
+				: count.toLocaleString(undefined, {
 						minimumFractionDigits: 1,
 						maximumFractionDigits: 2,
 				  });
-			return `${displayCount} ${noun}${roundedCount == 1 ? "" : "s"}`;
+			return `${displayCount} ${noun}${displayCount == 1 ? "" : "s"}`;
 		};
 
 		switch (countType) {
 			case CountType.None:
-				return "";
+				return null;
 			case CountType.Word:
 				return abbreviateDescriptions
 					? `${Math.ceil(counts.wordCount).toLocaleString()}w`
@@ -283,6 +282,16 @@ export default class NovelWordCountPlugin extends Plugin {
 							maximumFractionDigits: 2,
 					  })}p`
 					: getPluralizedCount("page", counts.pageCount, false);
+			case CountType.PercentGoal:
+				if (counts.wordGoal <= 0) {
+					return null;
+				}
+
+				const fraction = counts.wordCountTowardGoal / counts.wordGoal;
+				const percent = Math.round(fraction * 100);
+				return abbreviateDescriptions
+					? `${percent}%`
+					: `${percent}% of ${counts.wordGoal}`
 			case CountType.Note:
 				return abbreviateDescriptions
 					? `${counts.noteCount.toLocaleString()}n`
@@ -329,7 +338,7 @@ export default class NovelWordCountPlugin extends Plugin {
 				);
 		}
 
-		return "";
+		return null;
 	}
 
 	private getNodeLabel(counts: CountData): string {
