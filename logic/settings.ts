@@ -19,7 +19,7 @@ export const countTypeDisplayStrings: { [countType: string]: string } = {
 	[CountType.Word]: "Word Count",
 	[CountType.Page]: "Page Count",
 	[CountType.PageDecimal]: "Page Count (decimal)",
-	[CountType.PercentGoal]:" Percent of Goal",
+	[CountType.PercentGoal]: "% of Word Goal",
 	[CountType.Note]: "Note Count",
 	[CountType.Character]: "Character Count",
 	[CountType.Link]: "Link Count",
@@ -29,6 +29,26 @@ export const countTypeDisplayStrings: { [countType: string]: string } = {
 	[CountType.Modified]: "Last Updated Date",
 	[CountType.FileSize]: "File Size",
 };
+
+export const countTypeDescriptions: { [countType: string]: string } = {
+	[CountType.None]: "Hidden.",
+	[CountType.Word]: "Total words.",
+	[CountType.Page]: "Total pages, rounded up.",
+	[CountType.PageDecimal]: "Total pages, precise to 2 digits after the decimal.",
+	[CountType.PercentGoal]: "Set a word goal by adding the 'word-goal' property to a note.",
+	[CountType.Note]: "Total notes.",
+	[CountType.Character]: "Total characters (letters, symbols, numbers, and spaces).",
+	[CountType.Link]: "Total outbound links.",
+	[CountType.Embed]: "Total embedded images, files, and notes.",
+	[CountType.Alias]: "The first alias property of each note.",
+	[CountType.Created]: "Creation date. (On folders: earliest creation date of any note.)",
+	[CountType.Modified]: "Date of last edit. (On folders: latest edit date of any note.)",
+	[CountType.FileSize]: "Total size on hard drive.",
+}
+
+export function getDescription(countType: CountType): string {
+	return `[${countTypeDisplayStrings[countType]}] ${countTypeDescriptions[countType]}`;
+}
 
 export const countTypes = [
 	CountType.None,

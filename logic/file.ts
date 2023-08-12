@@ -236,7 +236,7 @@ export class FileHelper {
 	}
 
 	private getWordGoal(metadata: CachedMetadata): number | null {
-		const goal = metadata.frontmatter && metadata.frontmatter['wordcount-goal'];
+		const goal = metadata.frontmatter && metadata.frontmatter['word-goal'];
 		if (!goal || isNaN(Number(goal))) {
 			return null;
 		}

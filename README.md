@@ -10,7 +10,7 @@ This plugin displays statistics of your choice next to every file, folder, and v
 
 - **Word count:** Total words. By default, a "word" is any sequence of non-whitespace characters. To change this, see Advanced > Word Count Method.
 - **Page count:** Total pages, rounded up. By default, a page is 300 words. To change this, see Advanced > Page Count Method.
-- **Page count (decimal):** Total pages, precise to 2 decimal points. Any settings that would apply to Page Count also apply to Page Count (decimal).
+- **Page count (decimal):** Total pages, precise to 2 digits after the decimal. Any settings that would apply to Page Count also apply to Page Count (decimal).
 - **Character count:** Total characters (letters, symbols, numbers, and spaces).
 - **Note count:** Total notes. Many people prefer to show this information on folders only; to do so, untoggle "Show same data on folders" and configure it as a data type there.
 - **Link count:** Total *outbound* [links](https://help.obsidian.md/Getting+started/Link+notes).

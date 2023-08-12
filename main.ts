@@ -5,9 +5,11 @@ import {
 	AlignmentType,
 	alignmentTypes,
 	CountType,
+	countTypeDescriptions,
 	countTypeDisplayStrings,
 	countTypes,
 	DEFAULT_SETTINGS,
+	getDescription,
 	NovelWordCountSettings,
 	PageCountType,
 	WordCountType,
@@ -516,7 +518,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("1st data type to show")
-			.setDesc("Ex: 10,000 words")
+			.setDesc(getDescription(this.plugin.settings.countType))
 			.addDropdown((drop) => {
 				for (const countType of countTypes) {
 					drop.addOption(countType, countTypeDisplayStrings[countType]);
@@ -528,12 +530,14 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 						this.plugin.settings.countType = value;
 						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
+
+						this.display();
 					});
 			});
 
 		new Setting(containerEl)
 			.setName("2nd data type to show")
-			.setDesc("Ex: 10,000 words | 33 pages")
+			.setDesc(getDescription(this.plugin.settings.countType2))
 			.addDropdown((drop) => {
 				for (const countType of countTypes) {
 					drop.addOption(countType, countTypeDisplayStrings[countType]);
@@ -545,12 +549,14 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 						this.plugin.settings.countType2 = value;
 						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
+
+						this.display();
 					});
 			});
 
 		new Setting(containerEl)
 			.setName("3rd data type to show")
-			.setDesc("Ex: 10,000 words | 33 pages | Created 10/27/2022")
+			.setDesc(getDescription(this.plugin.settings.countType3))
 			.addDropdown((drop) => {
 				for (const countType of countTypes) {
 					drop.addOption(countType, countTypeDisplayStrings[countType]);
@@ -562,6 +568,8 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 						this.plugin.settings.countType3 = value;
 						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
+
+						this.display();
 					});
 			});
 
