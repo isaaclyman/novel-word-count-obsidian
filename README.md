@@ -11,6 +11,7 @@ This plugin displays statistics of your choice next to every file, folder, and v
 - **Word count:** Total words. By default, a "word" is any sequence of non-whitespace characters. To change this, see Advanced > Word Count Method.
 - **Page count:** Total pages, rounded up. By default, a page is 300 words. To change this, see Advanced > Page Count Method.
 - **Page count (decimal):** Total pages, precise to 2 digits after the decimal. Any settings that would apply to Page Count also apply to Page Count (decimal).
+- **% of Word Goal:** Percent of word goal for each note; see [*Setting goals*](#setting-goals) below.
 - **Character count:** Total characters (letters, symbols, numbers, and spaces).
 - **Note count:** Total notes. Many people prefer to show this information on folders only; to do so, untoggle "Show same data on folders" and configure it as a data type there.
 - **Link count:** Total *outbound* [links](https://help.obsidian.md/Getting+started/Link+notes).
@@ -52,6 +53,22 @@ You can choose up to three data types to display side by side.
 **Reanalyze all documents.** Triggers a recount of all documents in the vault. Useful if you've made changes outside of Obsidian. (A hotkey binding is available for this command.)
 
 **Debug mode.** Enables debugging output to the developer console, which may be useful if you need to report an issue.
+
+### Setting goals
+
+To set a word goal for a note, add the `word-goal` property:
+
+```md
+---
+
+word-goal: 1000
+
+---
+```
+
+Comma separators are not allowed—the value must be numbers only.
+
+On folders, the total number of words _for all notes with a goal_ is compared to the sum of all word goals.
 
 ### Excluding notes
 
