@@ -290,10 +290,10 @@ export default class NovelWordCountPlugin extends Plugin {
 				}
 
 				const fraction = counts.wordCountTowardGoal / counts.wordGoal;
-				const percent = Math.round(fraction * 100);
+				const percent = Math.round(fraction * 100).toLocaleString(undefined);
 				return abbreviateDescriptions
 					? `${percent}%`
-					: `${percent}% of ${counts.wordGoal}`
+					: `${percent}% of ${counts.wordGoal.toLocaleString(undefined)}`
 			case CountType.Note:
 				return abbreviateDescriptions
 					? `${counts.noteCount.toLocaleString()}n`
