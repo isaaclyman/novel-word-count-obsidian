@@ -3,12 +3,10 @@
     align-items: baseline;
 
     &::after {
-      align-items: center;
       content: attr(data-novel-word-count-plugin);
-      display: flex;
-      flex-direction: row;
       font-size: 0.8em;
       opacity: 0.75;
+      overflow: hidden;
       padding: 0 4px;
       position: relative;
       text-overflow: ellipsis;
@@ -16,7 +14,8 @@
     }
 
     .novel-word-count--right &-content {
-      flex: 1;
+      flex: 1 1 0;
+      min-width: 20px;
     }
 
     .novel-word-count--below & {
@@ -28,8 +27,12 @@
     }
 
     .novel-word-count--below &::after {
+      display: inline-block;
       margin-top: -2px;
+      overflow: hidden;
       padding: 0;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 }
