@@ -4,7 +4,10 @@
 
     &::after {
       content: attr(data-novel-word-count-plugin);
+      flex: 1 0 auto;
       font-size: 0.8em;
+      max-width: calc(100% - 30px);
+      min-width: 0;
       opacity: 0.75;
       overflow: hidden;
       padding: 0 4px;
@@ -13,9 +16,17 @@
       white-space: nowrap;
     }
 
+    &-content {
+      min-width: 30px;
+    }
+    
     .novel-word-count--right &-content {
       flex: 1 1 0;
-      min-width: 20px;
+    }
+
+    .novel-word-count--right &::after {
+      flex: none;
+      overflow: hidden;
     }
 
     .novel-word-count--below & {
@@ -29,6 +40,7 @@
     .novel-word-count--below &::after {
       display: inline-block;
       margin-top: -2px;
+      max-width: 100%;
       overflow: hidden;
       padding: 0;
       text-overflow: ellipsis;
