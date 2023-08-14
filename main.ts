@@ -258,12 +258,12 @@ export default class NovelWordCountPlugin extends Plugin {
 			round: boolean = true
 		) {
 			const displayCount = round
-				? Math.ceil(count)
+				? Math.ceil(count).toLocaleString(undefined)
 				: count.toLocaleString(undefined, {
 						minimumFractionDigits: 1,
 						maximumFractionDigits: 2,
 				  });
-			return `${displayCount} ${noun}${displayCount == 1 ? "" : "s"}`;
+			return `${displayCount} ${noun}${displayCount == '1' ? "" : "s"}`;
 		};
 
 		switch (countType) {
