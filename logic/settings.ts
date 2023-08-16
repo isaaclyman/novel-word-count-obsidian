@@ -38,7 +38,7 @@ export const countTypeDescriptions: { [countType: string]: string } = {
 	[CountType.PercentGoal]: "Set a word goal by adding the 'word-goal' property to a note.",
 	[CountType.Note]: "Total notes.",
 	[CountType.Character]: "Total characters (letters, symbols, numbers, and spaces).",
-	[CountType.Link]: "Total outbound links.",
+	[CountType.Link]: "Total links to other notes.",
 	[CountType.Embed]: "Total embedded images, files, and notes.",
 	[CountType.Alias]: "The first alias property of each note.",
 	[CountType.Created]: "Creation date. (On folders: earliest creation date of any note.)",
