@@ -6,7 +6,7 @@
       content: attr(data-novel-word-count-plugin);
       flex: 1 0 auto;
       font-size: 0.8em;
-      max-width: calc(100% - 30px);
+      max-width: calc(100% - 20px);
       min-width: 0;
       opacity: 0.75;
       overflow: hidden;
@@ -17,7 +17,7 @@
     }
 
     &-content {
-      min-width: 30px;
+      min-width: 20px;
     }
     
     .novel-word-count--right &-content {

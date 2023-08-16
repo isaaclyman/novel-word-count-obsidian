@@ -5,7 +5,7 @@
   content: attr(data-novel-word-count-plugin);
   flex: 1 0 auto;
   font-size: 0.8em;
-  max-width: calc(100% - 30px);
+  max-width: calc(100% - 20px);
   min-width: 0;
   opacity: 0.75;
   overflow: hidden;
@@ -15,7 +15,7 @@
   white-space: nowrap;
 }
 .nav-files-container .nav-folder-title-content, .nav-files-container .nav-file-title-content {
-  min-width: 30px;
+  min-width: 20px;
 }
 .novel-word-count--right .nav-files-container .nav-folder-title-content, .novel-word-count--right .nav-files-container .nav-file-title-content {
   flex: 1 1 0;
