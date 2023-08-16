@@ -303,10 +303,18 @@ export default class NovelWordCountPlugin extends Plugin {
 					? `${counts.characterCount.toLocaleString()}ch`
 					: getPluralizedCount("character", counts.characterCount);
 			case CountType.Link:
+				if (counts.linkCount === 0) {
+					return null;
+				}
+
 				return abbreviateDescriptions
 					? `${counts.linkCount.toLocaleString()}x`
 					: getPluralizedCount("link", counts.linkCount);
 			case CountType.Embed:
+				if (counts.embedCount === 0) {
+					return null;
+				}
+
 				return abbreviateDescriptions
 					? `${counts.embedCount.toLocaleString()}em`
 					: getPluralizedCount("embed", counts.embedCount);
@@ -314,12 +322,13 @@ export default class NovelWordCountPlugin extends Plugin {
 				if (!counts.aliases || !Array.isArray(counts.aliases) || !counts.aliases.length) {
 					return null;
 				}
+
 				return abbreviateDescriptions
 					? `${counts.aliases[0]}`
 					: `alias: ${counts.aliases[0]}${counts.aliases.length > 1 ? ` +${counts.aliases.length - 1}` : ''}`
 			case CountType.Created:
 				if (counts.createdDate === 0) {
-					return "";
+					return null;
 				}
 
 				return abbreviateDescriptions
@@ -327,7 +336,7 @@ export default class NovelWordCountPlugin extends Plugin {
 					: `Created ${new Date(counts.createdDate).toLocaleDateString()}`;
 			case CountType.Modified:
 				if (counts.modifiedDate === 0) {
-					return "";
+					return null;
 				}
 
 				return abbreviateDescriptions

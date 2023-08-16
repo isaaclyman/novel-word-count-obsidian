@@ -93,25 +93,30 @@ export class FileHelper {
 
 		return childPaths.reduce((total, childPath): CountData => {
 			const childCount = this.getCountDataForPath(counts, childPath);
-			total.isDirectory = true;
-			total.noteCount += childCount.noteCount;
-			total.wordCount += childCount.wordCount;
-			total.wordCountTowardGoal += childCount.wordCountTowardGoal;
-			total.wordGoal += childCount.wordGoal;
-			total.pageCount += childCount.pageCount;
-			total.characterCount += childCount.characterCount;
-			total.nonWhitespaceCharacterCount +=
-				childCount.nonWhitespaceCharacterCount;
-			total.createdDate =
-				total.createdDate === 0
+			return {
+				isDirectory: true,
+				noteCount: total.noteCount + childCount.noteCount,
+				linkCount: total.linkCount + childCount.linkCount,
+				embedCount: total.embedCount + childCount.embedCount,
+				aliases: [],
+				wordCount: total.wordCount + childCount.wordCount,
+				wordCountTowardGoal:
+					total.wordCountTowardGoal + childCount.wordCountTowardGoal,
+				wordGoal: total.wordGoal + childCount.wordGoal,
+				pageCount: total.pageCount + childCount.pageCount,
+				characterCount: total.characterCount + childCount.characterCount,
+				nonWhitespaceCharacterCount:
+					total.nonWhitespaceCharacterCount +
+					childCount.nonWhitespaceCharacterCount,
+				createdDate: total.createdDate === 0
 					? childCount.createdDate
-					: Math.min(total.createdDate, childCount.createdDate);
-			total.modifiedDate = Math.max(
-				total.modifiedDate,
-				childCount.modifiedDate
-			);
-			total.sizeInBytes += childCount.sizeInBytes;
-			return total;
+					: Math.min(total.createdDate, childCount.createdDate),
+				modifiedDate: Math.max(
+					total.modifiedDate,
+					childCount.modifiedDate
+				),
+				sizeInBytes: total.sizeInBytes + childCount.sizeInBytes,
+			};
 		}, directoryDefault);
 	}
 
@@ -236,7 +241,7 @@ export class FileHelper {
 	}
 
 	private getWordGoal(metadata: CachedMetadata): number | null {
-		const goal = metadata.frontmatter && metadata.frontmatter['word-goal'];
+		const goal = metadata.frontmatter && metadata.frontmatter["word-goal"];
 		if (!goal || isNaN(Number(goal))) {
 			return null;
 		}
