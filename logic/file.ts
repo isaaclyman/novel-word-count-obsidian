@@ -279,18 +279,17 @@ export class FileHelper {
 		return meaningfulContent;
 	}
 
-	private readonly ExcludedFileTypes = new Set([
-		"pdf",
-		"jpg",
-		"jpeg",
-		"png",
-		"webp",
-		"gif",
-		"avif",
-		"heic",
+	private readonly FileTypeWhitelist = new Set([
+		"",
+		"md",
+		"txt",
+		"rtf",
+		"qmd",
+		"rmd"
 	]);
+
 	private shouldCountFile(file: TFile, metadata: CachedMetadata): boolean {
-		if (this.ExcludedFileTypes.has(file.extension.toLowerCase())) {
+		if (!this.FileTypeWhitelist.has(file.extension.toLowerCase())) {
 			return false;
 		}
 
