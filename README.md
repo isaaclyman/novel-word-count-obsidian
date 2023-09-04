@@ -6,22 +6,22 @@ This plugin displays statistics of your choice next to every file, folder, and v
 
 ### Settings
 
-**Data to show.** Choose from the following:
+**Data to show.** You can choose up to three data types to display side by side. Choose from the following:
 
-- **Word count:** Total words. By default, a "word" is any sequence of non-whitespace characters. To change this, see Advanced > Word Count Method.
-- **Page count:** Total pages, rounded up. By default, a page is 300 words. To change this, see Advanced > Page Count Method.
-- **Page count (decimal):** Total pages, precise to 2 digits after the decimal. Any settings that would apply to Page Count also apply to Page Count (decimal).
-- **% of Word Goal:** Percent of word goal for each note; see [*Setting goals*](#setting-goals) below.
-- **Character count:** Total characters (letters, symbols, numbers, and spaces).
-- **Note count:** Total notes. Many people prefer to show this information on folders only; to do so, untoggle "Show same data on folders" and configure it as a data type there.
-- **Link count:** Total [links](https://help.obsidian.md/Getting+started/Link+notes) to other notes. Only internal links are counted; Obsidian doesn't count links to web pages.
-- **Embed count:** Total [embedded](https://help.obsidian.md/Linking+notes+and+files/Embedding+files) images, files, and notes.
-- **First alias:** The first [alias](https://help.obsidian.md/Linking+notes+and+files/Aliases) of each note. If a note has no alias, nothing is shown. Since folders don't have aliases, they also show nothing.
-- **Created date:** The date the note was created. On a folder, this shows the earliest creation date of all notes in the folder.
-- **Last updated date:** The date the note was last updated. On a folder, this shows the latest edit date of all notes in the folder.
-- **File size:** Total size on your hard drive.
-
-You can choose up to three data types to display side by side.
+| Data Type | Description | Notes |
+| --------- | ----------- | ----- |
+| **Word count** | Total words. | By default, a "word" is any sequence of non-whitespace characters. To change this, see Advanced > Word Count Method. |
+| **Page count** | Total pages, rounded up. | By default, a page is 300 words. To change this, see Advanced > Page Count Method. |
+| **Page count (decimal)** | Total pages, precise to 2 digits after the decimal. | Any settings that would apply to Page Count also apply to Page Count (decimal). |
+| **% of Word Goal** | Percent of word goal for each note. | See [*Setting goals*](#setting-goals) below. |
+| **Character count** | Total characters (letters, symbols, numbers, and spaces). | |
+| **Note count** | Total notes. | Many people prefer to show this information on folders only; to do so, untoggle "Show same data on folders" and configure it as a data type there. |
+| **Link count** | Total [links](https://help.obsidian.md/Getting+started/Link+notes) to other notes. | Only internal links are counted; Obsidian doesn't count links to web pages. |
+| **Embed count** | Total [embedded](https://help.obsidian.md/Linking+notes+and+files/Embedding+files) images, files, and notes. | |
+| **First alias** | The first [alias](https://help.obsidian.md/Linking+notes+and+files/Aliases) of each note. | If a note has no alias, nothing is shown. Since folders don't have aliases, they also show nothing. |
+| **Created date** | The date the note was created. | On a folder, this shows the earliest creation date of all notes in the folder. |
+| **Last updated date** | The date the note was last updated. | On a folder, this shows the latest edit date of all notes in the folder. |
+| **File size** | Total size on your hard drive. | |
 
 **Abbreviate descriptions.** Enable to show shortened counts:
 
