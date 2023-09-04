@@ -281,11 +281,24 @@ export class FileHelper {
 
 	private readonly FileTypeAllowlist = new Set([
 		"",
+		// Markdown extensions
+		"markdown",
 		"md",
+		"mdml",
+		"mdown",
+		"mdtext",
+		"mdtxt",
+		"mdwn",
+		"mkd",
+		"mkdn",
+		// Text files
 		"txt",
+		"text",
 		"rtf",
+		// MD with embedded code
 		"qmd",
 		"rmd",
+		// MD for screenwriters
 		"fountain"
 	]);
 
