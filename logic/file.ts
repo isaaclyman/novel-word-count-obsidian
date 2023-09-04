@@ -53,7 +53,7 @@ export class FileHelper {
 	): Promise<CountsByFile> {
 		const debugEnd = this.debugHelper.debugStart("getAllFileCounts");
 
-		const files = this.vault.getMarkdownFiles();
+		const files = this.vault.getFiles();
 		const counts: CountsByFile = {};
 
 		for (const file of files) {
