@@ -78,7 +78,7 @@ Alternately, you can set the `wordcount` property to `false`. This property must
 
 ### Safety
 
-Novel Word Count is fully compatible with Obsidian 1.0.
+Novel Word Count is fully compatible with Obsidian 1.4+.
 
 This plugin treats your vault as read-only. It never modifies, deletes, or renames any file or folder. It uses cached reads of all files for better performance.
 
