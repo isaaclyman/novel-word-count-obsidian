@@ -58,13 +58,7 @@ You can choose up to three data types to display side by side.
 
 To set a word goal for a note, add the `word-goal` property:
 
-```md
----
-
-word-goal: 1000
-
----
-```
+<img src="property-wordgoal.png" alt="Obsidian properties with a single property 'word-goal' set to 100" height="150px">
 
 Comma separators are not allowed—the value must be numbers only.
 
@@ -74,25 +68,13 @@ On folders, the total number of words _for all notes with a goal_ is compared to
 
 To exclude a note from all counts _except_ note count, created date, last updated date, and file size, add the `exclude-from-word-count` [tag](https://help.obsidian.md/Editing+and+formatting/Tags) to the [properties](https://help.obsidian.md/Editing+and+formatting/Properties).
 
-```md
----
-
-tags: exclude-from-word-count
-
----
-```
+<img src="property-exclude.png" alt="Obsidian properties with a single property 'tags' containing one chip with text 'exclude-from-word-count'" height="150px">
 
 (The plugin will recognize the tag in any case and with or without hyphens/underscores, so you can follow your preferred tagging syntax, e.g. `ExcludeFromWordCount`, `Exclude_from_word_count`, and so on.)
 
 Alternately, you can set the `wordcount` property to `false`. This property must always be lowercase and may not contain hyphens or underscores.
 
-```md
----
-
-wordcount: false
-
----
-```
+<img src="property-wordcount.png" alt="Obsidian properties with a single property 'wordcount' set to an empty checkbox" height="150px">
 
 ### Safety
 
