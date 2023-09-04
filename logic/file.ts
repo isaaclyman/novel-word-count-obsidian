@@ -279,7 +279,7 @@ export class FileHelper {
 		return meaningfulContent;
 	}
 
-	private readonly FileTypeWhitelist = new Set([
+	private readonly FileTypeAllowlist = new Set([
 		"",
 		"md",
 		"txt",
@@ -289,7 +289,7 @@ export class FileHelper {
 	]);
 
 	private shouldCountFile(file: TFile, metadata: CachedMetadata): boolean {
-		if (!this.FileTypeWhitelist.has(file.extension.toLowerCase())) {
+		if (!this.FileTypeAllowlist.has(file.extension.toLowerCase())) {
 			return false;
 		}
 
