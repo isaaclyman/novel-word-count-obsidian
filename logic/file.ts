@@ -285,7 +285,8 @@ export class FileHelper {
 		"txt",
 		"rtf",
 		"qmd",
-		"rmd"
+		"rmd",
+		"fountain"
 	]);
 
 	private shouldCountFile(file: TFile, metadata: CachedMetadata): boolean {
