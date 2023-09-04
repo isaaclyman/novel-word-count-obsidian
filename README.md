@@ -88,7 +88,13 @@ This plugin's effect on the File Explorer DOM is extremely minimal, consisting o
 
 Novel Word Count does not transmit any data over the Internet. All data is stored locally.
 
-### Development
+### Installing the plugin
+
+Search "novel word count" in the community plugin browser, or use [this link](https://obsidian.md/plugins?id=novel-word-count).
+
+## For Developers
+
+### Development setup
 
 - Clone this repo.
 - `npm i` or `yarn` to install dependencies
@@ -103,10 +109,6 @@ Novel Word Count does not transmit any data over the Internet. All data is store
 - Push commits to the remote.
 - Create a new release and tag in GitHub, both named after the version number e.g. `2.4.1` without a "v". Attach the files main.js, styles.css, and manifest.json.
 
-### Installing the plugin automatically
-
-Search "novel word count" in the community plugin browser, or use [this link](https://obsidian.md/plugins?id=novel-word-count).
-
-### Installing the plugin manually
+### Running the plugin locally
 
 Visit the [Releases page](https://github.com/isaaclyman/novel-word-count-obsidian/releases). Download `main.js`, `styles.css`, and `manifest.json` to your vault at `VaultFolder/.obsidian/plugins/novel-word-count/`.
