@@ -1,4 +1,4 @@
-## Novel word count plugin
+# Novel Word Count for Obsidian
 
 ![A screenshot showing slightly transparent word counts next to every document, folder, and vault in the File Explorer pane.](readme-screenshot-2.png)
 
