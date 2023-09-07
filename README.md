@@ -29,6 +29,7 @@ This plugin displays statistics of your choice next to every file, folder, and v
 | ---------------- | ----------- |
 | 3,250 words | 3,250w |
 | 30 pages | 30p |
+| 45% of 2,000 | 45% |
 | 23,800 characters | 23,800ch |
 | 12 notes | 12n |
 | 3 links | 3x |
