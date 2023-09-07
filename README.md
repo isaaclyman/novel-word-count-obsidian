@@ -92,6 +92,11 @@ Novel Word Count does not transmit any data over the Internet. All data is store
 
 Search "novel word count" in the community plugin browser, or use [this link](https://obsidian.md/plugins?id=novel-word-count).
 
+### Shout-outs
+
+- For an expanded version of Obsidian's built-in Word Count feature, which shows data for the current note in the Editor pane, check out [Better Word Count](https://obsidian.md/plugins?id=better-word-count) by [@lukeleppan](https://github.com/lukeleppan/).
+- For more features and improved graphic design around word goals, check out [Obsidian Writing Goals](https://github.com/lynchjames/obsidian-writing-goals) by [@lynchjames](https://github.com/lynchjames) (currently in prerelease).
+
 ## For Developers
 
 ### Development setup
