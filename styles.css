@@ -8,6 +8,7 @@
   max-width: calc(100% - 20px);
   min-width: 0;
   opacity: 0.75;
+  order: 1;
   overflow: hidden;
   padding: 0 4px;
   position: relative;
@@ -22,6 +23,7 @@
 }
 .novel-word-count--right .nav-files-container .nav-folder-title::after, .novel-word-count--right .nav-files-container .nav-file-title::after {
   flex: none;
+  order: 6;
   overflow: hidden;
 }
 .novel-word-count--below .nav-files-container .nav-folder-title, .novel-word-count--below .nav-files-container .nav-file-title {

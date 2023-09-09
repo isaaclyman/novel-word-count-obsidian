@@ -9,6 +9,7 @@
       max-width: calc(100% - 20px);
       min-width: 0;
       opacity: 0.75;
+      order: 1;
       overflow: hidden;
       padding: 0 4px;
       position: relative;
@@ -26,6 +27,7 @@
 
     .novel-word-count--right &::after {
       flex: none;
+      order: 6;
       overflow: hidden;
     }
 
