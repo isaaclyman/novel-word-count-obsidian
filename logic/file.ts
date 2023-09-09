@@ -267,12 +267,9 @@ export class FileHelper {
 		}
 
 		if (this.settings.excludeComments) {
-			const hasComments = meaningfulContent.includes("%%");
+			const hasComments = meaningfulContent.includes("%%") || meaningfulContent.includes("<!--");
 			if (hasComments) {
-				const splitByComments = meaningfulContent.split("%%");
-				meaningfulContent = splitByComments
-					.filter((_, ix) => ix % 2 == 0)
-					.join("");
+				meaningfulContent = meaningfulContent.replace(/(?:%%[\s\S]+?%%|<!--[\s\S]+?-->)/gmi, '');
 			}
 		}
 

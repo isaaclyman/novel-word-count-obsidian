@@ -695,7 +695,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Exclude comments")
-			.setDesc("Exclude %%comments%% from all counts. May affect performance.")
+			.setDesc("Exclude %%Obsidian%% and <!--HTML--> comments from counts. May affect performance on large vaults.")
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.excludeComments)
