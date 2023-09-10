@@ -29,7 +29,7 @@ export class EventHelper {
 				);
 				this.cancelToken(countToken);
 				await this.plugin.updateDisplayedCounts(file);
-				this.plugin.saveSettings();
+				await this.plugin.saveSettings();
 			})
 		);
 
@@ -47,7 +47,7 @@ export class EventHelper {
 				);
 				this.cancelToken(countToken);
 				await this.plugin.updateDisplayedCounts(file);
-				this.plugin.saveSettings();
+				await this.plugin.saveSettings();
 			})
 		);
 
@@ -62,7 +62,7 @@ export class EventHelper {
 					this.plugin.savedData.cachedCounts
 				);
 				await this.plugin.updateDisplayedCounts(file);
-				this.plugin.saveSettings();
+				await this.plugin.saveSettings();
 			})
 		);
 
@@ -89,7 +89,7 @@ export class EventHelper {
 				);
 				this.cancelToken(countToken);
 				await this.plugin.updateDisplayedCounts(file);
-				this.plugin.saveSettings();
+				await this.plugin.saveSettings();
 			})
 		);
 
@@ -130,7 +130,7 @@ export class EventHelper {
 			countToken.token
 		);
 		this.cancelToken(countToken);
-		this.plugin.saveSettings();
+		await this.plugin.saveSettings();
 	}
 
 	/*

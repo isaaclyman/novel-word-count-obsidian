@@ -81,7 +81,7 @@ export default class NovelWordCountPlugin extends Plugin {
 						(countTypes.indexOf(this.settings.countType) + 1) %
 							countTypes.length
 					];
-				this.saveSettings();
+				await this.saveSettings();
 				this.updateDisplayedCounts();
 			},
 		});
@@ -93,7 +93,7 @@ export default class NovelWordCountPlugin extends Plugin {
 				this.debugHelper.debug("[Toggle abbrevation] command triggered");
 				this.settings.abbreviateDescriptions =
 					!this.settings.abbreviateDescriptions;
-				this.saveSettings();
+				await this.saveSettings();
 				this.updateDisplayedCounts();
 			},
 		});
@@ -107,7 +107,7 @@ export default class NovelWordCountPlugin extends Plugin {
 						`[Set count type to ${countType}] command triggered`
 					);
 					this.settings.countType = countType;
-					this.saveSettings();
+					await this.saveSettings();
 					this.updateDisplayedCounts();
 				},
 			});
@@ -118,7 +118,7 @@ export default class NovelWordCountPlugin extends Plugin {
 	}
 
 	async onunload() {
-		this.saveSettings();
+		await this.saveSettings();
 	}
 
 	// SETTINGS
@@ -144,9 +144,9 @@ export default class NovelWordCountPlugin extends Plugin {
 		);
 	}
 
-	saveSettings = debounce(async () => {
+	async saveSettings() {
 		await this.saveData(this.savedData);
-	}, 1000);
+	}
 
 	// PUBLIC
 
@@ -158,6 +158,7 @@ export default class NovelWordCountPlugin extends Plugin {
 		}
 
 		try {
+			await this.getFileExplorerLeaf();
 			await this.updateDisplayedCounts();
 		} catch (err) {
 			this.debugHelper.debug("Error while updating displayed counts");
@@ -176,11 +177,18 @@ export default class NovelWordCountPlugin extends Plugin {
 		);
 
 		if (!Object.keys(this.savedData.cachedCounts).length) {
-			this.debugHelper.debug("No cached data found; refreshing all counts.");
-			await this.eventHelper.refreshAllCounts();
+			this.debugHelper.debug("No cached data found; skipping update.");
+			return;
 		}
 
-		const fileExplorerLeaf = await this.getFileExplorerLeaf();
+		let fileExplorerLeaf: WorkspaceLeaf;
+		try {
+			fileExplorerLeaf = await this.getFileExplorerLeaf();
+		} catch (err) {
+			this.debugHelper.debug("File explorer leaf not found; skipping update.");
+			return;
+		}
+		
 		this.setContainerClass(fileExplorerLeaf);
 		const fileItems: { [path: string]: FileItem } = (
 			fileExplorerLeaf.view as any

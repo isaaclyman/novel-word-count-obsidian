@@ -173,7 +173,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.countType)
 					.onChange(async (value: CountType) => {
 						this.plugin.settings.countType = value;
-						this.plugin.saveSettings();
+						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 
 						this.display();
@@ -192,7 +192,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.countType2)
 					.onChange(async (value: CountType) => {
 						this.plugin.settings.countType2 = value;
-						this.plugin.saveSettings();
+						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 
 						this.display();
@@ -211,7 +211,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.countType3)
 					.onChange(async (value: CountType) => {
 						this.plugin.settings.countType3 = value;
-						this.plugin.saveSettings();
+						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 
 						this.display();
@@ -226,7 +226,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.abbreviateDescriptions)
 					.onChange(async (value) => {
 						this.plugin.settings.abbreviateDescriptions = value;
-						this.plugin.saveSettings();
+						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 					})
 			);
@@ -244,7 +244,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.alignment)
 					.onChange(async (value: AlignmentType) => {
 						this.plugin.settings.alignment = value;
-						this.plugin.saveSettings();
+						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 					});
 			});
@@ -264,7 +264,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.showSameCountsOnFolders)
 					.onChange(async (value) => {
 						this.plugin.settings.showSameCountsOnFolders = value;
-						this.plugin.saveSettings();
+						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 
 						this.display();
@@ -283,7 +283,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.folderCountType)
 						.onChange(async (value: CountType) => {
 							this.plugin.settings.folderCountType = value;
-							this.plugin.saveSettings();
+							await this.plugin.saveSettings();
 							await this.plugin.updateDisplayedCounts();
 						});
 				});
@@ -299,7 +299,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.folderCountType2)
 						.onChange(async (value: CountType) => {
 							this.plugin.settings.folderCountType2 = value;
-							this.plugin.saveSettings();
+							await this.plugin.saveSettings();
 							await this.plugin.updateDisplayedCounts();
 						});
 				});
@@ -315,7 +315,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.folderCountType3)
 						.onChange(async (value: CountType) => {
 							this.plugin.settings.folderCountType3 = value;
-							this.plugin.saveSettings();
+							await this.plugin.saveSettings();
 							await this.plugin.updateDisplayedCounts();
 						});
 				});
@@ -339,7 +339,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.excludeComments)
 					.onChange(async (value) => {
 						this.plugin.settings.excludeComments = value;
-						this.plugin.saveSettings();
+						await this.plugin.saveSettings();
 						await this.plugin.initialize();
 					})
 			);
@@ -358,7 +358,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.wordCountType)
 					.onChange(async (value: WordCountType) => {
 						this.plugin.settings.wordCountType = value;
-						this.plugin.saveSettings();
+						await this.plugin.saveSettings();
 						await this.plugin.initialize();
 					});
 			});
@@ -373,7 +373,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.pageCountType)
 					.onChange(async (value: PageCountType) => {
 						this.plugin.settings.pageCountType = value;
-						this.plugin.saveSettings();
+						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 
 						this.display();
@@ -388,7 +388,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				txt.inputEl.style.borderColor = isValid ? null : "red";
 
 				this.plugin.settings.wordsPerPage = isValid ? Number(value) : 300;
-				this.plugin.saveSettings();
+				await this.plugin.saveSettings();
 				await this.plugin.initialize();
 			};
 			new Setting(containerEl)
@@ -412,7 +412,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.charsPerPageIncludesWhitespace)
 						.onChange(async (value) => {
 							this.plugin.settings.charsPerPageIncludesWhitespace = value;
-							this.plugin.saveSettings();
+							await this.plugin.saveSettings();
 							await this.plugin.initialize();
 
 							this.display();
@@ -429,7 +429,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				this.plugin.settings.charsPerPage = isValid
 					? Number(value)
 					: defaultCharsPerPage;
-				this.plugin.saveSettings();
+				await this.plugin.saveSettings();
 				await this.plugin.initialize();
 			};
 			new Setting(containerEl)
@@ -482,7 +482,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						this.plugin.settings.debugMode = value;
 						this.plugin.debugHelper.setDebugMode(value);
 						this.plugin.fileHelper.setDebugMode(value);
-						this.plugin.saveSettings();
+						await this.plugin.saveSettings();
 					})
 			);
 	}
