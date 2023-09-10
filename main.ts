@@ -1,11 +1,11 @@
 import { DebugHelper } from "logic/debug";
+import { EventHelper } from "logic/event";
 import { CountData, CountsByFile, FileHelper } from "logic/file";
 import { FileSizeHelper } from "logic/filesize";
 import {
 	AlignmentType,
 	alignmentTypes,
 	CountType,
-	countTypeDescriptions,
 	countTypeDisplayStrings,
 	countTypes,
 	DEFAULT_SETTINGS,
@@ -42,12 +42,19 @@ export default class NovelWordCountPlugin extends Plugin {
 		return this.savedData.settings;
 	}
 	fileHelper: FileHelper;
+	eventHelper: EventHelper;
 	debugHelper = new DebugHelper();
 	fileSizeHelper = new FileSizeHelper();
 
 	constructor(app: App, manifest: PluginManifest) {
 		super(app, manifest);
 		this.fileHelper = new FileHelper(this.app, this);
+		this.eventHelper = new EventHelper(
+			this,
+			app,
+			this.debugHelper,
+			this.fileHelper
+		);
 	}
 
 	// LIFECYCLE
@@ -80,7 +87,7 @@ export default class NovelWordCountPlugin extends Plugin {
 						(countTypes.indexOf(this.settings.countType) + 1) %
 							countTypes.length
 					];
-				await this.saveSettings();
+				this.saveSettings();
 				this.updateDisplayedCounts();
 			},
 		});
@@ -92,7 +99,7 @@ export default class NovelWordCountPlugin extends Plugin {
 				this.debugHelper.debug("[Toggle abbrevation] command triggered");
 				this.settings.abbreviateDescriptions =
 					!this.settings.abbreviateDescriptions;
-				await this.saveSettings();
+				this.saveSettings();
 				this.updateDisplayedCounts();
 			},
 		});
@@ -106,13 +113,13 @@ export default class NovelWordCountPlugin extends Plugin {
 						`[Set count type to ${countType}] command triggered`
 					);
 					this.settings.countType = countType;
-					await this.saveSettings();
+					this.saveSettings();
 					this.updateDisplayedCounts();
 				},
 			});
 		}
 
-		this.handleEvents();
+		this.eventHelper.handleEvents();
 		this.initialize();
 	}
 
@@ -143,9 +150,9 @@ export default class NovelWordCountPlugin extends Plugin {
 		);
 	}
 
-	async saveSettings() {
+	saveSettings = debounce(async () => {
 		await this.saveData(this.savedData);
-	}
+	}, 1000);
 
 	// PUBLIC
 
@@ -153,7 +160,7 @@ export default class NovelWordCountPlugin extends Plugin {
 		this.debugHelper.debug("initialize");
 
 		if (refreshAllCounts) {
-			await this.refreshAllCounts();
+			await this.eventHelper.refreshAllCounts();
 		}
 
 		try {
@@ -170,11 +177,13 @@ export default class NovelWordCountPlugin extends Plugin {
 	}
 
 	public async updateDisplayedCounts(file: TAbstractFile | null = null) {
-		const debugEnd = this.debugHelper.debugStart("updateDisplayedCounts");
+		const debugEnd = this.debugHelper.debugStart(
+			`updateDisplayedCounts [${file == null ? "ALL" : file.path}]`
+		);
 
 		if (!Object.keys(this.savedData.cachedCounts).length) {
 			this.debugHelper.debug("No cached data found; refreshing all counts.");
-			await this.refreshAllCounts();
+			await this.eventHelper.refreshAllCounts();
 		}
 
 		const fileExplorerLeaf = await this.getFileExplorerLeaf();
@@ -204,7 +213,7 @@ export default class NovelWordCountPlugin extends Plugin {
 				continue;
 			}
 
-			const counts = this.fileHelper.getCountDataForPath(
+			const counts = this.fileHelper.getCachedDataForPath(
 				this.savedData.cachedCounts,
 				path
 			);
@@ -220,7 +229,7 @@ export default class NovelWordCountPlugin extends Plugin {
 
 	// FUNCTIONALITY
 
-	private async getFileExplorerLeaf(): Promise<WorkspaceLeaf> {
+	public async getFileExplorerLeaf(): Promise<WorkspaceLeaf> {
 		return new Promise((resolve, reject) => {
 			let foundLeaf: WorkspaceLeaf | null = null;
 			this.app.workspace.iterateAllLeaves((leaf) => {
@@ -263,7 +272,7 @@ export default class NovelWordCountPlugin extends Plugin {
 						minimumFractionDigits: 1,
 						maximumFractionDigits: 2,
 				  });
-			return `${displayCount} ${noun}${displayCount == '1' ? "" : "s"}`;
+			return `${displayCount} ${noun}${displayCount == "1" ? "" : "s"}`;
 		};
 
 		switch (countType) {
@@ -293,7 +302,7 @@ export default class NovelWordCountPlugin extends Plugin {
 				const percent = Math.round(fraction * 100).toLocaleString(undefined);
 				return abbreviateDescriptions
 					? `${percent}%`
-					: `${percent}% of ${counts.wordGoal.toLocaleString(undefined)}`
+					: `${percent}% of ${counts.wordGoal.toLocaleString(undefined)}`;
 			case CountType.Note:
 				return abbreviateDescriptions
 					? `${counts.noteCount.toLocaleString()}n`
@@ -319,13 +328,19 @@ export default class NovelWordCountPlugin extends Plugin {
 					? `${counts.embedCount.toLocaleString()}em`
 					: getPluralizedCount("embed", counts.embedCount);
 			case CountType.Alias:
-				if (!counts.aliases || !Array.isArray(counts.aliases) || !counts.aliases.length) {
+				if (
+					!counts.aliases ||
+					!Array.isArray(counts.aliases) ||
+					!counts.aliases.length
+				) {
 					return null;
 				}
 
 				return abbreviateDescriptions
 					? `${counts.aliases[0]}`
-					: `alias: ${counts.aliases[0]}${counts.aliases.length > 1 ? ` +${counts.aliases.length - 1}` : ''}`
+					: `alias: ${counts.aliases[0]}${
+							counts.aliases.length > 1 ? ` +${counts.aliases.length - 1}` : ""
+					  }`;
 			case CountType.Created:
 				if (counts.createdDate === 0) {
 					return null;
@@ -373,113 +388,6 @@ export default class NovelWordCountPlugin extends Plugin {
 			)
 			.filter((display) => display !== null)
 			.join(" | ");
-	}
-
-	private async handleEvents(): Promise<void> {
-		this.registerEvent(
-			this.app.vault.on("modify", async (file) => {
-				this.debugHelper.debug(
-					"[modify] vault hook fired, recounting file",
-					file.path
-				);
-				await this.fileHelper.updateFileCounts(
-					file,
-					this.savedData.cachedCounts,
-					this.settings.wordCountType
-				);
-				await this.updateDisplayedCounts(file);
-				await this.saveSettings();
-			})
-		);
-
-		this.registerEvent(
-			this.app.metadataCache.on("changed", async (file) => {
-				this.debugHelper.debug(
-					"[changed] metadataCache hook fired, recounting file",
-					file.path
-				);
-				await this.fileHelper.updateFileCounts(
-					file,
-					this.savedData.cachedCounts,
-					this.settings.wordCountType
-				);
-				await this.updateDisplayedCounts(file);
-				await this.saveSettings();
-			})
-		);
-
-		const recalculateAll = async (hookName: string, file?: TAbstractFile) => {
-			if (file) {
-				this.debugHelper.debug(
-					`[${hookName}] vault hook fired by file`,
-					file.path,
-					"recounting all files"
-				);
-			} else {
-				this.debugHelper.debug(
-					`[${hookName}] hook fired`,
-					"recounting all files"
-				);
-			}
-			await this.refreshAllCounts();
-			await this.updateDisplayedCounts();
-		};
-
-		this.registerEvent(
-			this.app.vault.on(
-				"rename",
-				debounce(recalculateAll.bind(this, "rename"), 1000)
-			)
-		);
-
-		this.registerEvent(
-			this.app.vault.on(
-				"create",
-				debounce(recalculateAll.bind(this, "create"), 1000)
-			)
-		);
-
-		this.registerEvent(
-			this.app.vault.on(
-				"delete",
-				debounce(recalculateAll.bind(this, "delete"), 1000)
-			)
-		);
-
-		const reshowCountsIfNeeded = async (hookName: string) => {
-			this.debugHelper.debug(`[${hookName}] hook fired`);
-
-			const fileExplorerLeaf = await this.getFileExplorerLeaf();
-			if (this.isContainerTouched(fileExplorerLeaf)) {
-				this.debugHelper.debug(
-					"container already touched, skipping display update"
-				);
-				return;
-			}
-
-			this.debugHelper.debug("container is clean, updating display");
-			await this.updateDisplayedCounts();
-		};
-
-		this.registerEvent(
-			this.app.workspace.on(
-				"layout-change",
-				debounce(reshowCountsIfNeeded.bind(this, "layout-change"), 1000)
-			)
-		);
-	}
-
-	private isContainerTouched(leaf: WorkspaceLeaf): boolean {
-		const container = leaf.view.containerEl;
-		return container.className.includes("novel-word-count--");
-	}
-
-	private async refreshAllCounts() {
-		this.debugHelper.debug("refreshAllCounts");
-		this.savedData.cachedCounts = await this.fileHelper.getAllFileCounts(
-			this.settings.wordCountType
-		);
-		await this.saveSettings();
 	}
 
 	private setContainerClass(leaf: WorkspaceLeaf) {
@@ -537,7 +445,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.countType)
 					.onChange(async (value: CountType) => {
 						this.plugin.settings.countType = value;
-						await this.plugin.saveSettings();
+						this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 
 						this.display();
@@ -556,7 +464,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.countType2)
 					.onChange(async (value: CountType) => {
 						this.plugin.settings.countType2 = value;
-						await this.plugin.saveSettings();
+						this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 
 						this.display();
@@ -575,7 +483,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.countType3)
 					.onChange(async (value: CountType) => {
 						this.plugin.settings.countType3 = value;
-						await this.plugin.saveSettings();
+						this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 
 						this.display();
@@ -590,7 +498,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.abbreviateDescriptions)
 					.onChange(async (value) => {
 						this.plugin.settings.abbreviateDescriptions = value;
-						await this.plugin.saveSettings();
+						this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 					})
 			);
@@ -608,7 +516,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.alignment)
 					.onChange(async (value: AlignmentType) => {
 						this.plugin.settings.alignment = value;
-						await this.plugin.saveSettings();
+						this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 					});
 			});
@@ -628,7 +536,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.showSameCountsOnFolders)
 					.onChange(async (value) => {
 						this.plugin.settings.showSameCountsOnFolders = value;
-						await this.plugin.saveSettings();
+						this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 
 						this.display();
@@ -647,7 +555,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.folderCountType)
 						.onChange(async (value: CountType) => {
 							this.plugin.settings.folderCountType = value;
-							await this.plugin.saveSettings();
+							this.plugin.saveSettings();
 							await this.plugin.updateDisplayedCounts();
 						});
 				});
@@ -663,7 +571,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.folderCountType2)
 						.onChange(async (value: CountType) => {
 							this.plugin.settings.folderCountType2 = value;
-							await this.plugin.saveSettings();
+							this.plugin.saveSettings();
 							await this.plugin.updateDisplayedCounts();
 						});
 				});
@@ -679,7 +587,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.folderCountType3)
 						.onChange(async (value: CountType) => {
 							this.plugin.settings.folderCountType3 = value;
-							await this.plugin.saveSettings();
+							this.plugin.saveSettings();
 							await this.plugin.updateDisplayedCounts();
 						});
 				});
@@ -695,13 +603,15 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Exclude comments")
-			.setDesc("Exclude %%Obsidian%% and <!--HTML--> comments from counts. May affect performance on large vaults.")
+			.setDesc(
+				"Exclude %%Obsidian%% and <!--HTML--> comments from counts. May affect performance on large vaults."
+			)
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.excludeComments)
 					.onChange(async (value) => {
 						this.plugin.settings.excludeComments = value;
-						await this.plugin.saveSettings();
+						this.plugin.saveSettings();
 						await this.plugin.initialize();
 					})
 			);
@@ -720,7 +630,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.wordCountType)
 					.onChange(async (value: WordCountType) => {
 						this.plugin.settings.wordCountType = value;
-						await this.plugin.saveSettings();
+						this.plugin.saveSettings();
 						await this.plugin.initialize();
 					});
 			});
@@ -735,7 +645,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.pageCountType)
 					.onChange(async (value: PageCountType) => {
 						this.plugin.settings.pageCountType = value;
-						await this.plugin.saveSettings();
+						this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 
 						this.display();
@@ -750,7 +660,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 				txt.inputEl.style.borderColor = isValid ? null : "red";
 
 				this.plugin.settings.wordsPerPage = isValid ? Number(value) : 300;
-				await this.plugin.saveSettings();
+				this.plugin.saveSettings();
 				await this.plugin.initialize();
 			};
 			new Setting(containerEl)
@@ -774,7 +684,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.charsPerPageIncludesWhitespace)
 						.onChange(async (value) => {
 							this.plugin.settings.charsPerPageIncludesWhitespace = value;
-							await this.plugin.saveSettings();
+							this.plugin.saveSettings();
 							await this.plugin.initialize();
 
 							this.display();
@@ -791,7 +701,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 				this.plugin.settings.charsPerPage = isValid
 					? Number(value)
 					: defaultCharsPerPage;
-				await this.plugin.saveSettings();
+				this.plugin.saveSettings();
 				await this.plugin.initialize();
 			};
 			new Setting(containerEl)
@@ -844,7 +754,7 @@ class NovelWordCountSettingTab extends PluginSettingTab {
 						this.plugin.settings.debugMode = value;
 						this.plugin.debugHelper.setDebugMode(value);
 						this.plugin.fileHelper.setDebugMode(value);
-						await this.plugin.saveSettings();
+						this.plugin.saveSettings();
 					})
 			);
 	}

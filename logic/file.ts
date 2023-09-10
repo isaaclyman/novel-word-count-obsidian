@@ -1,4 +1,4 @@
-import NovelWordCountPlugin from "main";
+import type NovelWordCountPlugin from "main";
 import {
 	App,
 	CachedMetadata,
@@ -15,6 +15,7 @@ import {
 	PageCountType,
 	WordCountType,
 } from "./settings";
+import { CancellationToken } from "./cancellation";
 
 export interface CountData {
 	isDirectory: boolean;
@@ -49,7 +50,7 @@ export class FileHelper {
 	constructor(private app: App, private plugin: NovelWordCountPlugin) {}
 
 	public async getAllFileCounts(
-		wordCountType: WordCountType
+		cancellationToken: CancellationToken
 	): Promise<CountsByFile> {
 		const debugEnd = this.debugHelper.debugStart("getAllFileCounts");
 
@@ -57,22 +58,24 @@ export class FileHelper {
 		const counts: CountsByFile = {};
 
 		for (const file of files) {
+			if (cancellationToken.isCancelled) {
+				break;
+			}
+
 			const contents = await this.vault.cachedRead(file);
-			this.setCounts(counts, file, contents, wordCountType);
+			this.setCounts(counts, file, contents, this.settings.wordCountType);
 		}
 
 		debugEnd();
 		return counts;
 	}
 
-	public getCountDataForPath(counts: CountsByFile, path: string): CountData {
+	public getCachedDataForPath(counts: CountsByFile, path: string): CountData {
 		if (counts.hasOwnProperty(path)) {
 			return counts[path];
 		}
 
-		const childPaths = Object.keys(counts).filter(
-			(countPath) => path === "/" || countPath.startsWith(path + "/")
-		);
+		const childPaths = this.getChildPaths(counts, path);
 
 		const directoryDefault: CountData = {
 			isDirectory: true,
@@ -92,7 +95,7 @@ export class FileHelper {
 		};
 
 		return childPaths.reduce((total, childPath): CountData => {
-			const childCount = this.getCountDataForPath(counts, childPath);
+			const childCount = this.getCachedDataForPath(counts, childPath);
 			return {
 				isDirectory: true,
 				noteCount: total.noteCount + childCount.noteCount,
@@ -124,29 +127,41 @@ export class FileHelper {
 		this.debugHelper.setDebugMode(debug);
 	}
 
+	public removeFileCounts(
+		path: string,
+		counts: CountsByFile
+	): void {
+		this.removeCounts(counts, path);
+
+		for (const childPath of this.getChildPaths(counts, path)) {
+			this.removeCounts(counts, childPath);
+		}
+	}
+
 	public async updateFileCounts(
 		abstractFile: TAbstractFile,
 		counts: CountsByFile,
-		wordCountType: WordCountType
+		cancellationToken: CancellationToken
 	): Promise<void> {
 		if (abstractFile instanceof TFolder) {
-			this.debugHelper.debug("updateFileCounts called on instance of TFolder");
-			Object.assign(counts, this.getAllFileCounts(wordCountType));
+			for (const child of abstractFile.children) {
+				this.updateFileCounts(child, counts, cancellationToken);
+			}
 			return;
 		}
 
 		if (abstractFile instanceof TFile) {
 			const contents = await this.vault.cachedRead(abstractFile);
-			this.setCounts(counts, abstractFile, contents, wordCountType);
+			this.setCounts(counts, abstractFile, contents, this.settings.wordCountType);
 		}
 	}
 
-	private countEmbeds(metadata: CachedMetadata): number {
-		return metadata.embeds?.length ?? 0;
+	private countEmbeds(metadata?: CachedMetadata): number {
+		return metadata?.embeds?.length ?? 0;
 	}
 
-	private countLinks(metadata: CachedMetadata): number {
-		return metadata.links?.length ?? 0;
+	private countLinks(metadata?: CachedMetadata): number {
+		return metadata?.links?.length ?? 0;
 	}
 
 	private countNonWhitespaceCharacters(content: string): number {
@@ -168,6 +183,17 @@ export class FileHelper {
 			default:
 				return (content.match(/[^\s]+/g) || []).length;
 		}
+	}
+
+	private getChildPaths(counts: CountsByFile, path: string): string[] {
+		const childPaths = Object.keys(counts).filter(
+			(countPath) => path === "/" || countPath.startsWith(path + "/")
+		);
+		return childPaths;
+	}
+
+	private removeCounts(counts: CountsByFile, path: string): void {
+		delete counts[path];
 	}
 
 	private setCounts(
@@ -193,7 +219,7 @@ export class FileHelper {
 			sizeInBytes: file.stat.size,
 		};
 
-		const metadata = this.app.metadataCache.getFileCache(file);
+		const metadata = this.app.metadataCache.getFileCache(file) as CachedMetadata | null;
 		if (!this.shouldCountFile(file, metadata)) {
 			return;
 		}
@@ -236,12 +262,12 @@ export class FileHelper {
 			nonWhitespaceCharacterCount,
 			linkCount: this.countLinks(metadata),
 			embedCount: this.countEmbeds(metadata),
-			aliases: parseFrontMatterAliases(metadata.frontmatter),
+			aliases: parseFrontMatterAliases(metadata?.frontmatter),
 		} as CountData);
 	}
 
-	private getWordGoal(metadata: CachedMetadata): number | null {
-		const goal = metadata.frontmatter && metadata.frontmatter["word-goal"];
+	private getWordGoal(metadata?: CachedMetadata): number | null {
+		const goal = metadata && metadata.frontmatter && metadata.frontmatter["word-goal"];
 		if (!goal || isNaN(Number(goal))) {
 			return null;
 		}
@@ -251,11 +277,11 @@ export class FileHelper {
 
 	private getMeaningfulContent(
 		content: string,
-		metadata: CachedMetadata
+		metadata?: CachedMetadata
 	): string {
 		let meaningfulContent = content;
 
-		const hasFrontmatter = !!metadata.frontmatter;
+		const hasFrontmatter = !!metadata && !!metadata.frontmatter;
 		if (hasFrontmatter) {
 			const frontmatterPos =
 				(metadata as any).frontmatterPosition || metadata.frontmatter.position;
@@ -299,9 +325,13 @@ export class FileHelper {
 		"fountain"
 	]);
 
-	private shouldCountFile(file: TFile, metadata: CachedMetadata): boolean {
+	private shouldCountFile(file: TFile, metadata?: CachedMetadata): boolean {
 		if (!this.FileTypeAllowlist.has(file.extension.toLowerCase())) {
 			return false;
+		}
+
+		if (!metadata) {
+			return true;
 		}
 
 		if (
