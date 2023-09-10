@@ -17,7 +17,6 @@ import {
 	PluginManifest,
 	WorkspaceLeaf,
 	TAbstractFile,
-	debounce,
 } from "obsidian";
 
 interface NovelWordCountSavedData {
@@ -153,22 +152,25 @@ export default class NovelWordCountPlugin extends Plugin {
 	public async initialize(refreshAllCounts = true) {
 		this.debugHelper.debug("initialize");
 
-		if (refreshAllCounts) {
-			await this.eventHelper.refreshAllCounts();
-		}
-
-		try {
-			await this.getFileExplorerLeaf();
-			await this.updateDisplayedCounts();
-		} catch (err) {
-			this.debugHelper.debug("Error while updating displayed counts");
-			this.debugHelper.error(err);
-
-			// File Explorer pane may not be loaded yet
-			setTimeout(() => {
-				this.initialize(false);
-			}, 1000);
-		}
+		
+		this.app.workspace.onLayoutReady(async () => {
+			if (refreshAllCounts) {
+				await this.eventHelper.refreshAllCounts();
+			}
+			
+			try {
+				await this.getFileExplorerLeaf();
+				await this.updateDisplayedCounts();
+			} catch (err) {
+				this.debugHelper.debug("Error while updating displayed counts");
+				this.debugHelper.error(err);
+	
+				// File Explorer pane may not be loaded yet
+				setTimeout(() => {
+					this.initialize(false);
+				}, 1000);
+			}
+		});
 	}
 
 	public async updateDisplayedCounts(file: TAbstractFile | null = null) {

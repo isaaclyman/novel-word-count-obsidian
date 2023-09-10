@@ -33,23 +33,25 @@ export class EventHelper {
 			})
 		);
 
-		this.plugin.registerEvent(
-			this.app.vault.on("create", async (file) => {
-				this.debugHelper.debug(
-					"[create] vault hook fired, analyzing file",
-					file.path
-				);
-				const countToken = this.registerNewCountToken();
-				await this.fileHelper.updateFileCounts(
-					file,
-					this.plugin.savedData.cachedCounts,
-					countToken.token
-				);
-				this.cancelToken(countToken);
-				await this.plugin.updateDisplayedCounts(file);
-				await this.plugin.saveSettings();
-			})
-		);
+		this.app.workspace.onLayoutReady(() => {
+			this.plugin.registerEvent(
+				this.app.vault.on("create", async (file) => {
+					this.debugHelper.debug(
+						"[create] vault hook fired, analyzing file",
+						file.path
+					);
+					const countToken = this.registerNewCountToken();
+					await this.fileHelper.updateFileCounts(
+						file,
+						this.plugin.savedData.cachedCounts,
+						countToken.token
+					);
+					this.cancelToken(countToken);
+					await this.plugin.updateDisplayedCounts(file);
+					await this.plugin.saveSettings();
+				})
+			);
+		});
 
 		this.plugin.registerEvent(
 			this.app.vault.on("delete", async (file) => {
