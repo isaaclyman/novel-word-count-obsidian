@@ -152,19 +152,18 @@ export default class NovelWordCountPlugin extends Plugin {
 	public async initialize(refreshAllCounts = true) {
 		this.debugHelper.debug("initialize");
 
-		
 		this.app.workspace.onLayoutReady(async () => {
 			if (refreshAllCounts) {
 				await this.eventHelper.refreshAllCounts();
 			}
-			
+
 			try {
 				await this.getFileExplorerLeaf();
 				await this.updateDisplayedCounts();
 			} catch (err) {
 				this.debugHelper.debug("Error while updating displayed counts");
 				this.debugHelper.error(err);
-	
+
 				// File Explorer pane may not be loaded yet
 				setTimeout(() => {
 					this.initialize(false);
@@ -190,7 +189,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			this.debugHelper.debug("File explorer leaf not found; skipping update.");
 			return;
 		}
-		
+
 		this.setContainerClass(fileExplorerLeaf);
 		const fileItems: { [path: string]: FileItem } = (
 			fileExplorerLeaf.view as any
@@ -406,4 +405,3 @@ export default class NovelWordCountPlugin extends Plugin {
 		container.toggleClass(prefix + this.settings.alignment, true);
 	}
 }
-
