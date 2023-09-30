@@ -216,6 +216,10 @@ export default class NovelWordCountPlugin extends Plugin {
 				continue;
 			}
 
+			if (!this.fileHelper.shouldShowCountOnPath(path)) {
+				continue;
+			}
+
 			const counts = this.fileHelper.getCachedDataForPath(
 				this.savedData.cachedCounts,
 				path

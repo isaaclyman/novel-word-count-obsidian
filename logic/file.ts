@@ -325,6 +325,20 @@ export class FileHelper {
 		"fountain"
 	]);
 
+	public shouldShowCountOnPath(path: string): boolean {
+		const abstractFile = this.vault.getAbstractFileByPath(path);
+
+		if (abstractFile instanceof TFolder) {
+			return this.settings.showSameCountsOnFolders;
+		}
+		
+		if (abstractFile instanceof TFile) {
+			return this.FileTypeAllowlist.has(abstractFile.extension.toLowerCase());
+		}
+
+		return false;
+	}
+
 	private shouldCountFile(file: TFile, metadata?: CachedMetadata): boolean {
 		if (!this.FileTypeAllowlist.has(file.extension.toLowerCase())) {
 			return false;
