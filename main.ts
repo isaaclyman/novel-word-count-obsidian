@@ -255,12 +255,21 @@ export default class NovelWordCountPlugin extends Plugin {
 		});
 	}
 
+	private readonly unconditionalCountTypes: CountType[] = [
+		CountType.Created,
+		CountType.FileSize,
+		CountType.Modified,
+	];
 	private getDataTypeLabel(
 		counts: CountData,
 		countType: CountType,
 		abbreviateDescriptions: boolean
 	): string | null {
 		if (!counts || typeof counts.wordCount !== "number") {
+			return null;
+		}
+
+		if (!counts.isCountable && !this.unconditionalCountTypes.includes(countType)) {
 			return null;
 		}
 

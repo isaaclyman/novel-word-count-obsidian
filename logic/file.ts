@@ -18,6 +18,7 @@ import {
 import { CancellationToken } from "./cancellation";
 
 export interface CountData {
+	isCountable: boolean;
 	isDirectory: boolean;
 	noteCount: number;
 	pageCount: number;
@@ -62,8 +63,7 @@ export class FileHelper {
 				break;
 			}
 
-			const contents = await this.vault.cachedRead(file);
-			this.setCounts(counts, file, contents, this.settings.wordCountType);
+			this.setCounts(counts, file, this.settings.wordCountType);
 		}
 
 		debugEnd();
@@ -78,6 +78,7 @@ export class FileHelper {
 		const childPaths = this.getChildPaths(counts, path);
 
 		const directoryDefault: CountData = {
+			isCountable: false,
 			isDirectory: true,
 			noteCount: 0,
 			wordCount: 0,
@@ -97,6 +98,7 @@ export class FileHelper {
 		return childPaths.reduce((total, childPath): CountData => {
 			const childCount = this.getCachedDataForPath(counts, childPath);
 			return {
+				isCountable: total.isCountable || childCount.isCountable,
 				isDirectory: true,
 				noteCount: total.noteCount + childCount.noteCount,
 				linkCount: total.linkCount + childCount.linkCount,
@@ -151,8 +153,7 @@ export class FileHelper {
 		}
 
 		if (abstractFile instanceof TFile) {
-			const contents = await this.vault.cachedRead(abstractFile);
-			this.setCounts(counts, abstractFile, contents, this.settings.wordCountType);
+			this.setCounts(counts, abstractFile, this.settings.wordCountType);
 		}
 	}
 
@@ -196,13 +197,16 @@ export class FileHelper {
 		delete counts[path];
 	}
 
-	private setCounts(
+	private async setCounts(
 		counts: CountsByFile,
 		file: TFile,
-		content: string,
 		wordCountType: WordCountType
-	): void {
+	): Promise<void> {
+		const metadata = this.app.metadataCache.getFileCache(file) as CachedMetadata | null;
+		const shouldCountFile = this.shouldCountFile(file, metadata);
+
 		counts[file.path] = {
+			isCountable: shouldCountFile,
 			isDirectory: false,
 			noteCount: 1,
 			wordCount: 0,
@@ -219,11 +223,11 @@ export class FileHelper {
 			sizeInBytes: file.stat.size,
 		};
 
-		const metadata = this.app.metadataCache.getFileCache(file) as CachedMetadata | null;
-		if (!this.shouldCountFile(file, metadata)) {
+		if (!shouldCountFile) {
 			return;
 		}
 
+		const content = await this.vault.cachedRead(file);
 		const meaningfulContent = this.getMeaningfulContent(content, metadata);
 		const wordCount = this.countWords(meaningfulContent, wordCountType);
 		const wordGoal: number = this.getWordGoal(metadata);
