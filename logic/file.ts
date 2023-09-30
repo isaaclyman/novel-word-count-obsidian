@@ -62,8 +62,7 @@ export class FileHelper {
 				break;
 			}
 
-			const contents = await this.vault.cachedRead(file);
-			this.setCounts(counts, file, contents, this.settings.wordCountType);
+			await this.setCounts(counts, file, this.settings.wordCountType);
 		}
 
 		debugEnd();
@@ -151,8 +150,7 @@ export class FileHelper {
 		}
 
 		if (abstractFile instanceof TFile) {
-			const contents = await this.vault.cachedRead(abstractFile);
-			this.setCounts(counts, abstractFile, contents, this.settings.wordCountType);
+			await this.setCounts(counts, abstractFile, this.settings.wordCountType);
 		}
 	}
 
@@ -196,12 +194,15 @@ export class FileHelper {
 		delete counts[path];
 	}
 
-	private setCounts(
+	private async setCounts(
 		counts: CountsByFile,
 		file: TFile,
-		content: string,
 		wordCountType: WordCountType
-	): void {
+	): Promise<void> {
+		if (!this.shouldCountFile(file)) {
+			return;
+		}
+
 		counts[file.path] = {
 			isDirectory: false,
 			noteCount: 1,
@@ -220,10 +221,11 @@ export class FileHelper {
 		};
 
 		const metadata = this.app.metadataCache.getFileCache(file) as CachedMetadata | null;
-		if (!this.shouldCountFile(file, metadata)) {
+		if (!this.shouldCountMetadata(metadata)) {
 			return;
 		}
 
+		const content = await this.vault.cachedRead(file);
 		const meaningfulContent = this.getMeaningfulContent(content, metadata);
 		const wordCount = this.countWords(meaningfulContent, wordCountType);
 		const wordGoal: number = this.getWordGoal(metadata);
@@ -325,11 +327,11 @@ export class FileHelper {
 		"fountain"
 	]);
 
-	private shouldCountFile(file: TFile, metadata?: CachedMetadata): boolean {
-		if (!this.FileTypeAllowlist.has(file.extension.toLowerCase())) {
-			return false;
-		}
+	private shouldCountFile(file: TFile): boolean {
+		return this.FileTypeAllowlist.has(file.extension.toLowerCase());
+	}
 
+	private shouldCountMetadata(metadata?: CachedMetadata): boolean {
 		if (!metadata) {
 			return true;
 		}
