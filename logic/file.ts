@@ -208,7 +208,7 @@ export class FileHelper {
 		counts[file.path] = {
 			isCountable: shouldCountFile,
 			isDirectory: false,
-			noteCount: 1,
+			noteCount: 0,
 			wordCount: 0,
 			wordCountTowardGoal: 0,
 			wordGoal: 0,
@@ -258,6 +258,7 @@ export class FileHelper {
 		}
 
 		Object.assign(counts[file.path], {
+			noteCount: 1,
 			wordCount,
 			wordCountTowardGoal: wordGoal !== null ? wordCount : 0,
 			wordGoal,
