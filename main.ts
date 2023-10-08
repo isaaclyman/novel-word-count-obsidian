@@ -4,6 +4,7 @@ import { CountData, CountsByFile, FileHelper } from "logic/file";
 import { FileSizeHelper } from "logic/filesize";
 import {
 	alignmentTypes,
+	CharacterCountType,
 	CountType,
 	countTypeDisplayStrings,
 	countTypes,
@@ -269,7 +270,10 @@ export default class NovelWordCountPlugin extends Plugin {
 			return null;
 		}
 
-		if (!counts.isCountable && !this.unconditionalCountTypes.includes(countType)) {
+		if (
+			!counts.isCountable &&
+			!this.unconditionalCountTypes.includes(countType)
+		) {
 			return null;
 		}
 
@@ -320,9 +324,15 @@ export default class NovelWordCountPlugin extends Plugin {
 					? `${counts.noteCount.toLocaleString()}n`
 					: getPluralizedCount("note", counts.noteCount);
 			case CountType.Character:
+				const characterCount =
+					this.settings.characterCountType ===
+					CharacterCountType.ExcludeWhitespace
+						? counts.nonWhitespaceCharacterCount
+						: counts.characterCount;
+
 				return abbreviateDescriptions
-					? `${counts.characterCount.toLocaleString()}ch`
-					: getPluralizedCount("character", counts.characterCount);
+					? `${characterCount.toLocaleString()}ch`
+					: getPluralizedCount("character", characterCount);
 			case CountType.Link:
 				if (counts.linkCount === 0) {
 					return null;

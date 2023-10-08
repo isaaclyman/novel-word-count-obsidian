@@ -1,5 +1,11 @@
 import type NovelWordCountPlugin from "main";
-import { App, PluginSettingTab, Setting, TextComponent, debounce } from "obsidian";
+import {
+	App,
+	PluginSettingTab,
+	Setting,
+	TextComponent,
+	debounce,
+} from "obsidian";
 
 export enum CountType {
 	None = "none",
@@ -37,17 +43,22 @@ export const countTypeDescriptions: { [countType: string]: string } = {
 	[CountType.None]: "Hidden.",
 	[CountType.Word]: "Total words.",
 	[CountType.Page]: "Total pages, rounded up.",
-	[CountType.PageDecimal]: "Total pages, precise to 2 digits after the decimal.",
-	[CountType.PercentGoal]: "Set a word goal by adding the 'word-goal' property to a note.",
+	[CountType.PageDecimal]:
+		"Total pages, precise to 2 digits after the decimal.",
+	[CountType.PercentGoal]:
+		"Set a word goal by adding the 'word-goal' property to a note.",
 	[CountType.Note]: "Total notes.",
-	[CountType.Character]: "Total characters (letters, symbols, numbers, and spaces).",
+	[CountType.Character]:
+		"Total characters (letters, symbols, numbers, and spaces).",
 	[CountType.Link]: "Total links to other notes.",
 	[CountType.Embed]: "Total embedded images, files, and notes.",
 	[CountType.Alias]: "The first alias property of each note.",
-	[CountType.Created]: "Creation date. (On folders: earliest creation date of any note.)",
-	[CountType.Modified]: "Date of last edit. (On folders: latest edit date of any note.)",
+	[CountType.Created]:
+		"Creation date. (On folders: earliest creation date of any note.)",
+	[CountType.Modified]:
+		"Date of last edit. (On folders: latest edit date of any note.)",
 	[CountType.FileSize]: "Total size on hard drive.",
-}
+};
 
 export function getDescription(countType: CountType): string {
 	return `[${countTypeDisplayStrings[countType]}] ${countTypeDescriptions[countType]}`;
@@ -81,6 +92,11 @@ export const alignmentTypes = [
 	AlignmentType.Below,
 ];
 
+export enum CharacterCountType {
+	StringLength = "AllCharacters",
+	ExcludeWhitespace = "ExcludeWhitespace",
+}
+
 export enum WordCountType {
 	SpaceDelimited = "SpaceDelimited",
 	CJK = "CJK",
@@ -106,6 +122,7 @@ export interface NovelWordCountSettings {
 	wordsPerPage: number;
 	charsPerPage: number;
 	charsPerPageIncludesWhitespace: boolean;
+	characterCountType: CharacterCountType;
 	wordCountType: WordCountType;
 	pageCountType: PageCountType;
 	excludeComments: boolean;
@@ -125,11 +142,11 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	wordsPerPage: 300,
 	charsPerPage: 1500,
 	charsPerPageIncludesWhitespace: false,
+	characterCountType: CharacterCountType.StringLength,
 	wordCountType: WordCountType.SpaceDelimited,
 	pageCountType: PageCountType.ByWords,
 	excludeComments: false,
 };
-
 
 export class NovelWordCountSettingTab extends PluginSettingTab {
 	plugin: NovelWordCountPlugin;
@@ -343,6 +360,21 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						await this.plugin.initialize();
 					})
 			);
+
+		new Setting(containerEl)
+			.setName("Character count method")
+			.setDesc("For language compatibility")
+			.addDropdown((drop) => {
+				drop
+					.addOption(CharacterCountType.StringLength, "All characters")
+					.addOption(CharacterCountType.ExcludeWhitespace, "Exclude whitespace")
+					.setValue(this.plugin.settings.characterCountType)
+					.onChange(async (value: CharacterCountType) => {
+						this.plugin.settings.characterCountType = value;
+						await this.plugin.saveSettings();
+						await this.plugin.initialize();
+					});
+			});
 
 		new Setting(containerEl)
 			.setName("Word count method")

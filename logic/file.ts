@@ -113,13 +113,11 @@ export class FileHelper {
 				nonWhitespaceCharacterCount:
 					total.nonWhitespaceCharacterCount +
 					childCount.nonWhitespaceCharacterCount,
-				createdDate: total.createdDate === 0
-					? childCount.createdDate
-					: Math.min(total.createdDate, childCount.createdDate),
-				modifiedDate: Math.max(
-					total.modifiedDate,
-					childCount.modifiedDate
-				),
+				createdDate:
+					total.createdDate === 0
+						? childCount.createdDate
+						: Math.min(total.createdDate, childCount.createdDate),
+				modifiedDate: Math.max(total.modifiedDate, childCount.modifiedDate),
 				sizeInBytes: total.sizeInBytes + childCount.sizeInBytes,
 			};
 		}, directoryDefault);
@@ -129,10 +127,7 @@ export class FileHelper {
 		this.debugHelper.setDebugMode(debug);
 	}
 
-	public removeFileCounts(
-		path: string,
-		counts: CountsByFile
-	): void {
+	public removeFileCounts(path: string, counts: CountsByFile): void {
 		this.removeCounts(counts, path);
 
 		for (const childPath of this.getChildPaths(counts, path)) {
@@ -202,7 +197,9 @@ export class FileHelper {
 		file: TFile,
 		wordCountType: WordCountType
 	): Promise<void> {
-		const metadata = this.app.metadataCache.getFileCache(file) as CachedMetadata | null;
+		const metadata = this.app.metadataCache.getFileCache(
+			file
+		) as CachedMetadata | null;
 		const shouldCountFile = this.shouldCountFile(file, metadata);
 
 		counts[file.path] = {
@@ -272,7 +269,8 @@ export class FileHelper {
 	}
 
 	private getWordGoal(metadata?: CachedMetadata): number | null {
-		const goal = metadata && metadata.frontmatter && metadata.frontmatter["word-goal"];
+		const goal =
+			metadata && metadata.frontmatter && metadata.frontmatter["word-goal"];
 		if (!goal || isNaN(Number(goal))) {
 			return null;
 		}
@@ -298,9 +296,13 @@ export class FileHelper {
 		}
 
 		if (this.settings.excludeComments) {
-			const hasComments = meaningfulContent.includes("%%") || meaningfulContent.includes("<!--");
+			const hasComments =
+				meaningfulContent.includes("%%") || meaningfulContent.includes("<!--");
 			if (hasComments) {
-				meaningfulContent = meaningfulContent.replace(/(?:%%[\s\S]+?%%|<!--[\s\S]+?-->)/gmi, '');
+				meaningfulContent = meaningfulContent.replace(
+					/(?:%%[\s\S]+?%%|<!--[\s\S]+?-->)/gim,
+					""
+				);
 			}
 		}
 
@@ -327,7 +329,7 @@ export class FileHelper {
 		"qmd",
 		"rmd",
 		// MD for screenwriters
-		"fountain"
+		"fountain",
 	]);
 
 	private shouldCountFile(file: TFile, metadata?: CachedMetadata): boolean {
