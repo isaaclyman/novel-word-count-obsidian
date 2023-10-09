@@ -27,6 +27,7 @@ export interface CountData {
 	wordGoal: number | null;
 	characterCount: number;
 	nonWhitespaceCharacterCount: number;
+	readingTimeInMinutes: number;
 	linkCount: number;
 	embedCount: number;
 	aliases: string[] | null;
@@ -38,6 +39,11 @@ export interface CountData {
 export type CountsByFile = {
 	[path: string]: CountData;
 };
+
+interface CountWordsResult {
+	wordCount: number;
+	countType: WordCountType;
+}
 
 export class FileHelper {
 	private debugHelper = new DebugHelper();
@@ -87,6 +93,7 @@ export class FileHelper {
 			pageCount: 0,
 			characterCount: 0,
 			nonWhitespaceCharacterCount: 0,
+			readingTimeInMinutes: 0,
 			linkCount: 0,
 			embedCount: 0,
 			aliases: null,
@@ -113,6 +120,8 @@ export class FileHelper {
 				nonWhitespaceCharacterCount:
 					total.nonWhitespaceCharacterCount +
 					childCount.nonWhitespaceCharacterCount,
+				readingTimeInMinutes:
+					total.readingTimeInMinutes + childCount.readingTimeInMinutes,
 				createdDate:
 					total.createdDate === 0
 						? childCount.createdDate
@@ -167,17 +176,33 @@ export class FileHelper {
 	private cjkRegex =
 		/\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}|[0-9]+/gu;
 
-	private countWords(content: string, wordCountType: WordCountType): number {
+	private countWords(
+		content: string,
+		wordCountType: WordCountType
+	): CountWordsResult {
 		switch (wordCountType) {
 			case WordCountType.CJK:
-				return (content.match(this.cjkRegex) || []).length;
+				return {
+					wordCount: (content.match(this.cjkRegex) || []).length,
+					countType: WordCountType.CJK,
+				};
 			case WordCountType.AutoDetect:
 				const cjkLength = (content.match(this.cjkRegex) || []).length;
 				const spaceDelimitedLength = (content.match(/[^\s]+/g) || []).length;
-				return Math.max(cjkLength, spaceDelimitedLength);
+
+				return {
+					wordCount: Math.max(cjkLength, spaceDelimitedLength),
+					countType:
+						cjkLength > spaceDelimitedLength
+							? WordCountType.CJK
+							: WordCountType.SpaceDelimited,
+				};
 			case WordCountType.SpaceDelimited:
 			default:
-				return (content.match(/[^\s]+/g) || []).length;
+				return {
+					wordCount: (content.match(/[^\s]+/g) || []).length,
+					countType: WordCountType.SpaceDelimited,
+				};
 		}
 	}
 
@@ -212,6 +237,7 @@ export class FileHelper {
 			pageCount: 0,
 			characterCount: 0,
 			nonWhitespaceCharacterCount: 0,
+			readingTimeInMinutes: 0,
 			linkCount: 0,
 			embedCount: 0,
 			aliases: [],
@@ -226,11 +252,18 @@ export class FileHelper {
 
 		const content = await this.vault.cachedRead(file);
 		const meaningfulContent = this.getMeaningfulContent(content, metadata);
-		const wordCount = this.countWords(meaningfulContent, wordCountType);
+		const wordCountResult = this.countWords(meaningfulContent, wordCountType);
+		const wordCount = wordCountResult.wordCount;
 		const wordGoal: number = this.getWordGoal(metadata);
 		const characterCount = meaningfulContent.length;
 		const nonWhitespaceCharacterCount =
 			this.countNonWhitespaceCharacters(meaningfulContent);
+
+		const readingTimeFactor =
+			wordCountResult.countType === WordCountType.CJK
+				? this.settings.charsPerMinute
+				: this.settings.wordsPerMinute;
+		const readingTimeInMinutes = wordCount / readingTimeFactor;
 
 		let pageCount = 0;
 		if (this.settings.pageCountType === PageCountType.ByWords) {
@@ -262,6 +295,7 @@ export class FileHelper {
 			pageCount,
 			characterCount,
 			nonWhitespaceCharacterCount,
+			readingTimeInMinutes,
 			linkCount: this.countLinks(metadata),
 			embedCount: this.countEmbeds(metadata),
 			aliases: parseFrontMatterAliases(metadata?.frontmatter),

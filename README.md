@@ -13,8 +13,9 @@ This plugin displays statistics of your choice next to every file, folder, and v
 | **Word count** | Total words. | By default, a "word" is any sequence of non-whitespace characters. To change this, see Advanced > Word Count Method. |
 | **Page count** | Total pages, rounded up. | By default, a page is 300 words. To change this, see Advanced > Page Count Method. |
 | **Page count (decimal)** | Total pages, precise to 2 digits after the decimal. | Any settings that would apply to Page Count also apply to Page Count (decimal). |
+| **Reading Time** | Estimated time to read each note. | By default, this is calculated at 265 words per minute (European languages) or 500 characters per minute (CJK). To change this, see Advanced > Words per minute/Characters per minute. |
 | **% of Word Goal** | Percent of word goal for each note. | See [*Setting goals*](#setting-goals) below. |
-| **Character count** | Total characters (letters, symbols, numbers, and spaces). | |
+| **Character count** | Total characters (letters, symbols, and numbers). | By default, whitespace characters are included. To change this, see Advanced > Character Count Method. |
 | **Note count** | Total notes. | Many people prefer to show this information on folders only; to do so, untoggle "Show same data on folders" and configure it as a data type there. |
 | **Link count** | Total [links](https://help.obsidian.md/Getting+started/Link+notes) to other notes. | Only internal links are counted; Obsidian doesn't count links to web pages. |
 | **Embed count** | Total [embedded](https://help.obsidian.md/Linking+notes+and+files/Embedding+files) images, files, and notes. | |
@@ -32,6 +33,9 @@ This plugin displays statistics of your choice next to every file, folder, and v
 | 45% of 2,000 | 45% |
 | 23,800 characters | 23,800ch |
 | 12 notes | 12n |
+| 25s read | 25s |
+| 5m read | 5m |
+| 2h5m read | 2h5m |
 | 3 links | 3x |
 | 5 embeds | 5em |
 | alias: july +3 | july |
@@ -45,9 +49,13 @@ This plugin displays statistics of your choice next to every file, folder, and v
 
 **Exclude comments.** Excludes any content surrounded by `%%` [comment marks](https://help.obsidian.md/Editing+and+formatting/Basic+formatting+syntax#Comments) `%%` or `<!--` HTML comment tags `-->` from character count, word count, and page count. This may slow down performance on very large notes or vaults.
 
+**Character count method.** Choose whether to count all characters or exclude whitespace (spaces and line breaks).
+
 **Word count method.** Choose whether to count words using a space-delimited strategy (for English and other European languages) or by Han, Kana, and Hangul characters (for Chinese, Japanese, and Korean). The Auto-detect setting will count each file both ways, then return the larger result.
 
 **Page count method.** Choose whether pages are counted by number of words (default: 300) or number of characters (default: 1500). You can change the number of words/characters used.
+
+**Words per minute/Characters per minute.** Sets the number of words or characters per minute, depending on the selected _Word count method._
 
 **Words per page/Characters per page.** Sets the number of words or characters per page, depending on the selected _Page count method._
 

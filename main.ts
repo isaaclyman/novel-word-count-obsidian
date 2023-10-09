@@ -2,6 +2,7 @@ import { DebugHelper } from "logic/debug";
 import { EventHelper } from "logic/event";
 import { CountData, CountsByFile, FileHelper } from "logic/file";
 import { FileSizeHelper } from "logic/filesize";
+import { ReadTimeHelper } from "logic/readtime";
 import {
 	alignmentTypes,
 	CharacterCountType,
@@ -39,6 +40,7 @@ export default class NovelWordCountPlugin extends Plugin {
 	eventHelper: EventHelper;
 	debugHelper = new DebugHelper();
 	fileSizeHelper = new FileSizeHelper();
+	readTimeHelper = new ReadTimeHelper();
 
 	constructor(app: App, manifest: PluginManifest) {
 		super(app, manifest);
@@ -333,6 +335,11 @@ export default class NovelWordCountPlugin extends Plugin {
 				return abbreviateDescriptions
 					? `${characterCount.toLocaleString()}ch`
 					: getPluralizedCount("character", characterCount);
+			case CountType.ReadTime:
+				return this.readTimeHelper.formatReadTime(
+					counts.readingTimeInMinutes,
+					abbreviateDescriptions
+				);
 			case CountType.Link:
 				if (counts.linkCount === 0) {
 					return null;
