@@ -5,23 +5,23 @@ interface FormatThreshold {
 }
 
 const formatThresholds: FormatThreshold[] = [{
-  suffix: 'b',
+  suffix: 'B',
   suffixLong: ' B',
   divisor: 1,
 },{
-  suffix: 'kb',
-  suffixLong: ' KB',
+  suffix: 'kB',
+  suffixLong: ' kB',
   divisor: 1_000,
 },{
-  suffix: 'mb',
+  suffix: 'MB',
   suffixLong: ' MB',
   divisor: 1_000_000,
 },{
-  suffix: 'gb',
+  suffix: 'GB',
   suffixLong: ' GB',
   divisor: 1_000_000_000,
 },{
-  suffix: 'tb',
+  suffix: 'TB',
   suffixLong: ' TB',
   divisor: 1_000_000_000_000,
 }]
