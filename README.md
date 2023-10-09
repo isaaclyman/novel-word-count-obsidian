@@ -55,7 +55,7 @@ This plugin displays statistics of your choice next to every file, folder, and v
 
 **Page count method.** Choose whether pages are counted by number of words (default: 300) or number of characters (default: 1500). You can change the number of words/characters used.
 
-**Words per minute/Characters per minute.** Sets the number of words or characters per minute, depending on the selected _Word count method._
+**Words per minute/Characters per minute.** Sets the number of words (default: 265) or characters (default: 500) per minute, depending on the selected _Word count method._
 
 **Words per page/Characters per page.** Sets the number of words or characters per page, depending on the selected _Page count method._
 
