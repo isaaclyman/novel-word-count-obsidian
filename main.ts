@@ -223,6 +223,7 @@ export default class NovelWordCountPlugin extends Plugin {
 				this.savedData.cachedCounts,
 				path
 			);
+
 			const item = fileItems[path];
 			(item.titleEl ?? item.selfEl).setAttribute(
 				"data-novel-word-count-plugin",

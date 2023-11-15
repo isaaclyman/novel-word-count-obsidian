@@ -151,13 +151,13 @@ export class FileHelper {
 	): Promise<void> {
 		if (abstractFile instanceof TFolder) {
 			for (const child of abstractFile.children) {
-				this.updateFileCounts(child, counts, cancellationToken);
+				await this.updateFileCounts(child, counts, cancellationToken);
 			}
 			return;
 		}
 
 		if (abstractFile instanceof TFile) {
-			this.setCounts(counts, abstractFile, this.settings.wordCountType);
+			await this.setCounts(counts, abstractFile, this.settings.wordCountType);
 		}
 	}
 
