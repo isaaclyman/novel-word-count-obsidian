@@ -1,14 +1,12 @@
 import { DebugHelper } from "logic/debug";
 import { EventHelper } from "logic/event";
-import { CountData, CountsByFile, FileHelper } from "logic/file";
-import { FileSizeHelper } from "logic/filesize";
-import { ReadTimeHelper } from "logic/readtime";
+import { CountsByFile, FileHelper } from "logic/file";
+import { NodeLabelHelper } from "logic/node_label";
 import {
-	alignmentTypes,
-	CharacterCountType,
+	ALIGNMENT_TYPES,
 	CountType,
-	countTypeDisplayStrings,
-	countTypes,
+	COUNT_TYPE_DISPLAY_STRINGS,
+	COUNT_TYPES,
 	DEFAULT_SETTINGS,
 	NovelWordCountSettings,
 	NovelWordCountSettingTab,
@@ -38,9 +36,8 @@ export default class NovelWordCountPlugin extends Plugin {
 	}
 	fileHelper: FileHelper;
 	eventHelper: EventHelper;
+	nodeLabelHelper: NodeLabelHelper;
 	debugHelper = new DebugHelper();
-	fileSizeHelper = new FileSizeHelper();
-	readTimeHelper = new ReadTimeHelper();
 
 	constructor(app: App, manifest: PluginManifest) {
 		super(app, manifest);
@@ -51,6 +48,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			this.debugHelper,
 			this.fileHelper
 		);
+		this.nodeLabelHelper = new NodeLabelHelper(this);
 	}
 
 	// LIFECYCLE
@@ -79,9 +77,9 @@ export default class NovelWordCountPlugin extends Plugin {
 			callback: async () => {
 				this.debugHelper.debug("[Cycle next data type] command triggered");
 				this.settings.countType =
-					countTypes[
-						(countTypes.indexOf(this.settings.countType) + 1) %
-							countTypes.length
+					COUNT_TYPES[
+						(COUNT_TYPES.indexOf(this.settings.countType) + 1) %
+							COUNT_TYPES.length
 					];
 				await this.saveSettings();
 				this.updateDisplayedCounts();
@@ -102,10 +100,10 @@ export default class NovelWordCountPlugin extends Plugin {
 			},
 		});
 
-		for (const countType of countTypes) {
+		for (const countType of COUNT_TYPES) {
 			this.addCommand({
 				id: `set-count-type-${countType}`,
-				name: `Show ${countTypeDisplayStrings[countType]} (1st position)`,
+				name: `Show ${COUNT_TYPE_DISPLAY_STRINGS[countType]} (1st position)`,
 				callback: async () => {
 					this.debugHelper.debug(
 						`[Set count type to ${countType}] command triggered`
@@ -134,7 +132,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			loaded &&
 			loaded.settings &&
 			loaded.settings.countType &&
-			!countTypes.includes(loaded.settings.countType)
+			!COUNT_TYPES.includes(loaded.settings.countType)
 		) {
 			loaded.settings.countType = CountType.Word;
 		}
@@ -229,7 +227,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			const item = fileItems[path];
 			(item.titleEl ?? item.selfEl).setAttribute(
 				"data-novel-word-count-plugin",
-				this.getNodeLabel(counts)
+				this.nodeLabelHelper.getNodeLabel(counts)
 			);
 		}
 
@@ -261,177 +259,13 @@ export default class NovelWordCountPlugin extends Plugin {
 		});
 	}
 
-	private readonly unconditionalCountTypes: CountType[] = [
-		CountType.Created,
-		CountType.FileSize,
-		CountType.Modified,
-	];
-	private getDataTypeLabel(
-		counts: CountData,
-		countType: CountType,
-		abbreviateDescriptions: boolean
-	): string | null {
-		if (!counts || typeof counts.wordCount !== "number") {
-			return null;
-		}
-
-		if (
-			!counts.isCountable &&
-			!this.unconditionalCountTypes.includes(countType)
-		) {
-			return null;
-		}
-
-		const getPluralizedCount = function (
-			noun: string,
-			count: number,
-			round: boolean = true
-		) {
-			const displayCount = round
-				? Math.ceil(count).toLocaleString(undefined)
-				: count.toLocaleString(undefined, {
-						minimumFractionDigits: 1,
-						maximumFractionDigits: 2,
-				  });
-			return `${displayCount} ${noun}${displayCount == "1" ? "" : "s"}`;
-		};
-
-		switch (countType) {
-			case CountType.None:
-				return null;
-			case CountType.Word:
-				return abbreviateDescriptions
-					? `${Math.ceil(counts.wordCount).toLocaleString()}w`
-					: getPluralizedCount("word", counts.wordCount);
-			case CountType.Page:
-				return abbreviateDescriptions
-					? `${Math.ceil(counts.pageCount).toLocaleString()}p`
-					: getPluralizedCount("page", counts.pageCount);
-			case CountType.PageDecimal:
-				return abbreviateDescriptions
-					? `${counts.pageCount.toLocaleString(undefined, {
-							minimumFractionDigits: 1,
-							maximumFractionDigits: 2,
-					  })}p`
-					: getPluralizedCount("page", counts.pageCount, false);
-			case CountType.PercentGoal:
-				if (counts.wordGoal <= 0) {
-					return null;
-				}
-
-				const fraction = counts.wordCountTowardGoal / counts.wordGoal;
-				const percent = Math.round(fraction * 100).toLocaleString(undefined);
-				return abbreviateDescriptions
-					? `${percent}%`
-					: `${percent}% of ${counts.wordGoal.toLocaleString(undefined)}`;
-			case CountType.Note:
-				return abbreviateDescriptions
-					? `${counts.noteCount.toLocaleString()}n`
-					: getPluralizedCount("note", counts.noteCount);
-			case CountType.Character:
-				const characterCount =
-					this.settings.characterCountType ===
-					CharacterCountType.ExcludeWhitespace
-						? counts.nonWhitespaceCharacterCount
-						: counts.characterCount;
-
-				return abbreviateDescriptions
-					? `${characterCount.toLocaleString()}ch`
-					: getPluralizedCount("character", characterCount);
-			case CountType.ReadTime:
-				return this.readTimeHelper.formatReadTime(
-					counts.readingTimeInMinutes,
-					abbreviateDescriptions
-				);
-			case CountType.Link:
-				if (counts.linkCount === 0) {
-					return null;
-				}
-
-				return abbreviateDescriptions
-					? `${counts.linkCount.toLocaleString()}x`
-					: getPluralizedCount("link", counts.linkCount);
-			case CountType.Embed:
-				if (counts.embedCount === 0) {
-					return null;
-				}
-
-				return abbreviateDescriptions
-					? `${counts.embedCount.toLocaleString()}em`
-					: getPluralizedCount("embed", counts.embedCount);
-			case CountType.Alias:
-				if (
-					!counts.aliases ||
-					!Array.isArray(counts.aliases) ||
-					!counts.aliases.length
-				) {
-					return null;
-				}
-
-				return abbreviateDescriptions
-					? `${counts.aliases[0]}`
-					: `alias: ${counts.aliases[0]}${
-							counts.aliases.length > 1 ? ` +${counts.aliases.length - 1}` : ""
-					  }`;
-			case CountType.Created:
-				if (counts.createdDate === 0) {
-					return null;
-				}
-
-				return abbreviateDescriptions
-					? `${new Date(counts.createdDate).toLocaleDateString()}/c`
-					: `Created ${new Date(counts.createdDate).toLocaleDateString()}`;
-			case CountType.Modified:
-				if (counts.modifiedDate === 0) {
-					return null;
-				}
-
-				return abbreviateDescriptions
-					? `${new Date(counts.modifiedDate).toLocaleDateString()}/u`
-					: `Updated ${new Date(counts.modifiedDate).toLocaleDateString()}`;
-			case CountType.FileSize:
-				return this.fileSizeHelper.formatFileSize(
-					counts.sizeInBytes,
-					abbreviateDescriptions
-				);
-		}
-
-		return null;
-	}
-
-	private getNodeLabel(counts: CountData): string {
-		const countTypes =
-			counts.isDirectory && !this.settings.showSameCountsOnFolders
-				? [
-						this.settings.folderCountType,
-						this.settings.folderCountType2,
-						this.settings.folderCountType3,
-				  ]
-				: [
-						this.settings.countType,
-						this.settings.countType2,
-						this.settings.countType3,
-				  ];
-
-		const abbreviateDescriptions =
-			counts.isDirectory && !this.settings.showSameCountsOnFolders
-				? this.settings.folderAbbreviateDescriptions
-				: this.settings.abbreviateDescriptions;
-
-		return countTypes
-			.filter((ct) => ct !== CountType.None)
-			.map((ct) => this.getDataTypeLabel(counts, ct, abbreviateDescriptions))
-			.filter((display) => display !== null)
-			.join(" | ");
-	}
-
 	private setContainerClass(leaf: WorkspaceLeaf) {
 		const container = leaf.view.containerEl;
 		const notePrefix = `novel-word-count--note-`;
 		const folderPrefix = `novel-word-count--folder-`;
-		const alignmentClasses = alignmentTypes
+		const alignmentClasses = ALIGNMENT_TYPES
 			.map((at) => notePrefix + at)
-			.concat(alignmentTypes.map((at) => folderPrefix + at));
+			.concat(ALIGNMENT_TYPES.map((at) => folderPrefix + at));
 
 		for (const ac of alignmentClasses) {
 			container.toggleClass(ac, false);

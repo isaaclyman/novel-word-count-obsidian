@@ -24,7 +24,7 @@ export enum CountType {
 	FileSize = "filesize",
 }
 
-export const countTypeDisplayStrings: { [countType: string]: string } = {
+export const COUNT_TYPE_DISPLAY_STRINGS: { [countType: string]: string } = {
 	[CountType.None]: "None",
 	[CountType.Word]: "Word Count",
 	[CountType.Page]: "Page Count",
@@ -41,7 +41,7 @@ export const countTypeDisplayStrings: { [countType: string]: string } = {
 	[CountType.FileSize]: "File Size",
 };
 
-export const countTypeDescriptions: { [countType: string]: string } = {
+export const COUNT_TYPE_DESCRIPTIONS: { [countType: string]: string } = {
 	[CountType.None]: "Hidden.",
 	[CountType.Word]: "Total words.",
 	[CountType.Page]: "Total pages, rounded up.",
@@ -63,11 +63,30 @@ export const countTypeDescriptions: { [countType: string]: string } = {
 	[CountType.FileSize]: "Total size on hard drive.",
 };
 
+export const UNFORMATTABLE_COUNT_TYPES = [
+	CountType.None,
+	CountType.Alias,
+	CountType.FileSize,
+	CountType.ReadTime,
+];
+export const COUNT_TYPE_DEFAULT_SHORT_SUFFIXES: { [countType: string]: string } = {
+	[CountType.Word]: "w",
+	[CountType.Page]: "p",
+	[CountType.PageDecimal]: "p",
+	[CountType.PercentGoal]: "%",
+	[CountType.Note]: "n",
+	[CountType.Character]: "ch",
+	[CountType.Link]: "x",
+	[CountType.Embed]: "em",
+	[CountType.Created]: "/c",
+	[CountType.Modified]: "/u",
+};
+
 export function getDescription(countType: CountType): string {
-	return `[${countTypeDisplayStrings[countType]}] ${countTypeDescriptions[countType]}`;
+	return `[${COUNT_TYPE_DISPLAY_STRINGS[countType]}] ${COUNT_TYPE_DESCRIPTIONS[countType]}`;
 }
 
-export const countTypes = [
+export const COUNT_TYPES = [
 	CountType.None,
 	CountType.Word,
 	CountType.Page,
@@ -90,7 +109,7 @@ export enum AlignmentType {
 	Below = "below",
 }
 
-export const alignmentTypes = [
+export const ALIGNMENT_TYPES = [
 	AlignmentType.Inline,
 	AlignmentType.Right,
 	AlignmentType.Below,
@@ -113,21 +132,29 @@ export enum PageCountType {
 }
 
 export interface NovelWordCountSettings {
+	// FORMATTING
+	useAdvancedFormatting: boolean;
 	// NOTES
 	countType: CountType;
+	countTypeSuffix: string;
 	countType2: CountType;
+	countType2Suffix: string;
 	countType3: CountType;
+	countType3Suffix: string;
+	pipeSeparator: string;
 	abbreviateDescriptions: boolean;
 	alignment: AlignmentType;
 	// FOLDERS
 	showSameCountsOnFolders: boolean;
 	folderCountType: CountType;
+	folderCountTypeSuffix: string;
 	folderCountType2: CountType;
+	folderCountType2Suffix: string;
 	folderCountType3: CountType;
+	folderCountType3Suffix: string;
+	folderPipeSeparator: string;
 	folderAbbreviateDescriptions: boolean;
 	folderAlignment: AlignmentType;
-	// FORMATTING
-	showFormatting: boolean;
 	// ADVANCED
 	showAdvanced: boolean;
 	wordsPerMinute: number;
@@ -143,21 +170,29 @@ export interface NovelWordCountSettings {
 }
 
 export const DEFAULT_SETTINGS: NovelWordCountSettings = {
+	// FORMATTING
+	useAdvancedFormatting: false,
 	// NOTES
 	countType: CountType.Word,
+	countTypeSuffix: "w",
 	countType2: CountType.None,
+	countType2Suffix: "",
 	countType3: CountType.None,
+	countType3Suffix: "",
+	pipeSeparator: "|",
 	abbreviateDescriptions: false,
 	alignment: AlignmentType.Inline,
 	// FOLDERS
 	showSameCountsOnFolders: true,
 	folderCountType: CountType.Word,
+	folderCountTypeSuffix: "w",
 	folderCountType2: CountType.None,
+	folderCountType2Suffix: "",
 	folderCountType3: CountType.None,
+	folderCountType3Suffix: "",
+	folderPipeSeparator: "|",
 	folderAbbreviateDescriptions: false,
 	folderAlignment: AlignmentType.Inline,
-	// FORMATTING
-	showFormatting: false,
 	// ADVANCED
 	showAdvanced: false,
 	wordsPerMinute: 265,
@@ -210,96 +245,103 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 		});
 
 		new Setting(containerEl)
-			.setDesc("Show extra formatting options")
+			.setDesc("Use advanced formatting")
 			.addToggle((toggle) =>
 				toggle
-					.setValue(this.plugin.settings.showFormatting)
+					.setValue(this.plugin.settings.useAdvancedFormatting)
 					.onChange(async (value) => {
-						this.plugin.settings.showFormatting = value;
+						this.plugin.settings.useAdvancedFormatting = value;
 						await this.plugin.saveSettings();
+						await this.plugin.updateDisplayedCounts();
 						this.display();
 					})
 			);
 
 		// NOTE - DATA TYPE 1
 
-		new Setting(containerEl)
-			.setName("1st data type to show")
-			.setDesc(getDescription(this.plugin.settings.countType))
-			.addDropdown((drop) => {
-				for (const countType of countTypes) {
-					drop.addOption(countType, countTypeDisplayStrings[countType]);
-				}
+		this.renderCountTypeSetting(containerEl, {
+			name: "1st data type to show",
+			oldCountType: this.plugin.settings.countType,
+			setNewCountType: (value) => {
+				this.plugin.settings.countType = value;
+				this.plugin.settings.countTypeSuffix =
+					COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[this.plugin.settings.countType];
+			},
+		});
 
-				drop
-					.setValue(this.plugin.settings.countType)
-					.onChange(async (value: CountType) => {
-						this.plugin.settings.countType = value;
-						await this.plugin.saveSettings();
-						this.display();
-
-						await this.plugin.updateDisplayedCounts();
-					});
-			});
+		this.renderCustomFormatSetting(containerEl, {
+			countType: this.plugin.settings.countType,
+			oldSuffix: this.plugin.settings.countTypeSuffix,
+			setNewSuffix: (value) => (this.plugin.settings.countTypeSuffix = value),
+		});
 
 		// NOTE - DATA TYPE 2
 
-		new Setting(containerEl)
-			.setName("2nd data type to show")
-			.setDesc(getDescription(this.plugin.settings.countType2))
-			.addDropdown((drop) => {
-				for (const countType of countTypes) {
-					drop.addOption(countType, countTypeDisplayStrings[countType]);
-				}
+		this.renderCountTypeSetting(containerEl, {
+			name: "2nd data type to show",
+			oldCountType: this.plugin.settings.countType2,
+			setNewCountType: (value) => {
+				this.plugin.settings.countType2 = value;
+				this.plugin.settings.countType2Suffix =
+					COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[this.plugin.settings.countType2];
+			},
+		});
 
-				drop
-					.setValue(this.plugin.settings.countType2)
-					.onChange(async (value: CountType) => {
-						this.plugin.settings.countType2 = value;
-						await this.plugin.saveSettings();
-						this.display();
-
-						await this.plugin.updateDisplayedCounts();
-					});
-			});
+		this.renderCustomFormatSetting(containerEl, {
+			countType: this.plugin.settings.countType2,
+			oldSuffix: this.plugin.settings.countType2Suffix,
+			setNewSuffix: (value) => (this.plugin.settings.countType2Suffix = value),
+		});
 
 		// NOTE - DATA TYPE 3
 
-		new Setting(containerEl)
-			.setName("3rd data type to show")
-			.setDesc(getDescription(this.plugin.settings.countType3))
-			.addDropdown((drop) => {
-				for (const countType of countTypes) {
-					drop.addOption(countType, countTypeDisplayStrings[countType]);
-				}
+		this.renderCountTypeSetting(containerEl, {
+			name: "3rd data type to show",
+			oldCountType: this.plugin.settings.countType3,
+			setNewCountType: (value) => {
+				this.plugin.settings.countType3 = value;
+				this.plugin.settings.countType3Suffix =
+					COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[this.plugin.settings.countType3];
+			},
+		});
 
-				drop
-					.setValue(this.plugin.settings.countType3)
-					.onChange(async (value: CountType) => {
-						this.plugin.settings.countType3 = value;
-						await this.plugin.saveSettings();
-						this.display();
+		this.renderCustomFormatSetting(containerEl, {
+			countType: this.plugin.settings.countType3,
+			oldSuffix: this.plugin.settings.countType3Suffix,
+			setNewSuffix: (value) => (this.plugin.settings.countType3Suffix = value),
+		});
 
-						await this.plugin.updateDisplayedCounts();
-					});
-			});
-
-		// ABBREVIATE DESCRIPTIONS
-
-		new Setting(containerEl)
-			.setName("Abbreviate descriptions")
-			.setDesc("E.g. show '120w' instead of '120 words'")
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.abbreviateDescriptions)
+		// NOTE - SEPARATOR
+		if (this.plugin.settings.useAdvancedFormatting) {
+			new Setting(containerEl).setName("Data type separator").addText((text) =>
+				text
+					.setValue(this.plugin.settings.pipeSeparator)
 					.onChange(async (value) => {
-						this.plugin.settings.abbreviateDescriptions = value;
+						this.plugin.settings.pipeSeparator = value;
 						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 					})
 			);
+		}
 
-		// ALIGNMENT
+		// NOTE - ABBREVIATE DESCRIPTIONS
+
+		if (!this.plugin.settings.useAdvancedFormatting) {
+			new Setting(containerEl)
+				.setName("Abbreviate descriptions")
+				.setDesc("E.g. show '120w' instead of '120 words'")
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.abbreviateDescriptions)
+						.onChange(async (value) => {
+							this.plugin.settings.abbreviateDescriptions = value;
+							await this.plugin.saveSettings();
+							await this.plugin.updateDisplayedCounts();
+						})
+				);
+		}
+
+		// NOTE - ALIGNMENT
 
 		new Setting(containerEl)
 			.setName("Alignment")
@@ -321,7 +363,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 	}
 
 	private renderFolderSettings(containerEl: HTMLElement): void {
-		containerEl.createEl('hr');
+		containerEl.createEl("hr");
 
 		// SHOW SAME DATA ON FOLDERS
 
@@ -340,96 +382,114 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					})
 			);
 
-		// FOLDER - DATA TYPE 1
-
 		if (!this.plugin.settings.showSameCountsOnFolders) {
-			new Setting(containerEl)
-				.setName("1st data type to show")
-				.addDropdown((drop) => {
-					for (const countType of countTypes) {
-						drop.addOption(countType, countTypeDisplayStrings[countType]);
-					}
+			// FOLDER - DATA TYPE 1
 
-					drop
-						.setValue(this.plugin.settings.folderCountType)
-						.onChange(async (value: CountType) => {
-							this.plugin.settings.folderCountType = value;
-							await this.plugin.saveSettings();
-							await this.plugin.updateDisplayedCounts();
-						});
-				});
+			this.renderCountTypeSetting(containerEl, {
+				name: "1st data type to show",
+				oldCountType: this.plugin.settings.folderCountType,
+				setNewCountType: (value) => {
+					this.plugin.settings.folderCountType = value;
+					this.plugin.settings.folderCountTypeSuffix =
+						COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[this.plugin.settings.folderCountType];
+				},
+			});
+
+			this.renderCustomFormatSetting(containerEl, {
+				countType: this.plugin.settings.folderCountType,
+				oldSuffix: this.plugin.settings.folderCountTypeSuffix,
+				setNewSuffix: (value) =>
+					(this.plugin.settings.folderCountTypeSuffix = value),
+			});
 
 			// FOLDER - DATA TYPE 2
 
-			new Setting(containerEl)
-				.setName("2nd data type to show")
-				.addDropdown((drop) => {
-					for (const countType of countTypes) {
-						drop.addOption(countType, countTypeDisplayStrings[countType]);
-					}
+			this.renderCountTypeSetting(containerEl, {
+				name: "2nd data type to show",
+				oldCountType: this.plugin.settings.folderCountType2,
+				setNewCountType: (value) => {
+					this.plugin.settings.folderCountType2 = value;
+					this.plugin.settings.folderCountType2Suffix =
+						COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[this.plugin.settings.folderCountType2];
+				},
+			});
 
-					drop
-						.setValue(this.plugin.settings.folderCountType2)
-						.onChange(async (value: CountType) => {
-							this.plugin.settings.folderCountType2 = value;
-							await this.plugin.saveSettings();
-							await this.plugin.updateDisplayedCounts();
-						});
-				});
+			this.renderCustomFormatSetting(containerEl, {
+				countType: this.plugin.settings.folderCountType2,
+				oldSuffix: this.plugin.settings.folderCountType2Suffix,
+				setNewSuffix: (value) =>
+					(this.plugin.settings.folderCountType2Suffix = value),
+			});
 
 			// FOLDER - DATA TYPE 3
 
-			new Setting(containerEl)
-				.setName("3rd data type to show")
-				.addDropdown((drop) => {
-					for (const countType of countTypes) {
-						drop.addOption(countType, countTypeDisplayStrings[countType]);
-					}
+			this.renderCountTypeSetting(containerEl, {
+				name: "3rd data type to show",
+				oldCountType: this.plugin.settings.folderCountType3,
+				setNewCountType: (value) => {
+					this.plugin.settings.folderCountType3 = value;
+					this.plugin.settings.folderCountType3Suffix =
+						COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[this.plugin.settings.folderCountType3];
+				},
+			});
 
-					drop
-						.setValue(this.plugin.settings.folderCountType3)
-						.onChange(async (value: CountType) => {
-							this.plugin.settings.folderCountType3 = value;
-							await this.plugin.saveSettings();
-							await this.plugin.updateDisplayedCounts();
-						});
-				});
+			this.renderCustomFormatSetting(containerEl, {
+				countType: this.plugin.settings.folderCountType3,
+				oldSuffix: this.plugin.settings.folderCountType3Suffix,
+				setNewSuffix: (value) =>
+					(this.plugin.settings.folderCountType3Suffix = value),
+			});
+
+			// FOLDER - SEPARATOR
+			if (this.plugin.settings.useAdvancedFormatting) {
+				new Setting(containerEl)
+					.setName("Data type separator")
+					.addText((text) =>
+						text
+							.setValue(this.plugin.settings.folderPipeSeparator)
+							.onChange(async (value) => {
+								this.plugin.settings.folderPipeSeparator = value;
+								await this.plugin.saveSettings();
+								await this.plugin.updateDisplayedCounts();
+							})
+					);
+			}
 
 			// FOLDER - ABBREVIATE DESCRIPTIONS
 
-			new Setting(containerEl)
-				.setName("Abbreviate descriptions")
-				.addToggle((toggle) =>
-					toggle
-						.setValue(this.plugin.settings.folderAbbreviateDescriptions)
-						.onChange(async (value) => {
-							this.plugin.settings.folderAbbreviateDescriptions = value;
-							await this.plugin.saveSettings();
-							await this.plugin.updateDisplayedCounts();
-						})
-				);
+			if (!this.plugin.settings.useAdvancedFormatting) {
+				new Setting(containerEl)
+					.setName("Abbreviate descriptions")
+					.addToggle((toggle) =>
+						toggle
+							.setValue(this.plugin.settings.folderAbbreviateDescriptions)
+							.onChange(async (value) => {
+								this.plugin.settings.folderAbbreviateDescriptions = value;
+								await this.plugin.saveSettings();
+								await this.plugin.updateDisplayedCounts();
+							})
+					);
+			}
 
 			// FOLDER - ALIGNMENT
 
-			new Setting(containerEl)
-				.setName("Alignment")
-				.addDropdown((drop) => {
-					drop
-						.addOption(AlignmentType.Inline, "Inline")
-						.addOption(AlignmentType.Right, "Right-aligned")
-						.addOption(AlignmentType.Below, "Below")
-						.setValue(this.plugin.settings.folderAlignment)
-						.onChange(async (value: AlignmentType) => {
-							this.plugin.settings.folderAlignment = value;
-							await this.plugin.saveSettings();
-							await this.plugin.updateDisplayedCounts();
-						});
-				});
+			new Setting(containerEl).setName("Alignment").addDropdown((drop) => {
+				drop
+					.addOption(AlignmentType.Inline, "Inline")
+					.addOption(AlignmentType.Right, "Right-aligned")
+					.addOption(AlignmentType.Below, "Below")
+					.setValue(this.plugin.settings.folderAlignment)
+					.onChange(async (value: AlignmentType) => {
+						this.plugin.settings.folderAlignment = value;
+						await this.plugin.saveSettings();
+						await this.plugin.updateDisplayedCounts();
+					});
+			});
 		}
 	}
 
 	private renderAdvancedSettings(containerEl: HTMLElement): void {
-		containerEl.createEl('hr');
+		containerEl.createEl("hr");
 
 		new Setting(containerEl)
 			.setHeading()
@@ -689,7 +749,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 	}
 
 	private renderReanalyzeButton(containerEl: HTMLElement): void {
-		containerEl.createEl('hr');
+		containerEl.createEl("hr");
 
 		// REANALYZE
 
@@ -716,5 +776,67 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						}, 1000);
 					})
 			);
+	}
+
+	private renderCountTypeSetting(
+		containerEl: HTMLElement,
+		config: {
+			name: string;
+			oldCountType: CountType;
+			setNewCountType: (newCountType: CountType) => void;
+		}
+	): void {
+		new Setting(containerEl)
+			.setName(config.name)
+			.setDesc(getDescription(config.oldCountType))
+			.addDropdown((drop) => {
+				for (const countType of COUNT_TYPES) {
+					drop.addOption(countType, COUNT_TYPE_DISPLAY_STRINGS[countType]);
+				}
+
+				drop
+					.setValue(config.oldCountType)
+					.onChange(async (value: CountType) => {
+						config.setNewCountType(value);
+						await this.plugin.saveSettings();
+						this.display();
+
+						await this.plugin.updateDisplayedCounts();
+					});
+			});
+	}
+
+	private renderCustomFormatSetting(
+		containerEl: HTMLElement,
+		config: {
+			countType: CountType;
+			oldSuffix: string;
+			setNewSuffix: (newSuffix: string) => void;
+		}
+	): void {
+		if (
+			!this.plugin.settings.useAdvancedFormatting ||
+			config.countType === CountType.None
+		) {
+			return;
+		}
+
+		if (UNFORMATTABLE_COUNT_TYPES.includes(config.countType)) {
+			new Setting(containerEl).setDesc(
+				`[${COUNT_TYPE_DISPLAY_STRINGS[config.countType]}] can't be formatted.`
+			);
+		} else {
+			new Setting(containerEl)
+				.setDesc(
+					`[${COUNT_TYPE_DISPLAY_STRINGS[config.countType]}] Custom suffix`
+				)
+				.addText((text) =>
+					text.setValue(config.oldSuffix).onChange(async (value) => {
+						config.setNewSuffix(value);
+						await this.plugin.saveSettings();
+						await this.plugin.updateDisplayedCounts();
+					})
+				);
+		}
 	}
 }
