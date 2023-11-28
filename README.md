@@ -43,6 +43,8 @@ This plugin displays statistics of your choice next to every file, folder, and v
 | Updated 1/22/2022 | 1/22/2022/u |
 | 13.39 KB | 13.39kb |
 
+*NOTE:* You can set your own suffixes (or hide suffixes entirely) for most count types by enabling the "Use advanced formatting" toggle.
+
 **Alignment.** Choose where data is displayed relative to file/folder names: Inline, Right-aligned, or Below. All alignments work well with vanilla Obsidian, but Inline has the greatest compatibility with custom themes and plugins.
 
 **Show same data on folders.** By default, the same data types are shown on notes and folders. You can toggle this setting off to choose different data types to show on folders only.
