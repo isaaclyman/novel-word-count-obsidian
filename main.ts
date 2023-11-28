@@ -90,9 +90,11 @@ export default class NovelWordCountPlugin extends Plugin {
 
 		this.addCommand({
 			id: "toggle-abbreviate",
-			name: "Toggle abbreviation",
+			name: "Toggle abbreviation on Notes",
 			callback: async () => {
-				this.debugHelper.debug("[Toggle abbrevation] command triggered");
+				this.debugHelper.debug(
+					"[Toggle abbrevation - Notes] command triggered"
+				);
 				this.settings.abbreviateDescriptions =
 					!this.settings.abbreviateDescriptions;
 				await this.saveSettings();
@@ -411,24 +413,35 @@ export default class NovelWordCountPlugin extends Plugin {
 						this.settings.countType3,
 				  ];
 
+		const abbreviateDescriptions =
+			counts.isDirectory && !this.settings.showSameCountsOnFolders
+				? this.settings.folderAbbreviateDescriptions
+				: this.settings.abbreviateDescriptions;
+
 		return countTypes
 			.filter((ct) => ct !== CountType.None)
-			.map((ct) =>
-				this.getDataTypeLabel(counts, ct, this.settings.abbreviateDescriptions)
-			)
+			.map((ct) => this.getDataTypeLabel(counts, ct, abbreviateDescriptions))
 			.filter((display) => display !== null)
 			.join(" | ");
 	}
 
 	private setContainerClass(leaf: WorkspaceLeaf) {
 		const container = leaf.view.containerEl;
-		const prefix = `novel-word-count--`;
-		const alignmentClasses = alignmentTypes.map((at) => prefix + at);
+		const notePrefix = `novel-word-count--note-`;
+		const folderPrefix = `novel-word-count--folder-`;
+		const alignmentClasses = alignmentTypes
+			.map((at) => notePrefix + at)
+			.concat(alignmentTypes.map((at) => folderPrefix + at));
 
 		for (const ac of alignmentClasses) {
 			container.toggleClass(ac, false);
 		}
 
-		container.toggleClass(prefix + this.settings.alignment, true);
+		container.toggleClass(notePrefix + this.settings.alignment, true);
+
+		const folderAlignment = this.settings.showSameCountsOnFolders
+			? this.settings.alignment
+			: this.settings.folderAlignment;
+		container.toggleClass(folderPrefix + folderAlignment, true);
 	}
 }

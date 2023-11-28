@@ -1,5 +1,5 @@
 .nav-files-container {
-  .nav-folder-title, .nav-file-title {
+  .nav-file-title {
     align-items: baseline;
 
     &::after {
@@ -21,25 +21,76 @@
       min-width: 20px;
     }
     
-    .novel-word-count--right &-content {
+    .novel-word-count--note-right &-content {
       flex: 1 1 0;
     }
 
-    .novel-word-count--right &::after {
+    .novel-word-count--note-right &::after {
       flex: none;
       order: 6;
       overflow: hidden;
     }
 
-    .novel-word-count--below & {
+    .novel-word-count--note-below & {
       flex-wrap: wrap;
     }
 
-    .novel-word-count--below &-content {
+    .novel-word-count--note-below &-content {
       flex: 100%;
     }
 
-    .novel-word-count--below &::after {
+    .novel-word-count--note-below &::after {
+      display: inline-block;
+      margin-top: -2px;
+      max-width: 100%;
+      overflow: hidden;
+      padding: 0;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .nav-folder-title {
+    align-items: baseline;
+
+    &::after {
+      content: attr(data-novel-word-count-plugin);
+      flex: 1 0 auto;
+      font-size: 0.8em;
+      max-width: calc(100% - 20px);
+      min-width: 0;
+      opacity: 0.75;
+      order: 1;
+      overflow: hidden;
+      padding: 0 4px;
+      position: relative;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    &-content {
+      min-width: 20px;
+    }
+    
+    .novel-word-count--folder-right &-content {
+      flex: 1 1 0;
+    }
+
+    .novel-word-count--folder-right &::after {
+      flex: none;
+      order: 6;
+      overflow: hidden;
+    }
+
+    .novel-word-count--folder-below & {
+      flex-wrap: wrap;
+    }
+
+    .novel-word-count--folder-below &-content {
+      flex: 100%;
+    }
+
+    .novel-word-count--folder-below &::after {
       display: inline-block;
       margin-top: -2px;
       max-width: 100%;

@@ -113,16 +113,23 @@ export enum PageCountType {
 }
 
 export interface NovelWordCountSettings {
+	// NOTES
 	countType: CountType;
 	countType2: CountType;
 	countType3: CountType;
+	abbreviateDescriptions: boolean;
+	alignment: AlignmentType;
+	// FOLDERS
 	showSameCountsOnFolders: boolean;
 	folderCountType: CountType;
 	folderCountType2: CountType;
 	folderCountType3: CountType;
-	abbreviateDescriptions: boolean;
-	alignment: AlignmentType;
-	debugMode: boolean;
+	folderAbbreviateDescriptions: boolean;
+	folderAlignment: AlignmentType;
+	// FORMATTING
+	showFormatting: boolean;
+	// ADVANCED
+	showAdvanced: boolean;
 	wordsPerMinute: number;
 	charsPerMinute: number;
 	wordsPerPage: number;
@@ -132,19 +139,27 @@ export interface NovelWordCountSettings {
 	wordCountType: WordCountType;
 	pageCountType: PageCountType;
 	excludeComments: boolean;
+	debugMode: boolean;
 }
 
 export const DEFAULT_SETTINGS: NovelWordCountSettings = {
+	// NOTES
 	countType: CountType.Word,
 	countType2: CountType.None,
 	countType3: CountType.None,
+	abbreviateDescriptions: false,
+	alignment: AlignmentType.Inline,
+	// FOLDERS
 	showSameCountsOnFolders: true,
 	folderCountType: CountType.Word,
 	folderCountType2: CountType.None,
 	folderCountType3: CountType.None,
-	abbreviateDescriptions: false,
-	alignment: AlignmentType.Inline,
-	debugMode: false,
+	folderAbbreviateDescriptions: false,
+	folderAlignment: AlignmentType.Inline,
+	// FORMATTING
+	showFormatting: false,
+	// ADVANCED
+	showAdvanced: false,
 	wordsPerMinute: 265,
 	charsPerMinute: 500,
 	wordsPerPage: 300,
@@ -154,6 +169,7 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	wordCountType: WordCountType.SpaceDelimited,
 	pageCountType: PageCountType.ByWords,
 	excludeComments: false,
+	debugMode: false,
 };
 
 export class NovelWordCountSettingTab extends PluginSettingTab {
@@ -169,10 +185,17 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		/*
-		 * GENERAL
-		 */
+		this.renderNoteSettings(containerEl);
+		this.renderFolderSettings(containerEl);
+		this.renderAdvancedSettings(containerEl);
+		this.renderReanalyzeButton(containerEl);
+	}
 
+	//
+	// NOTES
+	//
+
+	private renderNoteSettings(containerEl: HTMLElement): void {
 		const mainHeader = containerEl.createEl("div", {
 			cls: [
 				"setting-item",
@@ -185,6 +208,18 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			text: "You can display up to three data types side by side.",
 			cls: "setting-item-description",
 		});
+
+		new Setting(containerEl)
+			.setDesc("Show extra formatting options")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.showFormatting)
+					.onChange(async (value) => {
+						this.plugin.settings.showFormatting = value;
+						await this.plugin.saveSettings();
+						this.display();
+					})
+			);
 
 		// NOTE - DATA TYPE 1
 
@@ -202,7 +237,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						this.plugin.settings.countType = value;
 						await this.plugin.saveSettings();
 						this.display();
-						
+
 						await this.plugin.updateDisplayedCounts();
 					});
 			});
@@ -223,7 +258,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						this.plugin.settings.countType2 = value;
 						await this.plugin.saveSettings();
 						this.display();
-						
+
 						await this.plugin.updateDisplayedCounts();
 					});
 			});
@@ -244,7 +279,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						this.plugin.settings.countType3 = value;
 						await this.plugin.saveSettings();
 						this.display();
-						
+
 						await this.plugin.updateDisplayedCounts();
 					});
 			});
@@ -283,19 +318,16 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						await this.plugin.updateDisplayedCounts();
 					});
 			});
+	}
 
-		/*
-		 *  FOLDER COUNTS
-		 */
-
-		containerEl
-			.createEl("div", { text: "Folders" })
-			.addClasses(["setting-item", "setting-item-heading"]);
+	private renderFolderSettings(containerEl: HTMLElement): void {
+		containerEl.createEl('hr');
 
 		// SHOW SAME DATA ON FOLDERS
 
 		new Setting(containerEl)
-			.setName("Show same data on folders")
+			.setHeading()
+			.setName("Folders: Same data as Notes")
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.showSameCountsOnFolders)
@@ -303,7 +335,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						this.plugin.settings.showSameCountsOnFolders = value;
 						await this.plugin.saveSettings();
 						this.display();
-						
+
 						await this.plugin.updateDisplayedCounts();
 					})
 			);
@@ -362,234 +394,307 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 							await this.plugin.updateDisplayedCounts();
 						});
 				});
-		}
 
-		/*
-		 *	ADVANCED
-		 */
+			// FOLDER - ABBREVIATE DESCRIPTIONS
 
-		containerEl
-			.createEl("div", { text: "Advanced" })
-			.addClasses(["setting-item", "setting-item-heading"]);
-
-		// EXCLUDE COMMENTS
-
-		new Setting(containerEl)
-			.setName("Exclude comments")
-			.setDesc(
-				"Exclude %%Obsidian%% and <!--HTML--> comments from counts. May affect performance on large vaults."
-			)
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.excludeComments)
-					.onChange(async (value) => {
-						this.plugin.settings.excludeComments = value;
-						await this.plugin.saveSettings();
-						await this.plugin.initialize();
-					})
-			);
-		
-		// CHARACTER COUNT METHOD
-
-		new Setting(containerEl)
-			.setName("Character count method")
-			.setDesc("For language compatibility")
-			.addDropdown((drop) => {
-				drop
-					.addOption(CharacterCountType.StringLength, "All characters")
-					.addOption(CharacterCountType.ExcludeWhitespace, "Exclude whitespace")
-					.setValue(this.plugin.settings.characterCountType)
-					.onChange(async (value: CharacterCountType) => {
-						this.plugin.settings.characterCountType = value;
-						await this.plugin.saveSettings();
-						await this.plugin.initialize();
-					});
-			});
-
-		// WORD COUNT METHOD
-
-		new Setting(containerEl)
-			.setName("Word count method")
-			.setDesc("For language compatibility")
-			.addDropdown((drop) => {
-				drop
-					.addOption(
-						WordCountType.SpaceDelimited,
-						"Space-delimited (European languages)"
-					)
-					.addOption(WordCountType.CJK, "Han/Kana/Hangul (CJK)")
-					.addOption(WordCountType.AutoDetect, "Auto-detect by file")
-					.setValue(this.plugin.settings.wordCountType)
-					.onChange(async (value: WordCountType) => {
-						this.plugin.settings.wordCountType = value;
-						await this.plugin.saveSettings();
-						this.display();
-						
-						await this.plugin.initialize();
-					});
-			});
-
-		// PAGE COUNT METHOD
-
-		new Setting(containerEl)
-			.setName("Page count method")
-			.setDesc("For language compatibility")
-			.addDropdown((drop) => {
-				drop
-					.addOption(PageCountType.ByWords, "Words per page")
-					.addOption(PageCountType.ByChars, "Characters per page")
-					.setValue(this.plugin.settings.pageCountType)
-					.onChange(async (value: PageCountType) => {
-						this.plugin.settings.pageCountType = value;
-						await this.plugin.saveSettings();
-						this.display();
-
-						await this.plugin.updateDisplayedCounts();
-					});
-			});
-
-		// READING TIME
-
-		if (
-			[WordCountType.SpaceDelimited, WordCountType.AutoDetect].includes(
-				this.plugin.settings.wordCountType
-			)
-		) {
-			const wordsPerMinuteChanged = async (
-				txt: TextComponent,
-				value: string
-			) => {
-				const asNumber = Number(value);
-				const isValid = !isNaN(asNumber) && asNumber > 0;
-
-				txt.inputEl.style.borderColor = isValid ? null : "red";
-
-				this.plugin.settings.wordsPerMinute = isValid ? Number(value) : 265;
-				await this.plugin.saveSettings();
-				await this.plugin.initialize();
-			};
 			new Setting(containerEl)
-				.setName("Words per minute")
-				.setDesc(
-					"Used to calculate Reading Time. 265 is the average speed of an English-speaking adult."
-				)
-				.addText((txt) => {
-					txt
-						.setPlaceholder("265")
-						.setValue(this.plugin.settings.wordsPerMinute.toString())
-						.onChange(debounce(wordsPerMinuteChanged.bind(this, txt), 1000));
-				});
-		}
-
-		if (
-			[WordCountType.CJK, WordCountType.AutoDetect].includes(
-				this.plugin.settings.wordCountType
-			)
-		) {
-			const charsPerMinuteChanged = async (
-				txt: TextComponent,
-				value: string
-			) => {
-				const asNumber = Number(value);
-				const isValid = !isNaN(asNumber) && asNumber > 0;
-
-				txt.inputEl.style.borderColor = isValid ? null : "red";
-
-				this.plugin.settings.charsPerMinute = isValid ? Number(value) : 500;
-				await this.plugin.saveSettings();
-				await this.plugin.initialize();
-			};
-			new Setting(containerEl)
-				.setName("Characters per minute")
-				.setDesc(
-					"Used to calculate Reading Time. 500 is the average speed for CJK texts."
-				)
-				.addText((txt) => {
-					txt
-						.setPlaceholder("500")
-						.setValue(this.plugin.settings.charsPerMinute.toString())
-						.onChange(debounce(charsPerMinuteChanged.bind(this, txt), 1000));
-				});
-		}
-
-		// WORDS PER PAGE
-
-		if (this.plugin.settings.pageCountType === PageCountType.ByWords) {
-			const wordsPerPageChanged = async (txt: TextComponent, value: string) => {
-				const asNumber = Number(value);
-				const isValid = !isNaN(asNumber) && asNumber > 0;
-
-				txt.inputEl.style.borderColor = isValid ? null : "red";
-
-				this.plugin.settings.wordsPerPage = isValid ? Number(value) : 300;
-				await this.plugin.saveSettings();
-				await this.plugin.initialize();
-			};
-			new Setting(containerEl)
-				.setName("Words per page")
-				.setDesc(
-					"Used for page count. 300 is standard in English language publishing."
-				)
-				.addText((txt) => {
-					txt
-						.setPlaceholder("300")
-						.setValue(this.plugin.settings.wordsPerPage.toString())
-						.onChange(debounce(wordsPerPageChanged.bind(this, txt), 1000));
-				});
-		}
-
-		// INCLUDE WHITESPACE IN PAGE COUNT
-
-		if (this.plugin.settings.pageCountType === PageCountType.ByChars) {
-			new Setting(containerEl)
-				.setName("Include whitespace characters in page count")
+				.setName("Abbreviate descriptions")
 				.addToggle((toggle) =>
 					toggle
-						.setValue(this.plugin.settings.charsPerPageIncludesWhitespace)
+						.setValue(this.plugin.settings.folderAbbreviateDescriptions)
 						.onChange(async (value) => {
-							this.plugin.settings.charsPerPageIncludesWhitespace = value;
+							this.plugin.settings.folderAbbreviateDescriptions = value;
+							await this.plugin.saveSettings();
+							await this.plugin.updateDisplayedCounts();
+						})
+				);
+
+			// FOLDER - ALIGNMENT
+
+			new Setting(containerEl)
+				.setName("Alignment")
+				.addDropdown((drop) => {
+					drop
+						.addOption(AlignmentType.Inline, "Inline")
+						.addOption(AlignmentType.Right, "Right-aligned")
+						.addOption(AlignmentType.Below, "Below")
+						.setValue(this.plugin.settings.folderAlignment)
+						.onChange(async (value: AlignmentType) => {
+							this.plugin.settings.folderAlignment = value;
+							await this.plugin.saveSettings();
+							await this.plugin.updateDisplayedCounts();
+						});
+				});
+		}
+	}
+
+	private renderAdvancedSettings(containerEl: HTMLElement): void {
+		containerEl.createEl('hr');
+
+		new Setting(containerEl)
+			.setHeading()
+			.setName("Show advanced options")
+			.setDesc("Language compatibility and fine-tuning")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.showAdvanced)
+					.onChange(async (value) => {
+						this.plugin.settings.showAdvanced = value;
+						await this.plugin.saveSettings();
+						this.display();
+					})
+			);
+
+		if (this.plugin.settings.showAdvanced) {
+			// EXCLUDE COMMENTS
+
+			new Setting(containerEl)
+				.setName("Exclude comments")
+				.setDesc(
+					"Exclude %%Obsidian%% and <!--HTML--> comments from counts. May affect performance on large vaults."
+				)
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.excludeComments)
+						.onChange(async (value) => {
+							this.plugin.settings.excludeComments = value;
+							await this.plugin.saveSettings();
+							await this.plugin.initialize();
+						})
+				);
+
+			// CHARACTER COUNT METHOD
+
+			new Setting(containerEl)
+				.setName("Character count method")
+				.setDesc("For language compatibility")
+				.addDropdown((drop) => {
+					drop
+						.addOption(CharacterCountType.StringLength, "All characters")
+						.addOption(
+							CharacterCountType.ExcludeWhitespace,
+							"Exclude whitespace"
+						)
+						.setValue(this.plugin.settings.characterCountType)
+						.onChange(async (value: CharacterCountType) => {
+							this.plugin.settings.characterCountType = value;
+							await this.plugin.saveSettings();
+							await this.plugin.initialize();
+						});
+				});
+
+			// WORD COUNT METHOD
+
+			new Setting(containerEl)
+				.setName("Word count method")
+				.setDesc("For language compatibility")
+				.addDropdown((drop) => {
+					drop
+						.addOption(
+							WordCountType.SpaceDelimited,
+							"Space-delimited (European languages)"
+						)
+						.addOption(WordCountType.CJK, "Han/Kana/Hangul (CJK)")
+						.addOption(WordCountType.AutoDetect, "Auto-detect by file")
+						.setValue(this.plugin.settings.wordCountType)
+						.onChange(async (value: WordCountType) => {
+							this.plugin.settings.wordCountType = value;
 							await this.plugin.saveSettings();
 							this.display();
 
 							await this.plugin.initialize();
+						});
+				});
+
+			// PAGE COUNT METHOD
+
+			new Setting(containerEl)
+				.setName("Page count method")
+				.setDesc("For language compatibility")
+				.addDropdown((drop) => {
+					drop
+						.addOption(PageCountType.ByWords, "Words per page")
+						.addOption(PageCountType.ByChars, "Characters per page")
+						.setValue(this.plugin.settings.pageCountType)
+						.onChange(async (value: PageCountType) => {
+							this.plugin.settings.pageCountType = value;
+							await this.plugin.saveSettings();
+							this.display();
+
+							await this.plugin.updateDisplayedCounts();
+						});
+				});
+
+			// READING TIME
+
+			if (
+				[WordCountType.SpaceDelimited, WordCountType.AutoDetect].includes(
+					this.plugin.settings.wordCountType
+				)
+			) {
+				const wordsPerMinuteChanged = async (
+					txt: TextComponent,
+					value: string
+				) => {
+					const asNumber = Number(value);
+					const isValid = !isNaN(asNumber) && asNumber > 0;
+
+					txt.inputEl.style.borderColor = isValid ? null : "red";
+
+					this.plugin.settings.wordsPerMinute = isValid ? Number(value) : 265;
+					await this.plugin.saveSettings();
+					await this.plugin.initialize();
+				};
+				new Setting(containerEl)
+					.setName("Words per minute")
+					.setDesc(
+						"Used to calculate Reading Time. 265 is the average speed of an English-speaking adult."
+					)
+					.addText((txt) => {
+						txt
+							.setPlaceholder("265")
+							.setValue(this.plugin.settings.wordsPerMinute.toString())
+							.onChange(debounce(wordsPerMinuteChanged.bind(this, txt), 1000));
+					});
+			}
+
+			if (
+				[WordCountType.CJK, WordCountType.AutoDetect].includes(
+					this.plugin.settings.wordCountType
+				)
+			) {
+				const charsPerMinuteChanged = async (
+					txt: TextComponent,
+					value: string
+				) => {
+					const asNumber = Number(value);
+					const isValid = !isNaN(asNumber) && asNumber > 0;
+
+					txt.inputEl.style.borderColor = isValid ? null : "red";
+
+					this.plugin.settings.charsPerMinute = isValid ? Number(value) : 500;
+					await this.plugin.saveSettings();
+					await this.plugin.initialize();
+				};
+				new Setting(containerEl)
+					.setName("Characters per minute")
+					.setDesc(
+						"Used to calculate Reading Time. 500 is the average speed for CJK texts."
+					)
+					.addText((txt) => {
+						txt
+							.setPlaceholder("500")
+							.setValue(this.plugin.settings.charsPerMinute.toString())
+							.onChange(debounce(charsPerMinuteChanged.bind(this, txt), 1000));
+					});
+			}
+
+			// WORDS PER PAGE
+
+			if (this.plugin.settings.pageCountType === PageCountType.ByWords) {
+				const wordsPerPageChanged = async (
+					txt: TextComponent,
+					value: string
+				) => {
+					const asNumber = Number(value);
+					const isValid = !isNaN(asNumber) && asNumber > 0;
+
+					txt.inputEl.style.borderColor = isValid ? null : "red";
+
+					this.plugin.settings.wordsPerPage = isValid ? Number(value) : 300;
+					await this.plugin.saveSettings();
+					await this.plugin.initialize();
+				};
+				new Setting(containerEl)
+					.setName("Words per page")
+					.setDesc(
+						"Used for page count. 300 is standard in English language publishing."
+					)
+					.addText((txt) => {
+						txt
+							.setPlaceholder("300")
+							.setValue(this.plugin.settings.wordsPerPage.toString())
+							.onChange(debounce(wordsPerPageChanged.bind(this, txt), 1000));
+					});
+			}
+
+			// INCLUDE WHITESPACE IN PAGE COUNT
+
+			if (this.plugin.settings.pageCountType === PageCountType.ByChars) {
+				new Setting(containerEl)
+					.setName("Include whitespace characters in page count")
+					.addToggle((toggle) =>
+						toggle
+							.setValue(this.plugin.settings.charsPerPageIncludesWhitespace)
+							.onChange(async (value) => {
+								this.plugin.settings.charsPerPageIncludesWhitespace = value;
+								await this.plugin.saveSettings();
+								this.display();
+
+								await this.plugin.initialize();
+							})
+					);
+
+				// CHARACTERS PER PAGE
+
+				const charsPerPageChanged = async (
+					txt: TextComponent,
+					value: string
+				) => {
+					const asNumber = Number(value);
+					const isValid = !isNaN(asNumber) && asNumber > 0;
+
+					txt.inputEl.style.borderColor = isValid ? null : "red";
+
+					const defaultCharsPerPage = 1500;
+					this.plugin.settings.charsPerPage = isValid
+						? Number(value)
+						: defaultCharsPerPage;
+					await this.plugin.saveSettings();
+					await this.plugin.initialize();
+				};
+				new Setting(containerEl)
+					.setName("Characters per page")
+					.setDesc(
+						`Used for page count. ${
+							this.plugin.settings.charsPerPageIncludesWhitespace
+								? "2400 is common in Danish."
+								: "1500 is common in German (Normseite)."
+						}`
+					)
+					.addText((txt) => {
+						txt
+							.setPlaceholder("1500")
+							.setValue(this.plugin.settings.charsPerPage.toString())
+							.onChange(debounce(charsPerPageChanged.bind(this, txt), 1000));
+					});
+			}
+
+			// DEBUG MODE
+
+			new Setting(containerEl)
+				.setName("Debug mode")
+				.setDesc("Log debugging information to the developer console")
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.debugMode)
+						.onChange(async (value) => {
+							this.plugin.settings.debugMode = value;
+							this.plugin.debugHelper.setDebugMode(value);
+							this.plugin.fileHelper.setDebugMode(value);
+							await this.plugin.saveSettings();
 						})
 				);
-			
-			// CHARACTERS PER PAGE
-
-			const charsPerPageChanged = async (txt: TextComponent, value: string) => {
-				const asNumber = Number(value);
-				const isValid = !isNaN(asNumber) && asNumber > 0;
-
-				txt.inputEl.style.borderColor = isValid ? null : "red";
-
-				const defaultCharsPerPage = 1500;
-				this.plugin.settings.charsPerPage = isValid
-					? Number(value)
-					: defaultCharsPerPage;
-				await this.plugin.saveSettings();
-				await this.plugin.initialize();
-			};
-			new Setting(containerEl)
-				.setName("Characters per page")
-				.setDesc(
-					`Used for page count. ${
-						this.plugin.settings.charsPerPageIncludesWhitespace
-							? "2400 is common in Danish."
-							: "1500 is common in German (Normseite)."
-					}`
-				)
-				.addText((txt) => {
-					txt
-						.setPlaceholder("1500")
-						.setValue(this.plugin.settings.charsPerPage.toString())
-						.onChange(debounce(charsPerPageChanged.bind(this, txt), 1000));
-				});
 		}
+	}
+
+	private renderReanalyzeButton(containerEl: HTMLElement): void {
+		containerEl.createEl('hr');
 
 		// REANALYZE
 
 		new Setting(containerEl)
+			.setHeading()
 			.setName("Reanalyze all documents")
 			.setDesc(
 				"If changes have occurred outside of Obsidian, you may need to trigger a manual analysis"
@@ -609,22 +714,6 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 							button.setCta();
 							button.disabled = false;
 						}, 1000);
-					})
-			);
-
-		// DEBUG MODE
-
-		new Setting(containerEl)
-			.setName("Debug mode")
-			.setDesc("Log debugging information to the developer console")
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.debugMode)
-					.onChange(async (value) => {
-						this.plugin.settings.debugMode = value;
-						this.plugin.debugHelper.setDebugMode(value);
-						this.plugin.fileHelper.setDebugMode(value);
-						await this.plugin.saveSettings();
 					})
 			);
 	}
