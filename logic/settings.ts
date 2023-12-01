@@ -1,66 +1,66 @@
-import type NovelWordCountPlugin from 'main';
+import type NovelWordCountPlugin from "main";
 import {
 	App,
 	PluginSettingTab,
 	Setting,
 	TextComponent,
 	debounce,
-} from 'obsidian';
+} from "obsidian";
 
 export enum CountType {
-	None = 'none',
-	Word = 'word',
-	Page = 'page',
-	PageDecimal = 'pagedecimal',
-	ReadTime = 'readtime',
-	PercentGoal = 'percentgoal',
-	Note = 'note',
-	Character = 'character',
-	Link = 'link',
-	Embed = 'embed',
-	Alias = 'alias',
-	Created = 'created',
-	Modified = 'modified',
-	FileSize = 'filesize',
+	None = "none",
+	Word = "word",
+	Page = "page",
+	PageDecimal = "pagedecimal",
+	ReadTime = "readtime",
+	PercentGoal = "percentgoal",
+	Note = "note",
+	Character = "character",
+	Link = "link",
+	Embed = "embed",
+	Alias = "alias",
+	Created = "created",
+	Modified = "modified",
+	FileSize = "filesize",
 }
 
 export const COUNT_TYPE_DISPLAY_STRINGS: { [countType: string]: string } = {
-	[CountType.None]: 'None',
-	[CountType.Word]: 'Word Count',
-	[CountType.Page]: 'Page Count',
-	[CountType.PageDecimal]: 'Page Count (decimal)',
-	[CountType.ReadTime]: 'Reading Time',
-	[CountType.PercentGoal]: '% of Word Goal',
-	[CountType.Note]: 'Note Count',
-	[CountType.Character]: 'Character Count',
-	[CountType.Link]: 'Link Count',
-	[CountType.Embed]: 'Embed Count',
-	[CountType.Alias]: 'First Alias',
-	[CountType.Created]: 'Created Date',
-	[CountType.Modified]: 'Last Updated Date',
-	[CountType.FileSize]: 'File Size',
+	[CountType.None]: "None",
+	[CountType.Word]: "Word Count",
+	[CountType.Page]: "Page Count",
+	[CountType.PageDecimal]: "Page Count (decimal)",
+	[CountType.ReadTime]: "Reading Time",
+	[CountType.PercentGoal]: "% of Word Goal",
+	[CountType.Note]: "Note Count",
+	[CountType.Character]: "Character Count",
+	[CountType.Link]: "Link Count",
+	[CountType.Embed]: "Embed Count",
+	[CountType.Alias]: "First Alias",
+	[CountType.Created]: "Created Date",
+	[CountType.Modified]: "Last Updated Date",
+	[CountType.FileSize]: "File Size",
 };
 
 export const COUNT_TYPE_DESCRIPTIONS: { [countType: string]: string } = {
-	[CountType.None]: 'Hidden.',
-	[CountType.Word]: 'Total words.',
-	[CountType.Page]: 'Total pages, rounded up.',
+	[CountType.None]: "Hidden.",
+	[CountType.Word]: "Total words.",
+	[CountType.Page]: "Total pages, rounded up.",
 	[CountType.PageDecimal]:
-		'Total pages, precise to 2 digits after the decimal.',
-	[CountType.ReadTime]: 'Estimated time to read the note.',
+		"Total pages, precise to 2 digits after the decimal.",
+	[CountType.ReadTime]: "Estimated time to read the note.",
 	[CountType.PercentGoal]:
 		"Set a word goal by adding the 'word-goal' property to a note.",
-	[CountType.Note]: 'Total notes.',
+	[CountType.Note]: "Total notes.",
 	[CountType.Character]:
-		'Total characters (letters, symbols, numbers, and spaces).',
-	[CountType.Link]: 'Total links to other notes.',
-	[CountType.Embed]: 'Total embedded images, files, and notes.',
-	[CountType.Alias]: 'The first alias property of each note.',
+		"Total characters (letters, symbols, numbers, and spaces).",
+	[CountType.Link]: "Total links to other notes.",
+	[CountType.Embed]: "Total embedded images, files, and notes.",
+	[CountType.Alias]: "The first alias property of each note.",
 	[CountType.Created]:
-		'Creation date. (On folders: earliest creation date of any note.)',
+		"Creation date. (On folders: earliest creation date of any note.)",
 	[CountType.Modified]:
-		'Date of last edit. (On folders: latest edit date of any note.)',
-	[CountType.FileSize]: 'Total size on hard drive.',
+		"Date of last edit. (On folders: latest edit date of any note.)",
+	[CountType.FileSize]: "Total size on hard drive.",
 };
 
 export const UNFORMATTABLE_COUNT_TYPES = [
@@ -72,16 +72,16 @@ export const UNFORMATTABLE_COUNT_TYPES = [
 export const COUNT_TYPE_DEFAULT_SHORT_SUFFIXES: {
 	[countType: string]: string;
 } = {
-	[CountType.Word]: 'w',
-	[CountType.Page]: 'p',
-	[CountType.PageDecimal]: 'p',
-	[CountType.PercentGoal]: '%',
-	[CountType.Note]: 'n',
-	[CountType.Character]: 'ch',
-	[CountType.Link]: 'x',
-	[CountType.Embed]: 'em',
-	[CountType.Created]: '/c',
-	[CountType.Modified]: '/u',
+	[CountType.Word]: "w",
+	[CountType.Page]: "p",
+	[CountType.PageDecimal]: "p",
+	[CountType.PercentGoal]: "%",
+	[CountType.Note]: "n",
+	[CountType.Character]: "ch",
+	[CountType.Link]: "x",
+	[CountType.Embed]: "em",
+	[CountType.Created]: "/c",
+	[CountType.Modified]: "/u",
 };
 
 export function getDescription(countType: CountType): string {
@@ -106,9 +106,9 @@ export const COUNT_TYPES = [
 ];
 
 export enum AlignmentType {
-	Inline = 'inline',
-	Right = 'right',
-	Below = 'below',
+	Inline = "inline",
+	Right = "right",
+	Below = "below",
 }
 
 export const ALIGNMENT_TYPES = [
@@ -118,19 +118,19 @@ export const ALIGNMENT_TYPES = [
 ];
 
 export enum CharacterCountType {
-	StringLength = 'AllCharacters',
-	ExcludeWhitespace = 'ExcludeWhitespace',
+	StringLength = "AllCharacters",
+	ExcludeWhitespace = "ExcludeWhitespace",
 }
 
 export enum WordCountType {
-	SpaceDelimited = 'SpaceDelimited',
-	CJK = 'CJK',
-	AutoDetect = 'AutoDetect',
+	SpaceDelimited = "SpaceDelimited",
+	CJK = "CJK",
+	AutoDetect = "AutoDetect",
 }
 
 export enum PageCountType {
-	ByWords = 'ByWords',
-	ByChars = 'ByChars',
+	ByWords = "ByWords",
+	ByChars = "ByChars",
 }
 
 export interface NovelWordCountSettings {
@@ -177,23 +177,23 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	useAdvancedFormatting: false,
 	// NOTES
 	countType: CountType.Word,
-	countTypeSuffix: 'w',
+	countTypeSuffix: "w",
 	countType2: CountType.None,
-	countType2Suffix: '',
+	countType2Suffix: "",
 	countType3: CountType.None,
-	countType3Suffix: '',
-	pipeSeparator: '|',
+	countType3Suffix: "",
+	pipeSeparator: "|",
 	abbreviateDescriptions: false,
 	alignment: AlignmentType.Inline,
 	// FOLDERS
 	showSameCountsOnFolders: true,
 	folderCountType: CountType.Word,
-	folderCountTypeSuffix: 'w',
+	folderCountTypeSuffix: "w",
 	folderCountType2: CountType.None,
-	folderCountType2Suffix: '',
+	folderCountType2Suffix: "",
 	folderCountType3: CountType.None,
-	folderCountType3Suffix: '',
-	folderPipeSeparator: '|',
+	folderCountType3Suffix: "",
+	folderPipeSeparator: "|",
 	folderAbbreviateDescriptions: false,
 	folderAlignment: AlignmentType.Inline,
 	// ADVANCED
@@ -206,7 +206,7 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	characterCountType: CharacterCountType.StringLength,
 	wordCountType: WordCountType.SpaceDelimited,
 	pageCountType: PageCountType.ByWords,
-	includeDirectories: '',
+	includeDirectories: "",
 	excludeComments: false,
 	debugMode: false,
 };
@@ -235,21 +235,21 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 	//
 
 	private renderNoteSettings(containerEl: HTMLElement): void {
-		const mainHeader = containerEl.createEl('div', {
+		const mainHeader = containerEl.createEl("div", {
 			cls: [
-				'setting-item',
-				'setting-item-heading',
-				'novel-word-count-settings-header',
+				"setting-item",
+				"setting-item-heading",
+				"novel-word-count-settings-header",
 			],
 		});
-		mainHeader.createEl('div', { text: 'Notes' });
-		mainHeader.createEl('div', {
-			text: 'You can display up to three data types side by side.',
-			cls: 'setting-item-description',
+		mainHeader.createEl("div", { text: "Notes" });
+		mainHeader.createEl("div", {
+			text: "You can display up to three data types side by side.",
+			cls: "setting-item-description",
 		});
 
 		new Setting(containerEl)
-			.setDesc('Use advanced formatting')
+			.setDesc("Use advanced formatting")
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.useAdvancedFormatting)
@@ -264,7 +264,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 		// NOTE - DATA TYPE 1
 
 		this.renderCountTypeSetting(containerEl, {
-			name: '1st data type to show',
+			name: "1st data type to show",
 			oldCountType: this.plugin.settings.countType,
 			setNewCountType: (value) => {
 				this.plugin.settings.countType = value;
@@ -282,7 +282,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 		// NOTE - DATA TYPE 2
 
 		this.renderCountTypeSetting(containerEl, {
-			name: '2nd data type to show',
+			name: "2nd data type to show",
 			oldCountType: this.plugin.settings.countType2,
 			setNewCountType: (value) => {
 				this.plugin.settings.countType2 = value;
@@ -300,7 +300,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 		// NOTE - DATA TYPE 3
 
 		this.renderCountTypeSetting(containerEl, {
-			name: '3rd data type to show',
+			name: "3rd data type to show",
 			oldCountType: this.plugin.settings.countType3,
 			setNewCountType: (value) => {
 				this.plugin.settings.countType3 = value;
@@ -317,7 +317,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 		// NOTE - SEPARATOR
 		if (this.plugin.settings.useAdvancedFormatting) {
-			new Setting(containerEl).setName('Data type separator').addText((text) =>
+			new Setting(containerEl).setName("Data type separator").addText((text) =>
 				text
 					.setValue(this.plugin.settings.pipeSeparator)
 					.onChange(async (value) => {
@@ -332,7 +332,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 		if (!this.plugin.settings.useAdvancedFormatting) {
 			new Setting(containerEl)
-				.setName('Abbreviate descriptions')
+				.setName("Abbreviate descriptions")
 				.setDesc("E.g. show '120w' instead of '120 words'")
 				.addToggle((toggle) =>
 					toggle
@@ -348,15 +348,15 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 		// NOTE - ALIGNMENT
 
 		new Setting(containerEl)
-			.setName('Alignment')
+			.setName("Alignment")
 			.setDesc(
-				'Show data inline with file/folder names, right-aligned, or underneath'
+				"Show data inline with file/folder names, right-aligned, or underneath"
 			)
 			.addDropdown((drop) => {
 				drop
-					.addOption(AlignmentType.Inline, 'Inline')
-					.addOption(AlignmentType.Right, 'Right-aligned')
-					.addOption(AlignmentType.Below, 'Below')
+					.addOption(AlignmentType.Inline, "Inline")
+					.addOption(AlignmentType.Right, "Right-aligned")
+					.addOption(AlignmentType.Below, "Below")
 					.setValue(this.plugin.settings.alignment)
 					.onChange(async (value: AlignmentType) => {
 						this.plugin.settings.alignment = value;
@@ -367,13 +367,13 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 	}
 
 	private renderFolderSettings(containerEl: HTMLElement): void {
-		containerEl.createEl('hr');
+		containerEl.createEl("hr");
 
 		// SHOW SAME DATA ON FOLDERS
 
 		new Setting(containerEl)
 			.setHeading()
-			.setName('Folders: Same data as Notes')
+			.setName("Folders: Same data as Notes")
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.showSameCountsOnFolders)
@@ -390,7 +390,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			// FOLDER - DATA TYPE 1
 
 			this.renderCountTypeSetting(containerEl, {
-				name: '1st data type to show',
+				name: "1st data type to show",
 				oldCountType: this.plugin.settings.folderCountType,
 				setNewCountType: (value) => {
 					this.plugin.settings.folderCountType = value;
@@ -411,7 +411,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			// FOLDER - DATA TYPE 2
 
 			this.renderCountTypeSetting(containerEl, {
-				name: '2nd data type to show',
+				name: "2nd data type to show",
 				oldCountType: this.plugin.settings.folderCountType2,
 				setNewCountType: (value) => {
 					this.plugin.settings.folderCountType2 = value;
@@ -432,7 +432,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			// FOLDER - DATA TYPE 3
 
 			this.renderCountTypeSetting(containerEl, {
-				name: '3rd data type to show',
+				name: "3rd data type to show",
 				oldCountType: this.plugin.settings.folderCountType3,
 				setNewCountType: (value) => {
 					this.plugin.settings.folderCountType3 = value;
@@ -453,7 +453,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			// FOLDER - SEPARATOR
 			if (this.plugin.settings.useAdvancedFormatting) {
 				new Setting(containerEl)
-					.setName('Data type separator')
+					.setName("Data type separator")
 					.addText((text) =>
 						text
 							.setValue(this.plugin.settings.folderPipeSeparator)
@@ -469,7 +469,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 			if (!this.plugin.settings.useAdvancedFormatting) {
 				new Setting(containerEl)
-					.setName('Abbreviate descriptions')
+					.setName("Abbreviate descriptions")
 					.addToggle((toggle) =>
 						toggle
 							.setValue(this.plugin.settings.folderAbbreviateDescriptions)
@@ -483,11 +483,11 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 			// FOLDER - ALIGNMENT
 
-			new Setting(containerEl).setName('Alignment').addDropdown((drop) => {
+			new Setting(containerEl).setName("Alignment").addDropdown((drop) => {
 				drop
-					.addOption(AlignmentType.Inline, 'Inline')
-					.addOption(AlignmentType.Right, 'Right-aligned')
-					.addOption(AlignmentType.Below, 'Below')
+					.addOption(AlignmentType.Inline, "Inline")
+					.addOption(AlignmentType.Right, "Right-aligned")
+					.addOption(AlignmentType.Below, "Below")
 					.setValue(this.plugin.settings.folderAlignment)
 					.onChange(async (value: AlignmentType) => {
 						this.plugin.settings.folderAlignment = value;
@@ -499,12 +499,12 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 	}
 
 	private renderAdvancedSettings(containerEl: HTMLElement): void {
-		containerEl.createEl('hr');
+		containerEl.createEl("hr");
 
 		new Setting(containerEl)
 			.setHeading()
-			.setName('Show advanced options')
-			.setDesc('Language compatibility and fine-tuning')
+			.setName("Show advanced options")
+			.setDesc("Language compatibility and fine-tuning")
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.showAdvanced)
@@ -519,13 +519,13 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			// INCLUDE DIRECTORIES
 
 			new Setting(containerEl)
-				.setName('Include directories')
+				.setName("Include directories")
 				.setDesc(
-					'Only include specific directories. Defaults to all directories. Can be used to exclude directories from displaying counts.'
+					"Only include specific directories. Defaults to all directories. Can be used to exclude directories from displaying counts."
 				)
 				.addText((txt) => {
 					txt
-						.setPlaceholder('')
+						.setPlaceholder("")
 						.setValue(this.plugin.settings.includeDirectories.toString())
 						.onChange(async (value) => {
 							this.plugin.settings.includeDirectories = value;
@@ -537,9 +537,9 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			// EXCLUDE COMMENTS
 
 			new Setting(containerEl)
-				.setName('Exclude comments')
+				.setName("Exclude comments")
 				.setDesc(
-					'Exclude %%Obsidian%% and <!--HTML--> comments from counts. May affect performance on large vaults.'
+					"Exclude %%Obsidian%% and <!--HTML--> comments from counts. May affect performance on large vaults."
 				)
 				.addToggle((toggle) =>
 					toggle
@@ -554,14 +554,14 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			// CHARACTER COUNT METHOD
 
 			new Setting(containerEl)
-				.setName('Character count method')
-				.setDesc('For language compatibility')
+				.setName("Character count method")
+				.setDesc("For language compatibility")
 				.addDropdown((drop) => {
 					drop
-						.addOption(CharacterCountType.StringLength, 'All characters')
+						.addOption(CharacterCountType.StringLength, "All characters")
 						.addOption(
 							CharacterCountType.ExcludeWhitespace,
-							'Exclude whitespace'
+							"Exclude whitespace"
 						)
 						.setValue(this.plugin.settings.characterCountType)
 						.onChange(async (value: CharacterCountType) => {
@@ -574,16 +574,16 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			// WORD COUNT METHOD
 
 			new Setting(containerEl)
-				.setName('Word count method')
-				.setDesc('For language compatibility')
+				.setName("Word count method")
+				.setDesc("For language compatibility")
 				.addDropdown((drop) => {
 					drop
 						.addOption(
 							WordCountType.SpaceDelimited,
-							'Space-delimited (European languages)'
+							"Space-delimited (European languages)"
 						)
-						.addOption(WordCountType.CJK, 'Han/Kana/Hangul (CJK)')
-						.addOption(WordCountType.AutoDetect, 'Auto-detect by file')
+						.addOption(WordCountType.CJK, "Han/Kana/Hangul (CJK)")
+						.addOption(WordCountType.AutoDetect, "Auto-detect by file")
 						.setValue(this.plugin.settings.wordCountType)
 						.onChange(async (value: WordCountType) => {
 							this.plugin.settings.wordCountType = value;
@@ -597,12 +597,12 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			// PAGE COUNT METHOD
 
 			new Setting(containerEl)
-				.setName('Page count method')
-				.setDesc('For language compatibility')
+				.setName("Page count method")
+				.setDesc("For language compatibility")
 				.addDropdown((drop) => {
 					drop
-						.addOption(PageCountType.ByWords, 'Words per page')
-						.addOption(PageCountType.ByChars, 'Characters per page')
+						.addOption(PageCountType.ByWords, "Words per page")
+						.addOption(PageCountType.ByChars, "Characters per page")
 						.setValue(this.plugin.settings.pageCountType)
 						.onChange(async (value: PageCountType) => {
 							this.plugin.settings.pageCountType = value;
@@ -627,20 +627,20 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					const asNumber = Number(value);
 					const isValid = !isNaN(asNumber) && asNumber > 0;
 
-					txt.inputEl.style.borderColor = isValid ? null : 'red';
+					txt.inputEl.style.borderColor = isValid ? null : "red";
 
 					this.plugin.settings.wordsPerMinute = isValid ? Number(value) : 265;
 					await this.plugin.saveSettings();
 					await this.plugin.initialize();
 				};
 				new Setting(containerEl)
-					.setName('Words per minute')
+					.setName("Words per minute")
 					.setDesc(
-						'Used to calculate Reading Time. 265 is the average speed of an English-speaking adult.'
+						"Used to calculate Reading Time. 265 is the average speed of an English-speaking adult."
 					)
 					.addText((txt) => {
 						txt
-							.setPlaceholder('265')
+							.setPlaceholder("265")
 							.setValue(this.plugin.settings.wordsPerMinute.toString())
 							.onChange(debounce(wordsPerMinuteChanged.bind(this, txt), 1000));
 					});
@@ -658,20 +658,20 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					const asNumber = Number(value);
 					const isValid = !isNaN(asNumber) && asNumber > 0;
 
-					txt.inputEl.style.borderColor = isValid ? null : 'red';
+					txt.inputEl.style.borderColor = isValid ? null : "red";
 
 					this.plugin.settings.charsPerMinute = isValid ? Number(value) : 500;
 					await this.plugin.saveSettings();
 					await this.plugin.initialize();
 				};
 				new Setting(containerEl)
-					.setName('Characters per minute')
+					.setName("Characters per minute")
 					.setDesc(
-						'Used to calculate Reading Time. 500 is the average speed for CJK texts.'
+						"Used to calculate Reading Time. 500 is the average speed for CJK texts."
 					)
 					.addText((txt) => {
 						txt
-							.setPlaceholder('500')
+							.setPlaceholder("500")
 							.setValue(this.plugin.settings.charsPerMinute.toString())
 							.onChange(debounce(charsPerMinuteChanged.bind(this, txt), 1000));
 					});
@@ -687,20 +687,20 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					const asNumber = Number(value);
 					const isValid = !isNaN(asNumber) && asNumber > 0;
 
-					txt.inputEl.style.borderColor = isValid ? null : 'red';
+					txt.inputEl.style.borderColor = isValid ? null : "red";
 
 					this.plugin.settings.wordsPerPage = isValid ? Number(value) : 300;
 					await this.plugin.saveSettings();
 					await this.plugin.initialize();
 				};
 				new Setting(containerEl)
-					.setName('Words per page')
+					.setName("Words per page")
 					.setDesc(
-						'Used for page count. 300 is standard in English language publishing.'
+						"Used for page count. 300 is standard in English language publishing."
 					)
 					.addText((txt) => {
 						txt
-							.setPlaceholder('300')
+							.setPlaceholder("300")
 							.setValue(this.plugin.settings.wordsPerPage.toString())
 							.onChange(debounce(wordsPerPageChanged.bind(this, txt), 1000));
 					});
@@ -710,7 +710,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 			if (this.plugin.settings.pageCountType === PageCountType.ByChars) {
 				new Setting(containerEl)
-					.setName('Include whitespace characters in page count')
+					.setName("Include whitespace characters in page count")
 					.addToggle((toggle) =>
 						toggle
 							.setValue(this.plugin.settings.charsPerPageIncludesWhitespace)
@@ -732,7 +732,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					const asNumber = Number(value);
 					const isValid = !isNaN(asNumber) && asNumber > 0;
 
-					txt.inputEl.style.borderColor = isValid ? null : 'red';
+					txt.inputEl.style.borderColor = isValid ? null : "red";
 
 					const defaultCharsPerPage = 1500;
 					this.plugin.settings.charsPerPage = isValid
@@ -742,17 +742,17 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					await this.plugin.initialize();
 				};
 				new Setting(containerEl)
-					.setName('Characters per page')
+					.setName("Characters per page")
 					.setDesc(
 						`Used for page count. ${
 							this.plugin.settings.charsPerPageIncludesWhitespace
-								? '2400 is common in Danish.'
-								: '1500 is common in German (Normseite).'
+								? "2400 is common in Danish."
+								: "1500 is common in German (Normseite)."
 						}`
 					)
 					.addText((txt) => {
 						txt
-							.setPlaceholder('1500')
+							.setPlaceholder("1500")
 							.setValue(this.plugin.settings.charsPerPage.toString())
 							.onChange(debounce(charsPerPageChanged.bind(this, txt), 1000));
 					});
@@ -761,8 +761,8 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			// DEBUG MODE
 
 			new Setting(containerEl)
-				.setName('Debug mode')
-				.setDesc('Log debugging information to the developer console')
+				.setName("Debug mode")
+				.setDesc("Log debugging information to the developer console")
 				.addToggle((toggle) =>
 					toggle
 						.setValue(this.plugin.settings.debugMode)
@@ -777,28 +777,28 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 	}
 
 	private renderReanalyzeButton(containerEl: HTMLElement): void {
-		containerEl.createEl('hr');
+		containerEl.createEl("hr");
 
 		// REANALYZE
 
 		new Setting(containerEl)
 			.setHeading()
-			.setName('Reanalyze all documents')
+			.setName("Reanalyze all documents")
 			.setDesc(
-				'If changes have occurred outside of Obsidian, you may need to trigger a manual analysis'
+				"If changes have occurred outside of Obsidian, you may need to trigger a manual analysis"
 			)
 			.addButton((button) =>
 				button
-					.setButtonText('Reanalyze')
+					.setButtonText("Reanalyze")
 					.setCta()
 					.onClick(async () => {
 						button.disabled = true;
 						await this.plugin.initialize();
-						button.setButtonText('Done');
+						button.setButtonText("Done");
 						button.removeCta();
 
 						setTimeout(() => {
-							button.setButtonText('Reanalyze');
+							button.setButtonText("Reanalyze");
 							button.setCta();
 							button.disabled = false;
 						}, 1000);
