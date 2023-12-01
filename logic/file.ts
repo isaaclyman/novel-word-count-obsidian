@@ -1,4 +1,4 @@
-import type NovelWordCountPlugin from "main";
+import type NovelWordCountPlugin from 'main';
 import {
 	App,
 	CachedMetadata,
@@ -8,14 +8,14 @@ import {
 	Vault,
 	getAllTags,
 	parseFrontMatterAliases,
-} from "obsidian";
-import { DebugHelper } from "./debug";
+} from 'obsidian';
+import { DebugHelper } from './debug';
 import {
 	NovelWordCountSettings,
 	PageCountType,
 	WordCountType,
-} from "./settings";
-import { CancellationToken } from "./cancellation";
+} from './settings';
+import { CancellationToken } from './cancellation';
 
 export interface CountData {
 	isCountable: boolean;
@@ -59,9 +59,26 @@ export class FileHelper {
 	public async getAllFileCounts(
 		cancellationToken: CancellationToken
 	): Promise<CountsByFile> {
-		const debugEnd = this.debugHelper.debugStart("getAllFileCounts");
-
-		const files = this.vault.getFiles();
+		const debugEnd = this.debugHelper.debugStart('getAllFileCounts');
+		let files: TFile[] = [];
+		if (
+			this.plugin.settings.showAdvanced &&
+			this.plugin.settings.includeDirectories !== '*' &&
+			this.plugin.settings.includeDirectories !== ''
+		) {
+			const includePath = this.vault.getAbstractFileByPath(
+				this.plugin.settings.includeDirectories
+			);
+			if (includePath instanceof TFolder) {
+				files = includePath.children.filter(
+					(abstractFile): abstractFile is TFile => abstractFile instanceof TFile
+				);
+			} else {
+				// May want to raise an error here?
+			}
+		} else {
+			files = this.vault.getFiles();
+		}
 		const counts: CountsByFile = {};
 
 		for (const file of files) {
@@ -170,7 +187,7 @@ export class FileHelper {
 	}
 
 	private countNonWhitespaceCharacters(content: string): number {
-		return (content.replace(/\s+/g, "") || []).length;
+		return (content.replace(/\s+/g, '') || []).length;
 	}
 
 	private cjkRegex =
@@ -208,7 +225,7 @@ export class FileHelper {
 
 	private getChildPaths(counts: CountsByFile, path: string): string[] {
 		const childPaths = Object.keys(counts).filter(
-			(countPath) => path === "/" || countPath.startsWith(path + "/")
+			(countPath) => path === '/' || countPath.startsWith(path + '/')
 		);
 		return childPaths;
 	}
@@ -304,7 +321,7 @@ export class FileHelper {
 
 	private getWordGoal(metadata?: CachedMetadata): number | null {
 		const goal =
-			metadata && metadata.frontmatter && metadata.frontmatter["word-goal"];
+			metadata && metadata.frontmatter && metadata.frontmatter['word-goal'];
 		if (!goal || isNaN(Number(goal))) {
 			return null;
 		}
@@ -331,11 +348,11 @@ export class FileHelper {
 
 		if (this.settings.excludeComments) {
 			const hasComments =
-				meaningfulContent.includes("%%") || meaningfulContent.includes("<!--");
+				meaningfulContent.includes('%%') || meaningfulContent.includes('<!--');
 			if (hasComments) {
 				meaningfulContent = meaningfulContent.replace(
 					/(?:%%[\s\S]+?%%|<!--[\s\S]+?-->)/gim,
-					""
+					''
 				);
 			}
 		}
@@ -344,26 +361,26 @@ export class FileHelper {
 	}
 
 	private readonly FileTypeAllowlist = new Set([
-		"",
+		'',
 		// Markdown extensions
-		"markdown",
-		"md",
-		"mdml",
-		"mdown",
-		"mdtext",
-		"mdtxt",
-		"mdwn",
-		"mkd",
-		"mkdn",
+		'markdown',
+		'md',
+		'mdml',
+		'mdown',
+		'mdtext',
+		'mdtxt',
+		'mdwn',
+		'mkd',
+		'mkdn',
 		// Text files
-		"txt",
-		"text",
-		"rtf",
+		'txt',
+		'text',
+		'rtf',
 		// MD with embedded code
-		"qmd",
-		"rmd",
+		'qmd',
+		'rmd',
 		// MD for screenwriters
-		"fountain",
+		'fountain',
 	]);
 
 	private shouldCountFile(file: TFile, metadata?: CachedMetadata): boolean {
@@ -377,10 +394,10 @@ export class FileHelper {
 
 		if (
 			metadata.frontmatter &&
-			metadata.frontmatter.hasOwnProperty("wordcount") &&
+			metadata.frontmatter.hasOwnProperty('wordcount') &&
 			(metadata.frontmatter.wordcount === null ||
 				metadata.frontmatter.wordcount === false ||
-				metadata.frontmatter.wordcount === "false")
+				metadata.frontmatter.wordcount === 'false')
 		) {
 			return false;
 		}
@@ -388,11 +405,11 @@ export class FileHelper {
 		const tags = getAllTags(metadata).map((tag) => tag.toLowerCase());
 		if (
 			tags.length &&
-			(tags.includes("#excalidraw") ||
+			(tags.includes('#excalidraw') ||
 				tags
-					.filter((tag) => tag.startsWith("#exclude"))
-					.map((tag) => tag.replace(/[-_]/g, ""))
-					.includes("#excludefromwordcount"))
+					.filter((tag) => tag.startsWith('#exclude'))
+					.map((tag) => tag.replace(/[-_]/g, ''))
+					.includes('#excludefromwordcount'))
 		) {
 			return false;
 		}
