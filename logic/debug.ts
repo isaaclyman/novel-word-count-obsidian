@@ -26,7 +26,7 @@ export class DebugHelper {
 			return () => {}
 		}
 
-		var qualifiedName = `novel-word-count|${name}`
+		let qualifiedName = `novel-word-count|${name}`
 		console.time(qualifiedName);
 		return () => console.timeEnd(qualifiedName);
 	}
