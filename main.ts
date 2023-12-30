@@ -58,6 +58,7 @@ export default class NovelWordCountPlugin extends Plugin {
 
 		this.fileHelper.setDebugMode(this.savedData.settings.debugMode);
 		this.debugHelper.setDebugMode(this.savedData.settings.debugMode);
+		this.debugHelper.debug(`Detected locales: [${navigator.languages}]`);
 		this.debugHelper.debug("onload lifecycle hook");
 
 		this.addSettingTab(new NovelWordCountSettingTab(this.app, this));

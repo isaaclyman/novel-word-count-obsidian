@@ -1,3 +1,5 @@
+import { NumberFormatDefault } from "./locale_format";
+
 export class ReadTimeHelper {
   formatReadTime(minutes: number, shouldAbbreviate: boolean): string {
     const final = shouldAbbreviate ? '' : ' read';
@@ -15,7 +17,7 @@ export class ReadTimeHelper {
       return `${Math.round(minutes)}m${final}`;
     }
 
-    const hours = Math.floor(minutes / 60).toLocaleString();
+    const hours = NumberFormatDefault.format(Math.floor(minutes / 60));
     const remainder = Math.floor(minutes) % 60;
     return remainder === 0 ? `${hours}h${final}` : `${hours}h${remainder}m${final}`;
   }

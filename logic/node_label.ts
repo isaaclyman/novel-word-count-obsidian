@@ -7,6 +7,7 @@ import {
 } from "./settings";
 import { FileSizeHelper } from "./filesize";
 import { ReadTimeHelper } from "./readtime";
+import { DateFormat, NumberFormatDecimal, NumberFormatDefault } from "./locale_format";
 
 interface CountTypeWithSuffix {
 	countType: CountType;
@@ -69,7 +70,12 @@ export class NodeLabelHelper {
 		return countTypes
 			.filter((ct) => ct.countType !== CountType.None)
 			.map((ct) =>
-				this.getDataTypeLabel(counts, ct.countType, abbreviateDescriptions, ct.overrideSuffix)
+				this.getDataTypeLabel(
+					counts,
+					ct.countType,
+					abbreviateDescriptions,
+					ct.overrideSuffix
+				)
 			)
 			.filter((display) => display !== null)
 			.join(` ${separator} `);
@@ -89,7 +95,7 @@ export class NodeLabelHelper {
 		count: string;
 		noun: string;
 		abbreviatedNoun: string;
-    abbreviateDescriptions: boolean;
+		abbreviateDescriptions: boolean;
 		overrideSuffix: string | null;
 	}): string {
 		const defaultSuffix = config.abbreviateDescriptions
@@ -109,7 +115,7 @@ export class NodeLabelHelper {
 	private getDataTypeLabel(
 		counts: CountData,
 		countType: CountType,
-    abbreviateDescriptions: boolean,
+		abbreviateDescriptions: boolean,
 		overrideSuffix: string | null
 	): string | null {
 		if (!counts || typeof counts.wordCount !== "number") {
@@ -128,29 +134,26 @@ export class NodeLabelHelper {
 				return null;
 			case CountType.Word:
 				return this.getBasicCountString({
-					count: Math.ceil(counts.wordCount).toLocaleString(),
+					count: NumberFormatDefault.format(Math.ceil(counts.wordCount)),
 					noun: "word",
 					abbreviatedNoun: "w",
-          abbreviateDescriptions,
+					abbreviateDescriptions,
 					overrideSuffix,
 				});
 			case CountType.Page:
 				return this.getBasicCountString({
-					count: Math.ceil(counts.pageCount).toLocaleString(),
+					count: NumberFormatDefault.format(Math.ceil(counts.pageCount)),
 					noun: "page",
 					abbreviatedNoun: "p",
-          abbreviateDescriptions,
+					abbreviateDescriptions,
 					overrideSuffix,
 				});
 			case CountType.PageDecimal:
 				return this.getBasicCountString({
-					count: counts.pageCount.toLocaleString(undefined, {
-						minimumFractionDigits: 1,
-						maximumFractionDigits: 2,
-					}),
+					count: NumberFormatDecimal.format(counts.pageCount),
 					noun: "page",
 					abbreviatedNoun: "p",
-          abbreviateDescriptions,
+					abbreviateDescriptions,
 					overrideSuffix,
 				});
 			case CountType.PercentGoal:
@@ -159,19 +162,19 @@ export class NodeLabelHelper {
 				}
 
 				const fraction = counts.wordCountTowardGoal / counts.wordGoal;
-				const percent = Math.round(fraction * 100).toLocaleString();
+				const percent = NumberFormatDefault.format(Math.round(fraction * 100));
 				const defaultSuffix = abbreviateDescriptions
 					? "%"
-					: `% of ${counts.wordGoal.toLocaleString()}`;
+					: `% of ${NumberFormatDefault.format(counts.wordGoal)}`;
 				const suffix = overrideSuffix ?? defaultSuffix;
 
 				return `${percent}${suffix}`;
 			case CountType.Note:
 				return this.getBasicCountString({
-					count: counts.noteCount.toLocaleString(),
+					count: NumberFormatDefault.format(counts.noteCount),
 					noun: "note",
 					abbreviatedNoun: "n",
-          abbreviateDescriptions,
+					abbreviateDescriptions,
 					overrideSuffix,
 				});
 			case CountType.Character:
@@ -182,10 +185,10 @@ export class NodeLabelHelper {
 						: counts.characterCount;
 
 				return this.getBasicCountString({
-					count: characterCount.toLocaleString(),
+					count: NumberFormatDefault.format(characterCount),
 					noun: "character",
 					abbreviatedNoun: "ch",
-          abbreviateDescriptions,
+					abbreviateDescriptions,
 					overrideSuffix,
 				});
 			case CountType.ReadTime:
@@ -198,25 +201,25 @@ export class NodeLabelHelper {
 					return null;
 				}
 
-        return this.getBasicCountString({
-          count: counts.linkCount.toLocaleString(),
-          noun: 'link',
-          abbreviatedNoun: 'x',
-          abbreviateDescriptions,
-          overrideSuffix,
-        });
+				return this.getBasicCountString({
+					count: NumberFormatDefault.format(counts.linkCount),
+					noun: "link",
+					abbreviatedNoun: "x",
+					abbreviateDescriptions,
+					overrideSuffix,
+				});
 			case CountType.Embed:
 				if (counts.embedCount === 0) {
 					return null;
 				}
 
-        return this.getBasicCountString({
-          count: counts.embedCount.toLocaleString(),
-          noun: 'embed',
-          abbreviatedNoun: 'em',
-          abbreviateDescriptions,
-          overrideSuffix,
-        });
+				return this.getBasicCountString({
+					count: NumberFormatDefault.format(counts.embedCount),
+					noun: "embed",
+					abbreviatedNoun: "em",
+					abbreviateDescriptions,
+					overrideSuffix,
+				});
 			case CountType.Alias:
 				if (
 					!counts.aliases ||
@@ -236,27 +239,25 @@ export class NodeLabelHelper {
 					return null;
 				}
 
-        const cDate = new Date(counts.createdDate).toLocaleDateString();
-        if (overrideSuffix !== null) {
-          return `${cDate}${overrideSuffix}`;
-        }
+				const cDate = DateFormat.format(new Date(counts.createdDate));
+				if (overrideSuffix !== null) {
+					return `${cDate}${overrideSuffix}`;
+				}
 
-				return abbreviateDescriptions
-					? `${cDate}/c`
-					: `Created ${cDate}`;
+				return abbreviateDescriptions ? `${cDate}/c` : `Created ${cDate}`;
 			case CountType.Modified:
 				if (counts.modifiedDate === 0) {
 					return null;
 				}
 
-        const uDate = new Date(counts.modifiedDate).toLocaleDateString();
-        if (overrideSuffix !== null) {
-          return `${uDate}${overrideSuffix}`;
-        }
+				const uDate = DateFormat.format(new Date(counts.modifiedDate));
+				if (overrideSuffix !== null) {
+					return `${uDate}${overrideSuffix}`;
+				}
 
 				return abbreviateDescriptions
-					? `${new Date(counts.modifiedDate).toLocaleDateString()}/u`
-					: `Updated ${new Date(counts.modifiedDate).toLocaleDateString()}`;
+					? `${DateFormat.format(new Date(counts.modifiedDate))}/u`
+					: `Updated ${DateFormat.format(new Date(counts.modifiedDate))}`;
 			case CountType.FileSize:
 				return this.fileSizeHelper.formatFileSize(
 					counts.sizeInBytes,

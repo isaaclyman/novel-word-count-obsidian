@@ -1,3 +1,5 @@
+import { NumberFormatFileSize } from "./locale_format";
+
 interface FormatThreshold {
   suffix: string;
   suffixLong: string;
@@ -33,17 +35,10 @@ export class FileSizeHelper {
       if (bytes < (formatThreshold.divisor * 1_000) || formatThreshold === largestThreshold) {
         const units = bytes / formatThreshold.divisor;
         const suffix = shouldAbbreviate ? formatThreshold.suffix : formatThreshold.suffixLong;
-        return `${this.round(units)}${suffix}`;
+        return `${NumberFormatFileSize.format(units)}${suffix}`;
       }
     }
 
     return `?B`;
-  }
-
-  private round(value: number): string {
-    return value.toLocaleString(undefined, {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    });
   }
 }
