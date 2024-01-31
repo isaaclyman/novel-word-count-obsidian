@@ -7,7 +7,11 @@ import {
 } from "./settings";
 import { FileSizeHelper } from "./filesize";
 import { ReadTimeHelper } from "./readtime";
-import { DateFormat, NumberFormatDecimal, NumberFormatDefault } from "./locale_format";
+import {
+	NumberFormatDecimal,
+	NumberFormatDefault,
+} from "./locale_format";
+import { moment } from "obsidian";
 
 interface CountTypeWithSuffix {
 	countType: CountType;
@@ -239,7 +243,7 @@ export class NodeLabelHelper {
 					return null;
 				}
 
-				const cDate = DateFormat.format(new Date(counts.createdDate));
+				const cDate = moment(counts.createdDate).format('YYYY/MM/DD');
 				if (overrideSuffix !== null) {
 					return `${cDate}${overrideSuffix}`;
 				}
@@ -250,14 +254,12 @@ export class NodeLabelHelper {
 					return null;
 				}
 
-				const uDate = DateFormat.format(new Date(counts.modifiedDate));
+				const uDate = moment(counts.modifiedDate).format('YYYY/MM/DD');
 				if (overrideSuffix !== null) {
 					return `${uDate}${overrideSuffix}`;
 				}
 
-				return abbreviateDescriptions
-					? `${DateFormat.format(new Date(counts.modifiedDate))}/u`
-					: `Updated ${DateFormat.format(new Date(counts.modifiedDate))}`;
+				return abbreviateDescriptions ? `${uDate}/u` : `Updated ${uDate}`;
 			case CountType.FileSize:
 				return this.fileSizeHelper.formatFileSize(
 					counts.sizeInBytes,

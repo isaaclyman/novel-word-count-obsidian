@@ -1,6 +1,5 @@
 const locales = [...navigator.languages, "en-US"];
 
-export const DateFormat = new Intl.DateTimeFormat(locales);
 export const NumberFormatDefault = new Intl.NumberFormat(locales);
 export const NumberFormatDecimal = new Intl.NumberFormat(locales, {
 	minimumFractionDigits: 1,
