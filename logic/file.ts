@@ -340,6 +340,13 @@ export class FileHelper {
 			}
 		}
 
+		if (this.settings.excludeCodeBlocks && meaningfulContent.includes("```")) {
+			meaningfulContent = meaningfulContent.replace(
+				/(?:```[\s\S]+?```)/gim,
+				""
+			);
+		}
+
 		return meaningfulContent;
 	}
 

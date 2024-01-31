@@ -166,6 +166,7 @@ export interface NovelWordCountSettings {
 	wordCountType: WordCountType;
 	pageCountType: PageCountType;
 	excludeComments: boolean;
+	excludeCodeBlocks: boolean;
 	debugMode: boolean;
 }
 
@@ -204,6 +205,7 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	wordCountType: WordCountType.SpaceDelimited,
 	pageCountType: PageCountType.ByWords,
 	excludeComments: false,
+	excludeCodeBlocks: false,
 	debugMode: false,
 };
 
@@ -518,6 +520,23 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.excludeComments)
 						.onChange(async (value) => {
 							this.plugin.settings.excludeComments = value;
+							await this.plugin.saveSettings();
+							await this.plugin.initialize();
+						})
+				);
+
+			// EXCLUDE CODE BLOCKS
+
+			new Setting(containerEl)
+				.setName("Exclude code blocks")
+				.setDesc(
+					"Exclude ```code blocks``` (e.g. DataView snippets) from all counts. May affect performance on large vaults."
+				)
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.excludeCodeBlocks)
+						.onChange(async (value) => {
+							this.plugin.settings.excludeCodeBlocks = value;
 							await this.plugin.saveSettings();
 							await this.plugin.initialize();
 						})
