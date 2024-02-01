@@ -60,25 +60,28 @@ export class FileHelper {
 		cancellationToken: CancellationToken
 	): Promise<CountsByFile> {
 		const debugEnd = this.debugHelper.debugStart("getAllFileCounts");
-		let files: TFile[] = [];
+
+		let files: TFile[] = this.vault.getFiles();
 		if (
-			this.plugin.settings.showAdvanced &&
-			this.plugin.settings.includeDirectories !== "*" &&
-			this.plugin.settings.includeDirectories !== ""
+			typeof this.plugin.settings.includeDirectories === "string" &&
+			this.plugin.settings.includeDirectories.trim() !== "*" &&
+			this.plugin.settings.includeDirectories.trim() !== ""
 		) {
-			const includePath = this.vault.getAbstractFileByPath(
-				this.plugin.settings.includeDirectories
+			const includeMatchers = this.plugin.settings.includeDirectories
+				.trim()
+				.split(",")
+				.map((matcher) => matcher.trim());
+			const matchedFiles = files.filter((file) =>
+				includeMatchers.some((matcher) => file.path.includes(matcher))
 			);
-			if (includePath instanceof TFolder) {
-				files = includePath.children.filter(
-					(abstractFile): abstractFile is TFile => abstractFile instanceof TFile
-				);
+
+			if (matchedFiles.length > 0) {
+				files = matchedFiles;
 			} else {
-				// May want to raise an error here?
+				this.debugHelper.debug("No files matched by includeDirectories setting. Defaulting to all files.");
 			}
-		} else {
-			files = this.vault.getFiles();
 		}
+
 		const counts: CountsByFile = {};
 
 		for (const file of files) {

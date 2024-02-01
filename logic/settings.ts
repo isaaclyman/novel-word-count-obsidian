@@ -518,22 +518,28 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			);
 
 		if (this.plugin.settings.showAdvanced) {
-			// INCLUDE DIRECTORIES
+			
+			// INCLUDE FILE/FOLDER NAMES
+
+			const includePathsChanged = async (
+				txt: TextComponent,
+				value: string
+			) => {
+				this.plugin.settings.includeDirectories = value;
+				await this.plugin.saveSettings();
+				await this.plugin.initialize();
+			};
 
 			new Setting(containerEl)
-				.setName("Include directories")
+				.setName("Include file/folder names")
 				.setDesc(
-					"Only include specific directories. Defaults to all directories. Can be used to exclude directories from displaying counts."
+					"Only count paths matching the indicated term(s). Case-sensitive, comma-separated. Defaults to all files."
 				)
 				.addText((txt) => {
 					txt
 						.setPlaceholder("")
-						.setValue(this.plugin.settings.includeDirectories.toString())
-						.onChange(async (value) => {
-							this.plugin.settings.includeDirectories = value;
-							await this.plugin.saveSettings();
-							await this.plugin.initialize();
-						});
+						.setValue(this.plugin.settings.includeDirectories)
+						.onChange(debounce(includePathsChanged.bind(this, txt), 1000));
 				});
 
 			// EXCLUDE COMMENTS
