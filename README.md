@@ -53,6 +53,8 @@ This plugin displays statistics of your choice next to every file, folder, and v
 
 **Exclude comments.** Excludes any content surrounded by `%%` [comment marks](https://help.obsidian.md/Editing+and+formatting/Basic+formatting+syntax#Comments) `%%` or `<!--` HTML comment tags `-->` from character count, word count, and page count. This may slow down performance on very large notes or vaults.
 
+**Exclude code blocks.** Excludes any content surrounded by `` ``` `` backticks from character count, word count, and page count. Includes DataView snippets. This may slow down performance on very large notes or vaults.
+
 **Character count method.** Choose whether to count all characters or exclude whitespace (spaces and line breaks).
 
 **Word count method.** Choose whether to count words using a space-delimited strategy (for English and other European languages) or by Han, Kana, and Hangul characters (for Chinese, Japanese, and Korean). The Auto-detect setting will count each file both ways, then return the larger result.
