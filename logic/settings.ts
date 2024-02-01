@@ -69,7 +69,9 @@ export const UNFORMATTABLE_COUNT_TYPES = [
 	CountType.FileSize,
 	CountType.ReadTime,
 ];
-export const COUNT_TYPE_DEFAULT_SHORT_SUFFIXES: { [countType: string]: string } = {
+export const COUNT_TYPE_DEFAULT_SHORT_SUFFIXES: {
+	[countType: string]: string;
+} = {
 	[CountType.Word]: "w",
 	[CountType.Page]: "p",
 	[CountType.PageDecimal]: "p",
@@ -165,6 +167,7 @@ export interface NovelWordCountSettings {
 	characterCountType: CharacterCountType;
 	wordCountType: WordCountType;
 	pageCountType: PageCountType;
+	includeDirectories: string;
 	excludeComments: boolean;
 	excludeCodeBlocks: boolean;
 	debugMode: boolean;
@@ -204,6 +207,7 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	characterCountType: CharacterCountType.StringLength,
 	wordCountType: WordCountType.SpaceDelimited,
 	pageCountType: PageCountType.ByWords,
+	includeDirectories: "",
 	excludeComments: false,
 	excludeCodeBlocks: false,
 	debugMode: false,
@@ -393,7 +397,9 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				setNewCountType: (value) => {
 					this.plugin.settings.folderCountType = value;
 					this.plugin.settings.folderCountTypeSuffix =
-						COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[this.plugin.settings.folderCountType];
+						COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[
+							this.plugin.settings.folderCountType
+						];
 				},
 			});
 
@@ -412,7 +418,9 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				setNewCountType: (value) => {
 					this.plugin.settings.folderCountType2 = value;
 					this.plugin.settings.folderCountType2Suffix =
-						COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[this.plugin.settings.folderCountType2];
+						COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[
+							this.plugin.settings.folderCountType2
+						];
 				},
 			});
 
@@ -431,7 +439,9 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				setNewCountType: (value) => {
 					this.plugin.settings.folderCountType3 = value;
 					this.plugin.settings.folderCountType3Suffix =
-						COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[this.plugin.settings.folderCountType3];
+						COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[
+							this.plugin.settings.folderCountType3
+						];
 				},
 			});
 
@@ -508,6 +518,24 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			);
 
 		if (this.plugin.settings.showAdvanced) {
+			// INCLUDE DIRECTORIES
+
+			new Setting(containerEl)
+				.setName("Include directories")
+				.setDesc(
+					"Only include specific directories. Defaults to all directories. Can be used to exclude directories from displaying counts."
+				)
+				.addText((txt) => {
+					txt
+						.setPlaceholder("")
+						.setValue(this.plugin.settings.includeDirectories.toString())
+						.onChange(async (value) => {
+							this.plugin.settings.includeDirectories = value;
+							await this.plugin.saveSettings();
+							await this.plugin.initialize();
+						});
+				});
+
 			// EXCLUDE COMMENTS
 
 			new Setting(containerEl)

@@ -60,8 +60,25 @@ export class FileHelper {
 		cancellationToken: CancellationToken
 	): Promise<CountsByFile> {
 		const debugEnd = this.debugHelper.debugStart("getAllFileCounts");
-
-		const files = this.vault.getFiles();
+		let files: TFile[] = [];
+		if (
+			this.plugin.settings.showAdvanced &&
+			this.plugin.settings.includeDirectories !== "*" &&
+			this.plugin.settings.includeDirectories !== ""
+		) {
+			const includePath = this.vault.getAbstractFileByPath(
+				this.plugin.settings.includeDirectories
+			);
+			if (includePath instanceof TFolder) {
+				files = includePath.children.filter(
+					(abstractFile): abstractFile is TFile => abstractFile instanceof TFile
+				);
+			} else {
+				// May want to raise an error here?
+			}
+		} else {
+			files = this.vault.getFiles();
+		}
 		const counts: CountsByFile = {};
 
 		for (const file of files) {
