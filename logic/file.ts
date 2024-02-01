@@ -54,6 +54,8 @@ export class FileHelper {
 		return this.app.vault;
 	}
 
+	private pathIncludeMatchers: string[] = [];
+
 	constructor(private app: App, private plugin: NovelWordCountPlugin) {}
 
 	public async getAllFileCounts(
@@ -76,9 +78,12 @@ export class FileHelper {
 			);
 
 			if (matchedFiles.length > 0) {
-				files = matchedFiles;
+				this.pathIncludeMatchers = includeMatchers;
 			} else {
-				this.debugHelper.debug("No files matched by includeDirectories setting. Defaulting to all files.");
+				this.pathIncludeMatchers = [];
+				this.debugHelper.debug(
+					"No files matched by includeDirectories setting. Defaulting to all files."
+				);
 			}
 		}
 
@@ -394,6 +399,13 @@ export class FileHelper {
 	]);
 
 	private shouldCountFile(file: TFile, metadata?: CachedMetadata): boolean {
+		if (
+			this.pathIncludeMatchers.length > 0 &&
+			!this.pathIncludeMatchers.some((matcher) => file.path.includes(matcher))
+		) {
+			return false;
+		}
+
 		if (!this.FileTypeAllowlist.has(file.extension.toLowerCase())) {
 			return false;
 		}
