@@ -87,6 +87,8 @@ To exclude a note from all counts _except_ note count, created date, last update
 
 Alternately, you can set the `wordcount` property to `false`. This property must always be lowercase and may not contain hyphens or underscores.
 
+For another way to include/exclude certain notes, see the "Include file/folder names" setting description.
+
 <img src="property-wordcount.png" alt="Obsidian properties with a single property 'wordcount' set to an empty checkbox" height="150px">
 
 ### Safety
