@@ -55,6 +55,8 @@ This plugin displays statistics of your choice next to every file, folder, and v
 
 **Exclude code blocks.** Excludes any content surrounded by `` ``` `` backticks from character count, word count, and page count. Includes DataView snippets. This may slow down performance on very large notes or vaults.
 
+**Exclude non-visible portions of links.** Excludes (from all counts) any portions of links you wouldn't see in Reading View. For external links (e.g. `[see example](https://uri)`), this excludes the URI. For internal links that have an alias (e.g. `[[note name|alias]]`), this excludes the note name.
+
 **Character count method.** Choose whether to count all characters or exclude whitespace (spaces and line breaks).
 
 **Word count method.** _This setting has been removed._ In the latest version of the plugin, space-delimited and CJK counts are combined. Notes in any language should be counted correctly, including mixed-language notes.
