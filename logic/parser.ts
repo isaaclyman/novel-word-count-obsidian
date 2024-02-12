@@ -1,6 +1,6 @@
 export interface MarkdownParseConfig {
-  excludeComments: boolean;
-  excludeCodeBlocks: boolean;
+	excludeComments: boolean;
+	excludeCodeBlocks: boolean;
 }
 
 export interface MarkdownParseResult {
@@ -14,7 +14,10 @@ const cjkRegex =
 	/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu;
 const allSymbolsRegex = /[\p{S}\p{P}]/gu;
 
-export function countMarkdown(content: string, config: MarkdownParseConfig): MarkdownParseResult {
+export function countMarkdown(
+	content: string,
+	config: MarkdownParseConfig
+): MarkdownParseResult {
 	content = removeNonCountedContent(content, config);
 
 	let wordSequences = content
@@ -22,11 +25,11 @@ export function countMarkdown(content: string, config: MarkdownParseConfig): Mar
 		.replace(allSymbolsRegex, "")
 		.trim()
 		.split(/\s+/);
-	
-  // There are more idiomatic ways to handle an empty string, but this is the fastest.
-  if (wordSequences.length === 1 && wordSequences[0] === '') {
-    wordSequences = [];
-  }
+
+	// There are more idiomatic ways to handle an empty string, but this is the fastest.
+	if (wordSequences.length === 1 && wordSequences[0] === "") {
+		wordSequences = [];
+	}
 
 	const result: MarkdownParseResult = {
 		charCount: content.length,
@@ -43,20 +46,17 @@ export function countNonWhitespaceCharacters(content: string): number {
 	return content.replace(whitespaceRegex, "").length;
 }
 
-export function removeNonCountedContent(content: string, config: MarkdownParseConfig): string {
-  if (config.excludeCodeBlocks) {
-    content = content.replace(
-			/(```.+?```)/gims,
-			""
-		);
-  }
+export function removeNonCountedContent(
+	content: string,
+	config: MarkdownParseConfig
+): string {
+	if (config.excludeCodeBlocks) {
+		content = content.replace(/(```.+?```)/gims, "");
+	}
 
-  if (config.excludeComments) {
-    content = content.replace(
-      /(%%.+?%%|<!--.+?-->)/gims,
-			""
-    );
-  }
+	if (config.excludeComments) {
+		content = content.replace(/(%%.+?%%|<!--.+?-->)/gims, "");
+	}
 
 	return content;
 }

@@ -8,7 +8,7 @@
 		"dev-style": "sass --watch styles.scss styles.css",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && sass --no-source-map styles.scss styles.css",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
-		"test": "jest"
+		"test": "jest -i"
 	},
 	"keywords": [],
 	"author": "Isaac Lyman",

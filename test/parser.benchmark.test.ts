@@ -76,6 +76,4 @@ describe('parser benchmark', () => {
     });
     console.timeEnd(label);
   });
-
-  
 });
