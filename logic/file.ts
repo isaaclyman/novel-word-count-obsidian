@@ -13,7 +13,6 @@ import { DebugHelper } from "./debug";
 import {
 	NovelWordCountSettings,
 	PageCountType,
-	WordCountType,
 } from "./settings";
 import { CancellationToken } from "./cancellation";
 import { countMarkdown } from "./parser";
@@ -40,11 +39,6 @@ export interface CountData {
 export type CountsByFile = {
 	[path: string]: CountData;
 };
-
-interface CountWordsResult {
-	wordCount: number;
-	countType: WordCountType;
-}
 
 export class FileHelper {
 	private debugHelper = new DebugHelper();
@@ -240,7 +234,10 @@ export class FileHelper {
 
 		const content = await this.vault.cachedRead(file);
 		const trimmedContent = this.trimFrontmatter(content, metadata);
-		const countResult = countMarkdown(trimmedContent);
+		const countResult = countMarkdown(trimmedContent, {
+			excludeCodeBlocks: this.settings.excludeCodeBlocks,
+			excludeComments: this.settings.excludeComments,
+		});
 		const combinedWordCount = countResult.cjkWordCount + countResult.spaceDelimitedWordCount;
 		const wordGoal: number = this.getWordGoal(metadata);
 

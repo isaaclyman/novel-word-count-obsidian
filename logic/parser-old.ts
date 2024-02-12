@@ -1,12 +1,4 @@
-import { CachedMetadata } from "obsidian";
-import { WordCountType } from "./settings";
-
-export interface MarkdownParseResult {
-	charCount: number;
-	nonWhitespaceCharCount: number;
-	spaceDelimitedWordCount: number;
-	cjkWordCount: number;
-}
+import { MarkdownParseResult } from "./parser";
 
 const cjkRegex =
 		/\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}|[0-9]+/gu;

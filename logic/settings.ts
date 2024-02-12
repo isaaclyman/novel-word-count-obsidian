@@ -122,13 +122,6 @@ export enum CharacterCountType {
 	ExcludeWhitespace = "ExcludeWhitespace",
 }
 
-export enum WordCountType {
-	SpaceDelimited = "SpaceDelimited",
-	CJK = "CJK",
-	AutoDetect = "AutoDetect",
-	Combined = "Combined"
-}
-
 export enum PageCountType {
 	ByWords = "ByWords",
 	ByChars = "ByChars",
@@ -166,7 +159,6 @@ export interface NovelWordCountSettings {
 	charsPerPage: number;
 	charsPerPageIncludesWhitespace: boolean;
 	characterCountType: CharacterCountType;
-	wordCountType: WordCountType;
 	pageCountType: PageCountType;
 	includeDirectories: string;
 	excludeComments: boolean;
@@ -206,7 +198,6 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	charsPerPage: 1500,
 	charsPerPageIncludesWhitespace: false,
 	characterCountType: CharacterCountType.StringLength,
-	wordCountType: WordCountType.Combined,
 	pageCountType: PageCountType.ByWords,
 	includeDirectories: "",
 	excludeComments: false,
@@ -519,13 +510,9 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			);
 
 		if (this.plugin.settings.showAdvanced) {
-			
 			// INCLUDE FILE/FOLDER NAMES
 
-			const includePathsChanged = async (
-				txt: TextComponent,
-				value: string
-			) => {
+			const includePathsChanged = async (txt: TextComponent, value: string) => {
 				this.plugin.settings.includeDirectories = value;
 				await this.plugin.saveSettings();
 				await this.plugin.initialize();
@@ -597,29 +584,6 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						});
 				});
 
-			// WORD COUNT METHOD
-
-			new Setting(containerEl)
-				.setName("Word count method")
-				.setDesc("For language compatibility")
-				.addDropdown((drop) => {
-					drop
-						.addOption(WordCountType.Combined, "Combined")
-						.addOption(
-							WordCountType.SpaceDelimited,
-							"Space-delimited (European languages)"
-						)
-						.addOption(WordCountType.CJK, "Han/Kana/Hangul (CJK)")
-						.setValue(this.plugin.settings.wordCountType)
-						.onChange(async (value: WordCountType) => {
-							this.plugin.settings.wordCountType = value;
-							await this.plugin.saveSettings();
-							this.display();
-
-							await this.plugin.initialize();
-						});
-				});
-
 			// PAGE COUNT METHOD
 
 			new Setting(containerEl)
@@ -641,67 +605,55 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 			// READING TIME
 
-			if (
-				[WordCountType.SpaceDelimited, WordCountType.AutoDetect, WordCountType.Combined].includes(
-					this.plugin.settings.wordCountType
+			const wordsPerMinuteChanged = async (
+				txt: TextComponent,
+				value: string
+			) => {
+				const asNumber = Number(value);
+				const isValid = !isNaN(asNumber) && asNumber > 0;
+
+				txt.inputEl.style.borderColor = isValid ? null : "red";
+
+				this.plugin.settings.wordsPerMinute = isValid ? Number(value) : 265;
+				await this.plugin.saveSettings();
+				await this.plugin.initialize();
+			};
+			new Setting(containerEl)
+				.setName("Words per minute")
+				.setDesc(
+					"Used to calculate Reading Time. 265 is the average speed of an English-speaking adult."
 				)
-			) {
-				const wordsPerMinuteChanged = async (
-					txt: TextComponent,
-					value: string
-				) => {
-					const asNumber = Number(value);
-					const isValid = !isNaN(asNumber) && asNumber > 0;
+				.addText((txt) => {
+					txt
+						.setPlaceholder("265")
+						.setValue(this.plugin.settings.wordsPerMinute.toString())
+						.onChange(debounce(wordsPerMinuteChanged.bind(this, txt), 1000));
+				});
 
-					txt.inputEl.style.borderColor = isValid ? null : "red";
+			const charsPerMinuteChanged = async (
+				txt: TextComponent,
+				value: string
+			) => {
+				const asNumber = Number(value);
+				const isValid = !isNaN(asNumber) && asNumber > 0;
 
-					this.plugin.settings.wordsPerMinute = isValid ? Number(value) : 265;
-					await this.plugin.saveSettings();
-					await this.plugin.initialize();
-				};
-				new Setting(containerEl)
-					.setName("Words per minute")
-					.setDesc(
-						"Used to calculate Reading Time. 265 is the average speed of an English-speaking adult."
-					)
-					.addText((txt) => {
-						txt
-							.setPlaceholder("265")
-							.setValue(this.plugin.settings.wordsPerMinute.toString())
-							.onChange(debounce(wordsPerMinuteChanged.bind(this, txt), 1000));
-					});
-			}
+				txt.inputEl.style.borderColor = isValid ? null : "red";
 
-			if (
-				[WordCountType.CJK, WordCountType.AutoDetect, WordCountType.Combined].includes(
-					this.plugin.settings.wordCountType
+				this.plugin.settings.charsPerMinute = isValid ? Number(value) : 500;
+				await this.plugin.saveSettings();
+				await this.plugin.initialize();
+			};
+			new Setting(containerEl)
+				.setName("CJK characters per minute")
+				.setDesc(
+					"Used to calculate Reading Time. 500 is the average speed for CJK texts."
 				)
-			) {
-				const charsPerMinuteChanged = async (
-					txt: TextComponent,
-					value: string
-				) => {
-					const asNumber = Number(value);
-					const isValid = !isNaN(asNumber) && asNumber > 0;
-
-					txt.inputEl.style.borderColor = isValid ? null : "red";
-
-					this.plugin.settings.charsPerMinute = isValid ? Number(value) : 500;
-					await this.plugin.saveSettings();
-					await this.plugin.initialize();
-				};
-				new Setting(containerEl)
-					.setName("Characters per minute")
-					.setDesc(
-						"Used to calculate Reading Time. 500 is the average speed for CJK texts."
-					)
-					.addText((txt) => {
-						txt
-							.setPlaceholder("500")
-							.setValue(this.plugin.settings.charsPerMinute.toString())
-							.onChange(debounce(charsPerMinuteChanged.bind(this, txt), 1000));
-					});
-			}
+				.addText((txt) => {
+					txt
+						.setPlaceholder("500")
+						.setValue(this.plugin.settings.charsPerMinute.toString())
+						.onChange(debounce(charsPerMinuteChanged.bind(this, txt), 1000));
+				});
 
 			// WORDS PER PAGE
 

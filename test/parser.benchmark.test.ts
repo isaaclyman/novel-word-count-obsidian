@@ -1,4 +1,5 @@
 import { countMarkdown } from "logic/parser";
+import { countMarkdownObsidian } from "logic/parser-obsidian";
 import { countMarkdownObsolete } from "logic/parser-old";
 
 const words500 = `
@@ -22,11 +23,11 @@ Disappointment guess in the which resembled. Which with and certainly work tied.
 `;
 
 describe('parser benchmark', () => {
-  it('parses 10,000 files with the new parser', () => {
-    const label = 'new parser - 10k files';
+  it('parses 10,000 files with the Obsidian parser', () => {
+    const label = 'obsidian parser - 10k files';
     console.time(label);
     for (let it = 0; it < 10_000; it++) {
-      const result = countMarkdown(words500);
+      const result = countMarkdownObsidian(words500);
     }
     console.timeEnd(label);
   });
@@ -40,17 +41,41 @@ describe('parser benchmark', () => {
     console.timeEnd(label);
   });
 
-  it('parses a very large file with the new parser', () => {
-    const label = 'new parser - large file';
+  it('parses 10,000 files with the new parser', () => {
+    const label = 'new parser - 10k files';
     console.time(label);
-    const result = countMarkdown(words500.repeat(10000));
+    for (let it = 0; it < 10_000; it++) {
+      const result = countMarkdown(words500, {
+        excludeCodeBlocks: true,
+        excludeComments: true,
+      });
+    }
+    console.timeEnd(label);
+  });
+
+  it('parses a very large file with the Obsidian parser', () => {
+    const label = 'obsidian parser - large file';
+    console.time(label);
+    const result = countMarkdownObsidian(words500.repeat(10_000));
     console.timeEnd(label);
   });
 
   it('parses a very large file with the old parser', () => {
     const label = 'old parser - large file';
     console.time(label);
-    const result = countMarkdownObsolete(words500.repeat(10000));
+    const result = countMarkdownObsolete(words500.repeat(10_000));
     console.timeEnd(label);
   });
+
+  it('parses a very large file with the new parser', () => {
+    const label = 'new parser - large file';
+    console.time(label);
+    const result = countMarkdown(words500.repeat(10_000), {
+      excludeCodeBlocks: true,
+      excludeComments: true,
+    });
+    console.timeEnd(label);
+  });
+
+  
 });

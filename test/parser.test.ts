@@ -1,6 +1,16 @@
-import { countMarkdown } from "logic/parser";
+import { countMarkdown as countMarkdownOriginal } from "logic/parser";
+
+const countMarkdown = (content: string) => countMarkdownOriginal(content, {
+  excludeCodeBlocks: true,
+  excludeComments: true
+});
 
 describe("parseMarkdown", () => {
+
+  /*
+    NORMAL CONTENT
+  */
+
 	describe("normal content", () => {
 		it("parses an empty file", () => {
 			const result = countMarkdown("");
@@ -101,6 +111,10 @@ It has mixed-language content.`;
 		});
 	});
 
+  /*
+    MARKDOWN COMMENTS
+  */
+
 	describe("markdown comments", () => {
 		it("parses a file with one well-formed inline comment", () => {
 			const content = `This is a note with an %%inline comment%% that shouldn't be counted.`;
@@ -178,6 +192,32 @@ The comment is over.`;
 			expect(result.spaceDelimitedWordCount).toBe(11);
 			expect(result.cjkWordCount).toBe(0);
     });
+    
+    it("parses a file with two separated comments", () => {
+			const content = `
+This is a note with a comment.
+
+%%
+Here's the comment
+don't count me
+%%
+
+word
+
+%%
+Here's another comment
+don't count me either
+%%
+
+The comment is over.`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(63);
+			expect(result.nonWhitespaceCharCount).toBe(45);
+			expect(result.spaceDelimitedWordCount).toBe(12);
+			expect(result.cjkWordCount).toBe(0);
+    });
 
 		it("parses a file with an unterminated comment", () => {
 			const content = `
@@ -226,6 +266,10 @@ don't count me
 			expect(result.cjkWordCount).toBe(0);
     });
 	});
+
+  /*
+    HTML COMMENTS
+  */
 
   describe("HTML comments", () => {
 		it("parses a file with one well-formed inline comment", () => {
@@ -291,6 +335,32 @@ The comment is over.`;
 			expect(result.charCount).toBe(55);
 			expect(result.nonWhitespaceCharCount).toBe(41);
 			expect(result.spaceDelimitedWordCount).toBe(11);
+			expect(result.cjkWordCount).toBe(0);
+    });
+
+    it("parses a file with two separated comments", () => {
+			const content = `
+This is a note with a comment.
+
+<!--
+Here's the comment
+don't count me
+-->
+
+word
+
+<!--
+Here's another comment
+don't count me either
+-->
+
+The comment is over.`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(63);
+			expect(result.nonWhitespaceCharCount).toBe(45);
+			expect(result.spaceDelimitedWordCount).toBe(12);
 			expect(result.cjkWordCount).toBe(0);
     });
 
@@ -405,6 +475,30 @@ The block is over.`;
 			expect(result.cjkWordCount).toBe(0);
     });
 
+    it("parses a file with two separated code blocks", () => {
+			const content = `
+This is a note with a code block.
+
+\`\`\`dataview
+select * from blah blah blah
+\`\`\`
+
+word
+
+\`\`\`
+select * from do re mi
+\`\`\`
+
+The block is over.`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(64);
+			expect(result.nonWhitespaceCharCount).toBe(45);
+			expect(result.spaceDelimitedWordCount).toBe(13);
+			expect(result.cjkWordCount).toBe(0);
+    });
+
 		it("parses a file with an unterminated code block", () => {
 			const content = `
 This is a note with a code block.
@@ -450,4 +544,32 @@ select * from blah blah blah
 			expect(result.cjkWordCount).toBe(0);
     });
 	});
+
+  /*
+    LINKS (INTERNAL + EXTERNAL)
+  */
+
+  describe.skip("links", () => {
+    it("ignores the link URI", () => {
+      const content = `Here's a [ link ](https://example.com)`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(17);
+			expect(result.nonWhitespaceCharCount).toBe(13);
+			expect(result.spaceDelimitedWordCount).toBe(3);
+			expect(result.cjkWordCount).toBe(0);
+    });
+
+    it("counts only the link alias", () => {
+      const content = `Here's an [another note somewhere|internal link]`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(36);
+			expect(result.nonWhitespaceCharCount).toBe(33);
+			expect(result.spaceDelimitedWordCount).toBe(4);
+			expect(result.cjkWordCount).toBe(0);
+    });
+  });
 });

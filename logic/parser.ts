@@ -1,3 +1,8 @@
+export interface MarkdownParseConfig {
+  excludeComments: boolean;
+  excludeCodeBlocks: boolean;
+}
+
 export interface MarkdownParseResult {
 	charCount: number;
 	nonWhitespaceCharCount: number;
@@ -9,8 +14,8 @@ const cjkRegex =
 	/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu;
 const allSymbolsRegex = /[\p{S}\p{P}]/gu;
 
-export function countMarkdown(content: string): MarkdownParseResult {
-	content = removeNonCountedContent(content);
+export function countMarkdown(content: string, config: MarkdownParseConfig): MarkdownParseResult {
+	content = removeNonCountedContent(content, config);
 
 	let wordSequences = content
 		.replace(cjkRegex, " ")
@@ -33,20 +38,24 @@ export function countMarkdown(content: string): MarkdownParseResult {
 	return result;
 }
 
-function countNonWhitespaceCharacters(content: string): number {
+export function countNonWhitespaceCharacters(content: string): number {
 	return content.replace(/\s/g, "").length;
 }
 
-function removeNonCountedContent(content: string): string {
-	return content
-		.replace(
-			// Remove comments
-			/(%%.+%%|<!--.+-->)/gims,
-			""
-		)
-		.replace(
-			// Remove code blocks
-			/```.+```/gims,
+export function removeNonCountedContent(content: string, config: MarkdownParseConfig): string {
+  if (config.excludeCodeBlocks) {
+    content = content.replace(
+			/(```.+?```)/gims,
 			""
 		);
+  }
+
+  if (config.excludeComments) {
+    content = content.replace(
+      /(%%.+?%%|<!--.+?-->)/gims,
+			""
+    );
+  }
+
+	return content;
 }
