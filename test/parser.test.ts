@@ -101,7 +101,7 @@ It has mixed-language content.`;
 		});
 	});
 
-	describe("comments", () => {
+	describe("markdown comments", () => {
 		it("parses a file with one well-formed inline comment", () => {
 			const content = `This is a note with an %%inline comment%% that shouldn't be counted.`;
 
@@ -189,9 +189,9 @@ without terminating marks`;
 
 			const result = countMarkdown(content);
 
-			expect(result.charCount).toBe(33);
-			expect(result.nonWhitespaceCharCount).toBe(24);
-			expect(result.spaceDelimitedWordCount).toBe(7);
+			expect(result.charCount).toBe(80);
+			expect(result.nonWhitespaceCharCount).toBe(65);
+			expect(result.spaceDelimitedWordCount).toBe(13);
 			expect(result.cjkWordCount).toBe(0);
     });
 
@@ -203,8 +203,8 @@ This is a note with a comment.
 
 			const result = countMarkdown(content);
 
-			expect(result.charCount).toBe(33);
-			expect(result.nonWhitespaceCharCount).toBe(24);
+			expect(result.charCount).toBe(35);
+			expect(result.nonWhitespaceCharCount).toBe(26);
 			expect(result.spaceDelimitedWordCount).toBe(7);
 			expect(result.cjkWordCount).toBe(0);
     });
@@ -217,6 +217,121 @@ This is a note with a comment.
 Here's the comment
 don't count me
 %%`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(33);
+			expect(result.nonWhitespaceCharCount).toBe(24);
+			expect(result.spaceDelimitedWordCount).toBe(7);
+			expect(result.cjkWordCount).toBe(0);
+    });
+	});
+
+  describe("HTML comments", () => {
+		it("parses a file with one well-formed inline comment", () => {
+			const content = `This is a note with an <!--inline comment--> that shouldn't be counted.`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(50);
+			expect(result.nonWhitespaceCharCount).toBe(40);
+			expect(result.spaceDelimitedWordCount).toBe(10);
+			expect(result.cjkWordCount).toBe(0);
+		});
+
+		it("parses a file with one well-formed block comment", () => {
+			const content = `
+This is a note with a comment.
+
+<!--
+Here's the comment
+don't count me
+-->
+
+The comment is over.`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(55);
+			expect(result.nonWhitespaceCharCount).toBe(41);
+			expect(result.spaceDelimitedWordCount).toBe(11);
+			expect(result.cjkWordCount).toBe(0);
+		});
+
+		it("parses a file that's entirely a comment", () => {
+			const content = `<!--
+I'm just a comment
+don't count me
+-->`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(0);
+			expect(result.nonWhitespaceCharCount).toBe(0);
+			expect(result.spaceDelimitedWordCount).toBe(0);
+			expect(result.cjkWordCount).toBe(0);
+		});
+
+		it("parses a file with two side-by-side comments", () => {
+			const content = `
+This is a note with a comment.
+
+<!--
+Here's the comment
+don't count me
+--><!--
+Here's another comment
+don't count me either
+-->
+
+The comment is over.`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(55);
+			expect(result.nonWhitespaceCharCount).toBe(41);
+			expect(result.spaceDelimitedWordCount).toBe(11);
+			expect(result.cjkWordCount).toBe(0);
+    });
+
+		it("parses a file with an unterminated comment", () => {
+			const content = `
+This is a note with a comment.
+
+<!--
+Here's the comment
+without terminating marks`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(82);
+			expect(result.nonWhitespaceCharCount).toBe(67);
+			expect(result.spaceDelimitedWordCount).toBe(13);
+			expect(result.cjkWordCount).toBe(0);
+    });
+
+    it("parses a file with a starting comment indicator at EOF", () => {
+			const content = `
+This is a note with a comment.
+
+<!--`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(37);
+			expect(result.nonWhitespaceCharCount).toBe(28);
+			expect(result.spaceDelimitedWordCount).toBe(7);
+			expect(result.cjkWordCount).toBe(0);
+    });
+
+		it("parses a file with a closing comment indicator at EOF", () => {
+			const content = `
+This is a note with a comment.
+
+<!--
+Here's the comment
+don't count me
+-->`;
 
 			const result = countMarkdown(content);
 
@@ -299,9 +414,9 @@ select * from blah blah blah`;
 
 			const result = countMarkdown(content);
 
-			expect(result.charCount).toBe(36);
-			expect(result.nonWhitespaceCharCount).toBe(26);
-			expect(result.spaceDelimitedWordCount).toBe(8);
+			expect(result.charCount).toBe(76);
+			expect(result.nonWhitespaceCharCount).toBe(60);
+			expect(result.spaceDelimitedWordCount).toBe(14);
 			expect(result.cjkWordCount).toBe(0);
     });
 
@@ -313,8 +428,8 @@ This is a note with a code block.
 
 			const result = countMarkdown(content);
 
-			expect(result.charCount).toBe(36);
-			expect(result.nonWhitespaceCharCount).toBe(26);
+			expect(result.charCount).toBe(39);
+			expect(result.nonWhitespaceCharCount).toBe(29);
 			expect(result.spaceDelimitedWordCount).toBe(8);
 			expect(result.cjkWordCount).toBe(0);
     });

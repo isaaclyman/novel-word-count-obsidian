@@ -126,6 +126,7 @@ export enum WordCountType {
 	SpaceDelimited = "SpaceDelimited",
 	CJK = "CJK",
 	AutoDetect = "AutoDetect",
+	Combined = "Combined"
 }
 
 export enum PageCountType {
@@ -205,7 +206,7 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	charsPerPage: 1500,
 	charsPerPageIncludesWhitespace: false,
 	characterCountType: CharacterCountType.StringLength,
-	wordCountType: WordCountType.SpaceDelimited,
+	wordCountType: WordCountType.Combined,
 	pageCountType: PageCountType.ByWords,
 	includeDirectories: "",
 	excludeComments: false,
@@ -603,12 +604,12 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				.setDesc("For language compatibility")
 				.addDropdown((drop) => {
 					drop
+						.addOption(WordCountType.Combined, "Combined")
 						.addOption(
 							WordCountType.SpaceDelimited,
 							"Space-delimited (European languages)"
 						)
 						.addOption(WordCountType.CJK, "Han/Kana/Hangul (CJK)")
-						.addOption(WordCountType.AutoDetect, "Auto-detect by file")
 						.setValue(this.plugin.settings.wordCountType)
 						.onChange(async (value: WordCountType) => {
 							this.plugin.settings.wordCountType = value;
@@ -641,7 +642,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			// READING TIME
 
 			if (
-				[WordCountType.SpaceDelimited, WordCountType.AutoDetect].includes(
+				[WordCountType.SpaceDelimited, WordCountType.AutoDetect, WordCountType.Combined].includes(
 					this.plugin.settings.wordCountType
 				)
 			) {
@@ -672,7 +673,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			}
 
 			if (
-				[WordCountType.CJK, WordCountType.AutoDetect].includes(
+				[WordCountType.CJK, WordCountType.AutoDetect, WordCountType.Combined].includes(
 					this.plugin.settings.wordCountType
 				)
 			) {

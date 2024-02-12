@@ -1,5 +1,6 @@
 export class DebugHelper {
   private debugMode = false;
+	private idCounter = 0;
 
   public setDebugMode(debug: boolean): void {
     this.debugMode = debug;
@@ -26,7 +27,7 @@ export class DebugHelper {
 			return () => {}
 		}
 
-		var qualifiedName = `novel-word-count|${name}`
+		var qualifiedName = `novel-word-count|${name} (${++this.idCounter})`
 		console.time(qualifiedName);
 		return () => console.timeEnd(qualifiedName);
 	}

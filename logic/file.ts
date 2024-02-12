@@ -16,6 +16,7 @@ import {
 	WordCountType,
 } from "./settings";
 import { CancellationToken } from "./cancellation";
+import { countMarkdown } from "./parser";
 
 export interface CountData {
 	isCountable: boolean;
@@ -94,7 +95,7 @@ export class FileHelper {
 				break;
 			}
 
-			this.setCounts(counts, file, this.settings.wordCountType);
+			this.setCounts(counts, file);
 		}
 
 		debugEnd();
@@ -182,7 +183,7 @@ export class FileHelper {
 		}
 
 		if (abstractFile instanceof TFile) {
-			await this.setCounts(counts, abstractFile, this.settings.wordCountType);
+			await this.setCounts(counts, abstractFile);
 		}
 	}
 
@@ -192,43 +193,6 @@ export class FileHelper {
 
 	private countLinks(metadata?: CachedMetadata): number {
 		return metadata?.links?.length ?? 0;
-	}
-
-	private countNonWhitespaceCharacters(content: string): number {
-		return (content.replace(/\s+/g, "") || []).length;
-	}
-
-	private cjkRegex =
-		/\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}|[0-9]+/gu;
-
-	private countWords(
-		content: string,
-		wordCountType: WordCountType
-	): CountWordsResult {
-		switch (wordCountType) {
-			case WordCountType.CJK:
-				return {
-					wordCount: (content.match(this.cjkRegex) || []).length,
-					countType: WordCountType.CJK,
-				};
-			case WordCountType.AutoDetect:
-				const cjkLength = (content.match(this.cjkRegex) || []).length;
-				const spaceDelimitedLength = (content.match(/[^\s]+/g) || []).length;
-
-				return {
-					wordCount: Math.max(cjkLength, spaceDelimitedLength),
-					countType:
-						cjkLength > spaceDelimitedLength
-							? WordCountType.CJK
-							: WordCountType.SpaceDelimited,
-				};
-			case WordCountType.SpaceDelimited:
-			default:
-				return {
-					wordCount: (content.match(/[^\s]+/g) || []).length,
-					countType: WordCountType.SpaceDelimited,
-				};
-		}
 	}
 
 	private getChildPaths(counts: CountsByFile, path: string): string[] {
@@ -244,8 +208,7 @@ export class FileHelper {
 
 	private async setCounts(
 		counts: CountsByFile,
-		file: TFile,
-		wordCountType: WordCountType
+		file: TFile
 	): Promise<void> {
 		const metadata = this.app.metadataCache.getFileCache(
 			file
@@ -276,25 +239,23 @@ export class FileHelper {
 		}
 
 		const content = await this.vault.cachedRead(file);
-		const meaningfulContent = this.getMeaningfulContent(content, metadata);
-		const wordCountResult = this.countWords(meaningfulContent, wordCountType);
-		const wordCount = wordCountResult.wordCount;
+		const trimmedContent = this.trimFrontmatter(content, metadata);
+		const countResult = countMarkdown(trimmedContent);
+		const combinedWordCount = countResult.cjkWordCount + countResult.spaceDelimitedWordCount;
 		const wordGoal: number = this.getWordGoal(metadata);
-		const characterCount = meaningfulContent.length;
-		const nonWhitespaceCharacterCount =
-			this.countNonWhitespaceCharacters(meaningfulContent);
 
-		const readingTimeFactor =
-			wordCountResult.countType === WordCountType.CJK
-				? this.settings.charsPerMinute
-				: this.settings.wordsPerMinute;
-		const readingTimeInMinutes = wordCount / readingTimeFactor;
+		const cjkReadingTime =
+			countResult.cjkWordCount / (this.settings.charsPerMinute || 500);
+		const spaceDelimitedReadingTime =
+			countResult.spaceDelimitedWordCount /
+			(this.settings.wordsPerMinute || 265);
+		const readingTimeInMinutes = cjkReadingTime + spaceDelimitedReadingTime;
 
 		let pageCount = 0;
 		if (this.settings.pageCountType === PageCountType.ByWords) {
 			const wordsPerPage = Number(this.settings.wordsPerPage);
 			const wordsPerPageValid = !isNaN(wordsPerPage) && wordsPerPage > 0;
-			pageCount = wordCount / (wordsPerPageValid ? wordsPerPage : 300);
+			pageCount = combinedWordCount / (wordsPerPageValid ? wordsPerPage : 300);
 		} else if (
 			this.settings.pageCountType === PageCountType.ByChars &&
 			!this.settings.charsPerPageIncludesWhitespace
@@ -302,24 +263,24 @@ export class FileHelper {
 			const charsPerPage = Number(this.settings.charsPerPage);
 			const charsPerPageValid = !isNaN(charsPerPage) && charsPerPage > 0;
 			pageCount =
-				nonWhitespaceCharacterCount / (charsPerPageValid ? charsPerPage : 1500);
+				countResult.nonWhitespaceCharCount / (charsPerPageValid ? charsPerPage : 1500);
 		} else if (
 			this.settings.pageCountType === PageCountType.ByChars &&
 			this.settings.charsPerPageIncludesWhitespace
 		) {
 			const charsPerPage = Number(this.settings.charsPerPage);
 			const charsPerPageValid = !isNaN(charsPerPage) && charsPerPage > 0;
-			pageCount = characterCount / (charsPerPageValid ? charsPerPage : 1500);
+			pageCount = countResult.charCount / (charsPerPageValid ? charsPerPage : 1500);
 		}
 
 		Object.assign(counts[file.path], {
 			noteCount: 1,
-			wordCount,
-			wordCountTowardGoal: wordGoal !== null ? wordCount : 0,
+			wordCount: combinedWordCount,
+			wordCountTowardGoal: wordGoal !== null ? combinedWordCount : 0,
 			wordGoal,
 			pageCount,
-			characterCount,
-			nonWhitespaceCharacterCount,
+			characterCount: countResult.charCount,
+			nonWhitespaceCharacterCount: countResult.nonWhitespaceCharCount,
 			readingTimeInMinutes,
 			linkCount: this.countLinks(metadata),
 			embedCount: this.countEmbeds(metadata),
@@ -337,10 +298,7 @@ export class FileHelper {
 		return Number(goal);
 	}
 
-	private getMeaningfulContent(
-		content: string,
-		metadata?: CachedMetadata
-	): string {
+	private trimFrontmatter(content: string, metadata?: CachedMetadata): string {
 		let meaningfulContent = content;
 
 		const hasFrontmatter = !!metadata && !!metadata.frontmatter;
@@ -352,24 +310,6 @@ export class FileHelper {
 					? meaningfulContent.slice(0, frontmatterPos.start.offset) +
 					  meaningfulContent.slice(frontmatterPos.end.offset)
 					: meaningfulContent;
-		}
-
-		if (this.settings.excludeComments) {
-			const hasComments =
-				meaningfulContent.includes("%%") || meaningfulContent.includes("<!--");
-			if (hasComments) {
-				meaningfulContent = meaningfulContent.replace(
-					/(?:%%[\s\S]+?%%|<!--[\s\S]+?-->)/gim,
-					""
-				);
-			}
-		}
-
-		if (this.settings.excludeCodeBlocks && meaningfulContent.includes("```")) {
-			meaningfulContent = meaningfulContent.replace(
-				/(?:```[\s\S]+?```)/gim,
-				""
-			);
 		}
 
 		return meaningfulContent;
