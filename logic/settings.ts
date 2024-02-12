@@ -163,6 +163,7 @@ export interface NovelWordCountSettings {
 	includeDirectories: string;
 	excludeComments: boolean;
 	excludeCodeBlocks: boolean;
+	excludeNonVisibleLinkPortions: boolean;
 	debugMode: boolean;
 }
 
@@ -202,6 +203,7 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	includeDirectories: "",
 	excludeComments: false,
 	excludeCodeBlocks: false,
+	excludeNonVisibleLinkPortions: false,
 	debugMode: false,
 };
 
@@ -559,6 +561,22 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.excludeCodeBlocks)
 						.onChange(async (value) => {
 							this.plugin.settings.excludeCodeBlocks = value;
+							await this.plugin.saveSettings();
+							await this.plugin.initialize();
+						})
+				);
+
+			new Setting(containerEl)
+				.setName("Exclude non-visible portions of links")
+				.setDesc(
+					"For external links, exclude the URI from all counts. For internal links with aliases, only count the alias. " +
+					"May affect performance on large vaults."
+				)
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.excludeNonVisibleLinkPortions)
+						.onChange(async (value) => {
+							this.plugin.settings.excludeNonVisibleLinkPortions = value;
 							await this.plugin.saveSettings();
 							await this.plugin.initialize();
 						})

@@ -237,6 +237,7 @@ export class FileHelper {
 		const countResult = countMarkdown(trimmedContent, {
 			excludeCodeBlocks: this.settings.excludeCodeBlocks,
 			excludeComments: this.settings.excludeComments,
+			excludeNonVisibleLinkPortions: this.settings.excludeNonVisibleLinkPortions
 		});
 		const combinedWordCount = countResult.cjkWordCount + countResult.spaceDelimitedWordCount;
 		const wordGoal: number = this.getWordGoal(metadata);

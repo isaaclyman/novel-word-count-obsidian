@@ -11,7 +11,7 @@ blah blah blah
 blah blah blah
 \`\`\`
 
-Delivered had are secured the done after meet. 
+Delivered had are secured the done after meet. [example link](https://example.com)
 That how to that else another ordinary it. And the resent demanded little seek. [[storm post]] [[inhabitants dressed]] branch and that at would. Or english crime out with it. Quantity every woman their the is. Him any months to [[impression]] mentioned usual. In the away the uttered to be. The namely had tank ambassador from at. And in %%inline comment%% close his if. Nature the bed against afterwards moderate. [[hopes slaves]] or she the the by. Smaller but and to creation support. Forwards what again think of. Usually her from its the i. Man it conspicuous indeed no lost. 
 The the when with the will. That side grandson depends into been with the attended. I and reading you only or urged phrases. The not the must could could. Thou in hours was and in. That me [[loud suffer]] the and. Know good cars enough it but. Of of childhood perspective youth. A your for Cicero Mr weak day. Thought would not much to relation. Promising with in gloom in he.
 
@@ -48,6 +48,7 @@ describe('parser benchmark', () => {
       const result = countMarkdown(words500, {
         excludeCodeBlocks: true,
         excludeComments: true,
+        excludeNonVisibleLinkPortions: true
       });
     }
     console.timeEnd(label);
@@ -73,6 +74,7 @@ describe('parser benchmark', () => {
     const result = countMarkdown(words500.repeat(10_000), {
       excludeCodeBlocks: true,
       excludeComments: true,
+      excludeNonVisibleLinkPortions: true
     });
     console.timeEnd(label);
   });

@@ -2,7 +2,8 @@ import { countMarkdown as countMarkdownOriginal } from "logic/parser";
 
 const countMarkdown = (content: string) => countMarkdownOriginal(content, {
   excludeCodeBlocks: true,
-  excludeComments: true
+  excludeComments: true,
+	excludeNonVisibleLinkPortions: true
 });
 
 describe("parseMarkdown", () => {
