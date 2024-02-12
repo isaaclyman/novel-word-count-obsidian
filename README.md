@@ -57,11 +57,11 @@ This plugin displays statistics of your choice next to every file, folder, and v
 
 **Character count method.** Choose whether to count all characters or exclude whitespace (spaces and line breaks).
 
-**Word count method.** Choose whether to count words using a space-delimited strategy (for English and other European languages) or by Han, Kana, and Hangul characters (for Chinese, Japanese, and Korean). The Auto-detect setting will count each file both ways, then return the larger result.
+**Word count method.** _This setting has been removed._ In the latest version of the plugin, space-delimited and CJK counts are combined. Notes in any language should be counted correctly, including mixed-language notes.
 
 **Page count method.** Choose whether pages are counted by number of words (default: 300) or number of characters (default: 1500). You can change the number of words/characters used.
 
-**Words per minute/Characters per minute.** Sets the number of words (default: 265) or characters (default: 500) per minute, depending on the selected _Word count method._
+**Words per minute/CJK characters per minute.** Sets the number of words (default: 265) and CJK characters (default: 500) per minute. Reading time is calculated as \[word count divided by words per minute\] plus \[CJK character count divided by characters per minute\].
 
 **Words per page/Characters per page.** Sets the number of words or characters per page, depending on the selected _Page count method._
 
