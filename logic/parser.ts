@@ -38,8 +38,9 @@ export function countMarkdown(content: string, config: MarkdownParseConfig): Mar
 	return result;
 }
 
+const whitespaceRegex = /\s/g;
 export function countNonWhitespaceCharacters(content: string): number {
-	return content.replace(/\s/g, "").length;
+	return content.replace(whitespaceRegex, "").length;
 }
 
 export function removeNonCountedContent(content: string, config: MarkdownParseConfig): string {
