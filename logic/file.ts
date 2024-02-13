@@ -16,6 +16,7 @@ import {
 } from "./settings";
 import { CancellationToken } from "./cancellation";
 import { countMarkdown } from "./parser";
+import { CanvasHelper } from "./canvas";
 
 export interface CountData {
 	isCountable: boolean;
@@ -42,6 +43,7 @@ export type CountsByFile = {
 
 export class FileHelper {
 	private debugHelper = new DebugHelper();
+	private canvasHelper = new CanvasHelper(this.debugHelper);
 	private get settings(): NovelWordCountSettings {
 		return this.plugin.settings;
 	}
@@ -232,9 +234,15 @@ export class FileHelper {
 			return;
 		}
 
-		const content = await this.vault.cachedRead(file);
-		const trimmedContent = this.trimFrontmatter(content, metadata);
-		const countResult = countMarkdown(trimmedContent, {
+		let content = await this.vault.cachedRead(file);
+
+		if (file.extension.toLowerCase() === 'canvas') {
+			content = this.canvasHelper.getCanvasText(file, content);
+		} else {
+			content = this.trimFrontmatter(content, metadata);
+		}
+
+		const countResult = countMarkdown(content, {
 			excludeCodeBlocks: this.settings.excludeCodeBlocks,
 			excludeComments: this.settings.excludeComments,
 			excludeNonVisibleLinkPortions: this.settings.excludeNonVisibleLinkPortions
@@ -325,6 +333,8 @@ export class FileHelper {
 		"mdwn",
 		"mkd",
 		"mkdn",
+		// Obsidian canvas
+		"canvas",
 		// Text files
 		"txt",
 		"text",

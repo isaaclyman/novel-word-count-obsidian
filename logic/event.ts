@@ -1,5 +1,5 @@
 import type NovelWordCountPlugin from "main";
-import { App, TFolder, WorkspaceLeaf, debounce } from "obsidian";
+import { App, TAbstractFile, TFolder, WorkspaceLeaf, debounce } from "obsidian";
 import { CancellationTokenSource } from "./cancellation";
 import { DebugHelper } from "./debug";
 import { FileHelper } from "./file";
@@ -15,21 +15,25 @@ export class EventHelper {
 	) {}
 
 	public async handleEvents(): Promise<void> {
+		const debouncedFileModified = debounce(async (file: TAbstractFile) => {
+			const countToken = this.registerNewCountToken();
+			await this.fileHelper.updateFileCounts(
+				file,
+				this.plugin.savedData.cachedCounts,
+				countToken.token
+			);
+			this.cancelToken(countToken);
+			await this.plugin.updateDisplayedCounts(file);
+			await this.plugin.saveSettings();
+		}, 500);
+
 		this.plugin.registerEvent(
 			this.app.metadataCache.on("changed", async (file) => {
 				this.debugHelper.debug(
-					"[changed] metadataCache hook fired, recounting file",
+					"[changed] metadataCache hook fired, scheduling file for analysis",
 					file.path
 				);
-				const countToken = this.registerNewCountToken();
-				await this.fileHelper.updateFileCounts(
-					file,
-					this.plugin.savedData.cachedCounts,
-					countToken.token
-				);
-				this.cancelToken(countToken);
-				await this.plugin.updateDisplayedCounts(file);
-				await this.plugin.saveSettings();
+				debouncedFileModified(file);
 			})
 		);
 
@@ -51,6 +55,16 @@ export class EventHelper {
 					await this.plugin.saveSettings();
 				})
 			);
+
+			this.plugin.registerEvent(
+				this.app.vault.on("modify", async (file) => {
+					this.debugHelper.debug(
+						"[modify] vault hook fired, scheduling file for analysis",
+						file.path
+					);
+					debouncedFileModified(file);
+				})
+			);
 		});
 
 		this.plugin.registerEvent(
@@ -70,10 +84,10 @@ export class EventHelper {
 
 		this.plugin.registerEvent(
 			this.app.vault.on("rename", async (file, oldPath) => {
-        if (file instanceof TFolder) {
-          // When a folder is renamed, all of its child folders/files are renamed as well.
-          return;
-        }
+				if (file instanceof TFolder) {
+					// When a folder is renamed, all of its child folders/files are renamed as well.
+					return;
+				}
 
 				this.debugHelper.debug(
 					"[rename] vault hook fired, recounting file",
