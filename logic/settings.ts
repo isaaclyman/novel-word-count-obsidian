@@ -224,6 +224,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 		this.renderFolderSettings(containerEl);
 		this.renderAdvancedSettings(containerEl);
 		this.renderReanalyzeButton(containerEl);
+		this.renderDonationButton(containerEl);
 	}
 
 	//
@@ -363,7 +364,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 	}
 
 	private renderFolderSettings(containerEl: HTMLElement): void {
-		containerEl.createEl("hr");
+		this.renderSeparator(containerEl);
 
 		// SHOW SAME DATA ON FOLDERS
 
@@ -495,7 +496,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 	}
 
 	private renderAdvancedSettings(containerEl: HTMLElement): void {
-		containerEl.createEl("hr");
+		this.renderSeparator(containerEl);
 
 		new Setting(containerEl)
 			.setHeading()
@@ -570,7 +571,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				.setName("Exclude non-visible portions of links")
 				.setDesc(
 					"For external links, exclude the URI from all counts. For internal links with aliases, only count the alias. " +
-					"May affect performance on large vaults."
+						"May affect performance on large vaults."
 				)
 				.addToggle((toggle) =>
 					toggle
@@ -773,7 +774,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 	}
 
 	private renderReanalyzeButton(containerEl: HTMLElement): void {
-		containerEl.createEl("hr");
+		this.renderSeparator(containerEl);
 
 		// REANALYZE
 
@@ -800,6 +801,24 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						}, 1000);
 					})
 			);
+	}
+
+	private renderDonationButton(containerEl: HTMLElement): void {
+		this.renderSeparator(containerEl);
+
+		const label = containerEl.createEl("div", {
+			cls: [
+				"setting-item",
+				"setting-item-heading",
+				"novel-word-count-settings-header",
+				"novel-word-count-donation-line"
+			],
+		});
+		label.createEl("div", {
+			text: "Enjoying this plugin? Want more features?",
+		});
+		const button = label.createEl("div");
+		button.innerHTML = `<a href='https://ko-fi.com/J3J6OWA5C' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi2.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>`;
 	}
 
 	private renderCountTypeSetting(
@@ -862,5 +881,11 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					})
 				);
 		}
+	}
+
+	private renderSeparator(containerEl: HTMLElement) {
+		containerEl.createEl("hr", {
+			cls: "novel-word-count-hr"
+		});
 	}
 }

@@ -88,3 +88,14 @@
 .novel-word-count-settings-header {
   align-items: baseline;
 }
+
+.novel-word-count-donation-line {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.novel-word-count-hr {
+  margin: 1rem 0;
+}
