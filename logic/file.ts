@@ -10,10 +10,7 @@ import {
 	parseFrontMatterAliases,
 } from "obsidian";
 import { DebugHelper } from "./debug";
-import {
-	NovelWordCountSettings,
-	PageCountType,
-} from "./settings";
+import { NovelWordCountSettings, PageCountType } from "./settings";
 import { CancellationToken } from "./cancellation";
 import { countMarkdown } from "./parser";
 import { CanvasHelper } from "./canvas";
@@ -52,6 +49,7 @@ export class FileHelper {
 	}
 
 	private pathIncludeMatchers: string[] = [];
+	private pathExcludeMatchers: string[] = [];
 
 	constructor(private app: App, private plugin: NovelWordCountPlugin) {}
 
@@ -66,18 +64,31 @@ export class FileHelper {
 			this.plugin.settings.includeDirectories.trim() !== "*" &&
 			this.plugin.settings.includeDirectories.trim() !== ""
 		) {
-			const includeMatchers = this.plugin.settings.includeDirectories
+			const allMatchers = this.plugin.settings.includeDirectories
 				.trim()
 				.split(",")
 				.map((matcher) => matcher.trim());
-			const matchedFiles = files.filter((file) =>
-				includeMatchers.some((matcher) => file.path.includes(matcher))
+			const includeMatchers = allMatchers.filter(
+				(matcher) => !matcher.startsWith("!")
+			);
+			const excludeMatchers = allMatchers
+				.filter((matcher) => matcher.startsWith("!"))
+				.map((matcher) => matcher.slice(1));
+
+			const matchedFiles = files.filter(
+				(file) =>
+					(includeMatchers.length === 0
+						? true
+						: includeMatchers.some((matcher) => file.path.includes(matcher))) &&
+					!excludeMatchers.some((matcher) => file.path.includes(matcher))
 			);
 
 			if (matchedFiles.length > 0) {
 				this.pathIncludeMatchers = includeMatchers;
+				this.pathExcludeMatchers = excludeMatchers;
 			} else {
 				this.pathIncludeMatchers = [];
+				this.pathExcludeMatchers = [];
 				this.debugHelper.debug(
 					"No files matched by includeDirectories setting. Defaulting to all files."
 				);
@@ -202,10 +213,7 @@ export class FileHelper {
 		delete counts[path];
 	}
 
-	private async setCounts(
-		counts: CountsByFile,
-		file: TFile
-	): Promise<void> {
+	private async setCounts(counts: CountsByFile, file: TFile): Promise<void> {
 		const metadata = this.app.metadataCache.getFileCache(
 			file
 		) as CachedMetadata | null;
@@ -236,7 +244,7 @@ export class FileHelper {
 
 		let content = await this.vault.cachedRead(file);
 
-		if (file.extension.toLowerCase() === 'canvas') {
+		if (file.extension.toLowerCase() === "canvas") {
 			content = this.canvasHelper.getCanvasText(file, content);
 		} else {
 			content = this.trimFrontmatter(content, metadata);
@@ -245,9 +253,11 @@ export class FileHelper {
 		const countResult = countMarkdown(content, {
 			excludeCodeBlocks: this.settings.excludeCodeBlocks,
 			excludeComments: this.settings.excludeComments,
-			excludeNonVisibleLinkPortions: this.settings.excludeNonVisibleLinkPortions
+			excludeNonVisibleLinkPortions:
+				this.settings.excludeNonVisibleLinkPortions,
 		});
-		const combinedWordCount = countResult.cjkWordCount + countResult.spaceDelimitedWordCount;
+		const combinedWordCount =
+			countResult.cjkWordCount + countResult.spaceDelimitedWordCount;
 		const wordGoal: number = this.getWordGoal(metadata);
 
 		const cjkReadingTime =
@@ -269,14 +279,16 @@ export class FileHelper {
 			const charsPerPage = Number(this.settings.charsPerPage);
 			const charsPerPageValid = !isNaN(charsPerPage) && charsPerPage > 0;
 			pageCount =
-				countResult.nonWhitespaceCharCount / (charsPerPageValid ? charsPerPage : 1500);
+				countResult.nonWhitespaceCharCount /
+				(charsPerPageValid ? charsPerPage : 1500);
 		} else if (
 			this.settings.pageCountType === PageCountType.ByChars &&
 			this.settings.charsPerPageIncludesWhitespace
 		) {
 			const charsPerPage = Number(this.settings.charsPerPage);
 			const charsPerPageValid = !isNaN(charsPerPage) && charsPerPage > 0;
-			pageCount = countResult.charCount / (charsPerPageValid ? charsPerPage : 1500);
+			pageCount =
+				countResult.charCount / (charsPerPageValid ? charsPerPage : 1500);
 		}
 
 		Object.assign(counts[file.path], {
@@ -350,6 +362,13 @@ export class FileHelper {
 		if (
 			this.pathIncludeMatchers.length > 0 &&
 			!this.pathIncludeMatchers.some((matcher) => file.path.includes(matcher))
+		) {
+			return false;
+		}
+
+		if (
+			this.pathExcludeMatchers.length > 0 &&
+			this.pathExcludeMatchers.some((matcher) => file.path.includes(matcher))
 		) {
 			return false;
 		}

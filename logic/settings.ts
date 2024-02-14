@@ -524,7 +524,8 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			new Setting(containerEl)
 				.setName("Include file/folder names")
 				.setDesc(
-					"Only count paths matching the indicated term(s). Case-sensitive, comma-separated. Defaults to all files."
+					"Only count paths matching the indicated term(s). Case-sensitive, comma-separated. Defaults to all files. " +
+					"Any term starting with ! will be excluded instead of included."
 				)
 				.addText((txt) => {
 					txt
