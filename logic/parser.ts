@@ -1,7 +1,7 @@
 export interface MarkdownParseConfig {
 	excludeComments: boolean;
 	excludeCodeBlocks: boolean;
-  excludeNonVisibleLinkPortions: boolean;
+	excludeNonVisibleLinkPortions: boolean;
 }
 
 export interface MarkdownParseResult {
@@ -59,13 +59,15 @@ export function removeNonCountedContent(
 		content = content.replace(/(%%.+?%%|<!--.+?-->)/gims, "");
 	}
 
-  if (config.excludeNonVisibleLinkPortions) {
-    // Exclude the URL of external links
-    content = content.replace(/\[(.+?)\]\(.+?\)/gim, "$1");
+	if (config.excludeNonVisibleLinkPortions) {
+		// Exclude the URL of external links
+		content = content.replace(/\[([^\]]*?)\]\([^\)]*?\)/gim, "$1");
 
-    // Exclude the note name of internal links with an alias
-    content = content.replace(/\[\[.+?\|(.+?)\]\]/gim, "$1");
-  }
+		// Exclude the note name of internal links with an alias
+		content = content.replace(/\[\[(.*?)\]\]/gim, (_, $1) => {
+			return !$1 ? "" : $1.includes("|") ? $1.slice($1.indexOf("|") + 1) : $1;
+		});
+	}
 
 	return content;
 }

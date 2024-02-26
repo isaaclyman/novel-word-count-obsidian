@@ -1,14 +1,14 @@
 import { countMarkdown as countMarkdownOriginal } from "logic/parser";
 
-const countMarkdown = (content: string) => countMarkdownOriginal(content, {
-  excludeCodeBlocks: true,
-  excludeComments: true,
-	excludeNonVisibleLinkPortions: true
-});
+const countMarkdown = (content: string) =>
+	countMarkdownOriginal(content, {
+		excludeCodeBlocks: true,
+		excludeComments: true,
+		excludeNonVisibleLinkPortions: true,
+	});
 
 describe("parseMarkdown", () => {
-
-  /*
+	/*
     NORMAL CONTENT
   */
 
@@ -112,7 +112,7 @@ It has mixed-language content.`;
 		});
 	});
 
-  /*
+	/*
     MARKDOWN COMMENTS
   */
 
@@ -192,9 +192,9 @@ The comment is over.`;
 			expect(result.nonWhitespaceCharCount).toBe(41);
 			expect(result.spaceDelimitedWordCount).toBe(11);
 			expect(result.cjkWordCount).toBe(0);
-    });
-    
-    it("parses a file with two separated comments", () => {
+		});
+
+		it("parses a file with two separated comments", () => {
 			const content = `
 This is a note with a comment.
 
@@ -218,7 +218,7 @@ The comment is over.`;
 			expect(result.nonWhitespaceCharCount).toBe(45);
 			expect(result.spaceDelimitedWordCount).toBe(12);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 
 		it("parses a file with an unterminated comment", () => {
 			const content = `
@@ -234,9 +234,9 @@ without terminating marks`;
 			expect(result.nonWhitespaceCharCount).toBe(65);
 			expect(result.spaceDelimitedWordCount).toBe(13);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 
-    it("parses a file with a starting comment indicator at EOF", () => {
+		it("parses a file with a starting comment indicator at EOF", () => {
 			const content = `
 This is a note with a comment.
 
@@ -248,7 +248,7 @@ This is a note with a comment.
 			expect(result.nonWhitespaceCharCount).toBe(26);
 			expect(result.spaceDelimitedWordCount).toBe(7);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 
 		it("parses a file with a closing comment indicator at EOF", () => {
 			const content = `
@@ -265,14 +265,14 @@ don't count me
 			expect(result.nonWhitespaceCharCount).toBe(24);
 			expect(result.spaceDelimitedWordCount).toBe(7);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 	});
 
-  /*
+	/*
     HTML COMMENTS
   */
 
-  describe("HTML comments", () => {
+	describe("HTML comments", () => {
 		it("parses a file with one well-formed inline comment", () => {
 			const content = `This is a note with an <!--inline comment--> that shouldn't be counted.`;
 
@@ -337,9 +337,9 @@ The comment is over.`;
 			expect(result.nonWhitespaceCharCount).toBe(41);
 			expect(result.spaceDelimitedWordCount).toBe(11);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 
-    it("parses a file with two separated comments", () => {
+		it("parses a file with two separated comments", () => {
 			const content = `
 This is a note with a comment.
 
@@ -363,7 +363,7 @@ The comment is over.`;
 			expect(result.nonWhitespaceCharCount).toBe(45);
 			expect(result.spaceDelimitedWordCount).toBe(12);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 
 		it("parses a file with an unterminated comment", () => {
 			const content = `
@@ -379,9 +379,9 @@ without terminating marks`;
 			expect(result.nonWhitespaceCharCount).toBe(67);
 			expect(result.spaceDelimitedWordCount).toBe(13);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 
-    it("parses a file with a starting comment indicator at EOF", () => {
+		it("parses a file with a starting comment indicator at EOF", () => {
 			const content = `
 This is a note with a comment.
 
@@ -393,7 +393,7 @@ This is a note with a comment.
 			expect(result.nonWhitespaceCharCount).toBe(28);
 			expect(result.spaceDelimitedWordCount).toBe(7);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 
 		it("parses a file with a closing comment indicator at EOF", () => {
 			const content = `
@@ -410,12 +410,12 @@ don't count me
 			expect(result.nonWhitespaceCharCount).toBe(24);
 			expect(result.spaceDelimitedWordCount).toBe(7);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 	});
 
 	describe("code blocks", () => {
-    it("parses a file with inline code", () => {
-      const content = `This is a note with \`inline code\` that should be counted.`;
+		it("parses a file with inline code", () => {
+			const content = `This is a note with \`inline code\` that should be counted.`;
 
 			const result = countMarkdown(content);
 
@@ -423,8 +423,8 @@ don't count me
 			expect(result.nonWhitespaceCharCount).toBe(47);
 			expect(result.spaceDelimitedWordCount).toBe(11);
 			expect(result.cjkWordCount).toBe(0);
-    });
-    
+		});
+
 		it("parses a file with one well-formed code block", () => {
 			const content = `
 This is a note with a code block.
@@ -441,7 +441,7 @@ The block is over.`;
 			expect(result.nonWhitespaceCharCount).toBe(41);
 			expect(result.spaceDelimitedWordCount).toBe(12);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 
 		it("parses a file that's entirely a code block", () => {
 			const content = `\`\`\`dataview
@@ -454,7 +454,7 @@ select * from blah blah blah
 			expect(result.nonWhitespaceCharCount).toBe(0);
 			expect(result.spaceDelimitedWordCount).toBe(0);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 
 		it("parses a file with two side-by-side code blocks", () => {
 			const content = `
@@ -474,9 +474,9 @@ The block is over.`;
 			expect(result.nonWhitespaceCharCount).toBe(41);
 			expect(result.spaceDelimitedWordCount).toBe(12);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 
-    it("parses a file with two separated code blocks", () => {
+		it("parses a file with two separated code blocks", () => {
 			const content = `
 This is a note with a code block.
 
@@ -498,7 +498,7 @@ The block is over.`;
 			expect(result.nonWhitespaceCharCount).toBe(45);
 			expect(result.spaceDelimitedWordCount).toBe(13);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 
 		it("parses a file with an unterminated code block", () => {
 			const content = `
@@ -513,9 +513,9 @@ select * from blah blah blah`;
 			expect(result.nonWhitespaceCharCount).toBe(60);
 			expect(result.spaceDelimitedWordCount).toBe(14);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 
-    it("parses a file with a starting code block indicator at EOF", () => {
+		it("parses a file with a starting code block indicator at EOF", () => {
 			const content = `
 This is a note with a code block.
 
@@ -527,7 +527,7 @@ This is a note with a code block.
 			expect(result.nonWhitespaceCharCount).toBe(29);
 			expect(result.spaceDelimitedWordCount).toBe(8);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 
 		it("parses a file with a closing code block indicator at EOF", () => {
 			const content = `
@@ -543,16 +543,16 @@ select * from blah blah blah
 			expect(result.nonWhitespaceCharCount).toBe(26);
 			expect(result.spaceDelimitedWordCount).toBe(8);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 	});
 
-  /*
+	/*
     LINKS (INTERNAL + EXTERNAL)
   */
 
-  describe("links", () => {
-    it("ignores the link URI", () => {
-      const content = `Here's a [ link ](https://example.com)`;
+	describe("links", () => {
+		it("ignores the link URI", () => {
+			const content = `Here's a [ link ](https://example.com)`;
 
 			const result = countMarkdown(content);
 
@@ -560,10 +560,10 @@ select * from blah blah blah
 			expect(result.nonWhitespaceCharCount).toBe(11);
 			expect(result.spaceDelimitedWordCount).toBe(3);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 
-    it("counts only the link alias", () => {
-      const content = `Here's an [[another note somewhere|internal link]]`;
+		it("counts only the link alias", () => {
+			const content = `Here's an [[another note somewhere|internal link]]`;
 
 			const result = countMarkdown(content);
 
@@ -571,7 +571,7 @@ select * from blah blah blah
 			expect(result.nonWhitespaceCharCount).toBe(20);
 			expect(result.spaceDelimitedWordCount).toBe(4);
 			expect(result.cjkWordCount).toBe(0);
-    });
+		});
 
 		it("handles multiple links in a line", () => {
 			const content = `Have a [link](https://example.com) or [two](https://example.com)`;
@@ -594,5 +594,38 @@ select * from blah blah blah
 			expect(result.spaceDelimitedWordCount).toBe(7);
 			expect(result.cjkWordCount).toBe(0);
 		});
-  });
+
+		it("handles an empty link followed by a later close paren", () => {
+			const content = `Have a ([link]() or two)`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(20);
+			expect(result.nonWhitespaceCharCount).toBe(16);
+			expect(result.spaceDelimitedWordCount).toBe(5);
+			expect(result.cjkWordCount).toBe(0);
+		});
+
+		it("handles an empty internal link followed later by a pipe and close brackets", () => {
+			const content = `Have a [[]] or | operator or close brackets ]]`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(42);
+			expect(result.nonWhitespaceCharCount).toBe(33);
+			expect(result.spaceDelimitedWordCount).toBe(7);
+			expect(result.cjkWordCount).toBe(0);
+		});
+
+		it("handles a line with every kind of link", () => {
+			const content = `Start with [[]] then [[internal]] then [external](https://example.com) then [[]]`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(45);
+			expect(result.nonWhitespaceCharCount).toBe(37);
+			expect(result.spaceDelimitedWordCount).toBe(7);
+			expect(result.cjkWordCount).toBe(0);
+		});
+	});
 });
