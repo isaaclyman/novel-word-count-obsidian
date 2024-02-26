@@ -550,27 +550,49 @@ select * from blah blah blah
     LINKS (INTERNAL + EXTERNAL)
   */
 
-  describe.skip("links", () => {
+  describe("links", () => {
     it("ignores the link URI", () => {
       const content = `Here's a [ link ](https://example.com)`;
 
 			const result = countMarkdown(content);
 
-			expect(result.charCount).toBe(17);
-			expect(result.nonWhitespaceCharCount).toBe(13);
+			expect(result.charCount).toBe(15);
+			expect(result.nonWhitespaceCharCount).toBe(11);
 			expect(result.spaceDelimitedWordCount).toBe(3);
 			expect(result.cjkWordCount).toBe(0);
     });
 
     it("counts only the link alias", () => {
-      const content = `Here's an [another note somewhere|internal link]`;
+      const content = `Here's an [[another note somewhere|internal link]]`;
 
 			const result = countMarkdown(content);
 
-			expect(result.charCount).toBe(36);
-			expect(result.nonWhitespaceCharCount).toBe(33);
+			expect(result.charCount).toBe(23);
+			expect(result.nonWhitespaceCharCount).toBe(20);
 			expect(result.spaceDelimitedWordCount).toBe(4);
 			expect(result.cjkWordCount).toBe(0);
     });
+
+		it("handles multiple links in a line", () => {
+			const content = `Have a [link](https://example.com) or [two](https://example.com)`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(18);
+			expect(result.nonWhitespaceCharCount).toBe(14);
+			expect(result.spaceDelimitedWordCount).toBe(5);
+			expect(result.cjkWordCount).toBe(0);
+		});
+
+		it("handles links inside of parentheses", () => {
+			const content = `Have a link (or [two](https://example.com) or three)`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(29);
+			expect(result.nonWhitespaceCharCount).toBe(23);
+			expect(result.spaceDelimitedWordCount).toBe(7);
+			expect(result.cjkWordCount).toBe(0);
+		});
   });
 });
