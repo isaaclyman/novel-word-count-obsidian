@@ -61,7 +61,7 @@ export function removeNonCountedContent(
 
   if (config.excludeNonVisibleLinkPortions) {
     // Exclude the URL of external links
-    content = content.replace(/\[(.+?)\]\(.+?\)/gim, "$1");
+    content = content.replace(/\[(.+?)\]\((?!\)).+?\)/gim, "$1");
 
     // Exclude the note name of internal links with an alias
     content = content.replace(/\[\[.+?\|(.+?)\]\]/gim, "$1");
