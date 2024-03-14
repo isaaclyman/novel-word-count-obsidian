@@ -48,7 +48,8 @@ describe('parser benchmark', () => {
       const result = countMarkdown(words500, {
         excludeCodeBlocks: true,
         excludeComments: true,
-        excludeNonVisibleLinkPortions: true
+        excludeNonVisibleLinkPortions: true,
+        excludeFootnotes: true,
       });
     }
     console.timeEnd(label);
@@ -74,7 +75,8 @@ describe('parser benchmark', () => {
     const result = countMarkdown(words500.repeat(10_000), {
       excludeCodeBlocks: true,
       excludeComments: true,
-      excludeNonVisibleLinkPortions: true
+      excludeNonVisibleLinkPortions: true,
+      excludeFootnotes: true,
     });
     console.timeEnd(label);
   });
