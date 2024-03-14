@@ -587,9 +587,9 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				);
 
 			new Setting(containerEl)
-				.setName("Exclude markdown footnotes")
+				.setName("Exclude footnotes")
 				.setDesc(
-					"Exclude markdown footnotes as per this specification https://github.blog/changelog/2021-09-30-footnotes-now-supported-in-markdown-fields/"
+					"Exclude footnotes[^1] from counts. May affect performance on large vaults."
 				)
 				.addToggle((toggle) =>
 					toggle
