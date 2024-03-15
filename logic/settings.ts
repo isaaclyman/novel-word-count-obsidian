@@ -164,6 +164,7 @@ export interface NovelWordCountSettings {
 	excludeComments: boolean;
 	excludeCodeBlocks: boolean;
 	excludeNonVisibleLinkPortions: boolean;
+	excludeFootnotes: boolean;
 	debugMode: boolean;
 }
 
@@ -204,6 +205,7 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	excludeComments: false,
 	excludeCodeBlocks: false,
 	excludeNonVisibleLinkPortions: false,
+	excludeFootnotes: false,
 	debugMode: false,
 };
 
@@ -579,6 +581,21 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.excludeNonVisibleLinkPortions)
 						.onChange(async (value) => {
 							this.plugin.settings.excludeNonVisibleLinkPortions = value;
+							await this.plugin.saveSettings();
+							await this.plugin.initialize();
+						})
+				);
+
+			new Setting(containerEl)
+				.setName("Exclude footnotes")
+				.setDesc(
+					"Exclude footnotes[^1] from counts. May affect performance on large vaults."
+				)
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.excludeFootnotes)
+						.onChange(async (value) => {
+							this.plugin.settings.excludeFootnotes = value;
 							await this.plugin.saveSettings();
 							await this.plugin.initialize();
 						})

@@ -5,6 +5,7 @@ const countMarkdown = (content: string) =>
 		excludeCodeBlocks: true,
 		excludeComments: true,
 		excludeNonVisibleLinkPortions: true,
+		excludeFootnotes: true,
 	});
 
 describe("parseMarkdown", () => {
@@ -625,6 +626,57 @@ select * from blah blah blah
 			expect(result.charCount).toBe(45);
 			expect(result.nonWhitespaceCharCount).toBe(37);
 			expect(result.spaceDelimitedWordCount).toBe(7);
+			expect(result.cjkWordCount).toBe(0);
+		});
+	});
+
+	describe("footnotes", () => {
+		it("ignores numeric footnotes", () => {
+			const content = `
+Here's a footnote mark[^7]!
+
+[^7]: This is the footnote itself
+			`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(30);
+			expect(result.nonWhitespaceCharCount).toBe(20);
+			expect(result.spaceDelimitedWordCount).toBe(4);
+			expect(result.cjkWordCount).toBe(0);
+		});
+
+		it("ignores string footnotes", () => {
+			const content = `
+Here's a footnote mark with a string[^some-string]!
+
+[^some-string]: This is the footnote itself
+			`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(44);
+			expect(result.nonWhitespaceCharCount).toBe(31);
+			expect(result.spaceDelimitedWordCount).toBe(7);
+			expect(result.cjkWordCount).toBe(0);
+		});
+
+		it("ignores multiple footnotes", () => {
+			const content = `
+Here's a footnote mark[^7]!
+Here's another *footnote mark[^8]*, and some content after.
+Here's a footnote mark with a string[^some-string]!
+
+[^7]: This is the footnote
+[^8]: This is the other footnote
+[^some-string]: This is the string footnote
+			`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(126);
+			expect(result.nonWhitespaceCharCount).toBe(99);
+			expect(result.spaceDelimitedWordCount).toBe(19);
 			expect(result.cjkWordCount).toBe(0);
 		});
 	});

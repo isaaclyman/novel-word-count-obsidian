@@ -6,7 +6,8 @@ export function countMarkdownObsidian(content: string): MarkdownParseResult {
   content = removeNonCountedContent(content, {
     excludeCodeBlocks: true,
     excludeComments: true,
-    excludeNonVisibleLinkPortions: true
+    excludeNonVisibleLinkPortions: true,
+    excludeFootnotes: true,
   });
 
   const result: MarkdownParseResult = {

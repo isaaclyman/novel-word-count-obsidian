@@ -2,6 +2,7 @@ export interface MarkdownParseConfig {
 	excludeComments: boolean;
 	excludeCodeBlocks: boolean;
 	excludeNonVisibleLinkPortions: boolean;
+	excludeFootnotes: boolean;
 }
 
 export interface MarkdownParseResult {
@@ -67,6 +68,14 @@ export function removeNonCountedContent(
 		content = content.replace(/\[\[(.*?)\]\]/gim, (_, $1) => {
 			return !$1 ? "" : $1.includes("|") ? $1.slice($1.indexOf("|") + 1) : $1;
 		});
+	}
+
+	if (config.excludeFootnotes) {
+		// Replace the footnotes
+		content = content.replace(/\[\^.+?\]: .*/gim, "");
+
+		// Replace the footnote marks
+		content = content.replace(/\[\^.+?\]/gim, "");
 	}
 
 	return content;

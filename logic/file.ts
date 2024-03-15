@@ -255,6 +255,7 @@ export class FileHelper {
 			excludeComments: this.settings.excludeComments,
 			excludeNonVisibleLinkPortions:
 				this.settings.excludeNonVisibleLinkPortions,
+			excludeFootnotes: this.settings.excludeFootnotes,
 		});
 		const combinedWordCount =
 			countResult.cjkWordCount + countResult.spaceDelimitedWordCount;
