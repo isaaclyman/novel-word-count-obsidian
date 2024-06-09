@@ -1,3 +1,20 @@
+.nav-header {
+  .nav-buttons-container::after {
+    content: attr(data-novel-word-count-plugin);
+    display: block;
+    font-size: 0.8em;
+    max-width: calc(100% - 20px);
+    min-width: 0;
+    opacity: 0.75;
+    overflow: hidden;
+    padding: 0 4px;
+    position: relative;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 .nav-files-container {
   .nav-file-title {
     align-items: baseline;

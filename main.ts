@@ -195,9 +195,22 @@ export default class NovelWordCountPlugin extends Plugin {
 		}
 
 		this.setContainerClass(fileExplorerLeaf);
+		const fileExplorerView = fileExplorerLeaf.view as any;
 		const fileItems: { [path: string]: FileItem } = (
-			fileExplorerLeaf.view as any
+			fileExplorerView
 		).fileItems;
+
+		if (fileExplorerView?.headerDom?.navButtonsEl) {
+			const counts = this.fileHelper.getCachedDataForPath(
+				this.savedData.cachedCounts,
+				"/"
+			);
+
+			fileExplorerView.headerDom.navButtonsEl.setAttribute(
+				"data-novel-word-count-plugin",
+				this.nodeLabelHelper.getNodeLabel(counts)
+			)
+		}
 
 		if (file) {
 			const relevantItems = Object.keys(fileItems).filter((path) =>
@@ -216,7 +229,7 @@ export default class NovelWordCountPlugin extends Plugin {
 		}
 
 		for (const path in fileItems) {
-			if (file && !file.path.includes(path)) {
+			if (file && (!file.path.includes(path) || file.path === '/')) {
 				continue;
 			}
 
@@ -262,6 +275,8 @@ export default class NovelWordCountPlugin extends Plugin {
 
 	private setContainerClass(leaf: WorkspaceLeaf) {
 		const container = leaf.view.containerEl;
+		container.toggleClass(`novel-word-count--active`, true);
+
 		const notePrefix = `novel-word-count--note-`;
 		const folderPrefix = `novel-word-count--folder-`;
 		const alignmentClasses = ALIGNMENT_TYPES
