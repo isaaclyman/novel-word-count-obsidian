@@ -1,3 +1,6 @@
+.nav-header .nav-buttons-container {
+  flex-wrap: wrap !important;
+}
 .nav-header .nav-buttons-container::after {
   content: attr(data-novel-word-count-plugin);
   display: block;
