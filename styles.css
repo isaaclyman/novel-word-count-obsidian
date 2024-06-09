@@ -11,6 +11,7 @@
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
+  width: 100%;
 }
 
 .nav-files-container .nav-file-title {
