@@ -282,8 +282,9 @@ export class NodeLabelHelper {
 				if (!value) {
 					return null;
 				}
+				const isValidNumber = !isNaN(Number(value))
 				const date = moment(value);
-				const text = date.isValid() ? date.format('YYYY/MM/DD') : value;
+				const text = !isValidNumber && date.isValid() ? date.format('YYYY/MM/DD') : value;
 				if (overrideSuffix !== null) {
 					return `${text}${overrideSuffix}`;
 				}
