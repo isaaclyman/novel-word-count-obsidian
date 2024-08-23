@@ -2,6 +2,7 @@ import type NovelWordCountPlugin from "main";
 import {
 	App,
 	CachedMetadata,
+	FrontMatterCache,
 	TAbstractFile,
 	TFile,
 	TFolder,
@@ -32,6 +33,7 @@ export interface CountData {
 	sizeInBytes: number;
 	createdDate: number;
 	modifiedDate: number;
+	frontmatter?: FrontMatterCache
 }
 
 export type CountsByFile = {
@@ -304,6 +306,7 @@ export class FileHelper {
 			linkCount: this.countLinks(metadata),
 			embedCount: this.countEmbeds(metadata),
 			aliases: parseFrontMatterAliases(metadata?.frontmatter),
+			frontmatter: metadata?.frontmatter
 		} as CountData);
 	}
 
