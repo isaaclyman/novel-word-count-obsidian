@@ -91,7 +91,24 @@ export function getDescription(countType: CountType): string {
 	return `[${COUNT_TYPE_DISPLAY_STRINGS[countType]}] ${COUNT_TYPE_DESCRIPTIONS[countType]}`;
 }
 
-export const COUNT_TYPES = [
+const FOLDER_COUNT_TYPES = [
+	CountType.None,
+	CountType.Word,
+	CountType.Page,
+	CountType.PageDecimal,
+	CountType.ReadTime,
+	CountType.PercentGoal,
+	CountType.Note,
+	CountType.Character,
+	CountType.Link,
+	CountType.Embed,
+	CountType.Alias,
+	CountType.Created,
+	CountType.Modified,
+	CountType.FileSize,
+];
+
+const NOTE_COUNT_TYPES = [
 	CountType.None,
 	CountType.Word,
 	CountType.Page,
@@ -108,6 +125,8 @@ export const COUNT_TYPES = [
 	CountType.FileSize,
 	CountType.CustomKey,
 ];
+
+export const COUNT_TYPES = [...new Set([...FOLDER_COUNT_TYPES, ...NOTE_COUNT_TYPES])];
 
 export enum AlignmentType {
 	Inline = "inline",
@@ -272,7 +291,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 		// NOTE - DATA TYPE 1
 
-		this.renderCountTypeSetting(containerEl, {
+		this.renderCountTypeSetting(containerEl, NOTE_COUNT_TYPES, {
 			name: "1st data type to show",
 			oldCountType: this.plugin.settings.countType,
 			setNewCountType: (value) => {
@@ -296,7 +315,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 		// NOTE - DATA TYPE 2
 
-		this.renderCountTypeSetting(containerEl, {
+		this.renderCountTypeSetting(containerEl, NOTE_COUNT_TYPES, {
 			name: "2nd data type to show",
 			oldCountType: this.plugin.settings.countType2,
 			setNewCountType: (value) => {
@@ -320,7 +339,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 		// NOTE - DATA TYPE 3
 
-		this.renderCountTypeSetting(containerEl, {
+		this.renderCountTypeSetting(containerEl, NOTE_COUNT_TYPES, {
 			name: "3rd data type to show",
 			oldCountType: this.plugin.settings.countType3,
 			setNewCountType: (value) => {
@@ -416,7 +435,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 		if (!this.plugin.settings.showSameCountsOnFolders) {
 			// FOLDER - DATA TYPE 1
 
-			this.renderCountTypeSetting(containerEl, {
+			this.renderCountTypeSetting(containerEl, FOLDER_COUNT_TYPES, {
 				name: "1st data type to show",
 				oldCountType: this.plugin.settings.folderCountType,
 				setNewCountType: (value) => {
@@ -437,7 +456,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 			// FOLDER - DATA TYPE 2
 
-			this.renderCountTypeSetting(containerEl, {
+			this.renderCountTypeSetting(containerEl, FOLDER_COUNT_TYPES, {
 				name: "2nd data type to show",
 				oldCountType: this.plugin.settings.folderCountType2,
 				setNewCountType: (value) => {
@@ -458,7 +477,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 			// FOLDER - DATA TYPE 3
 
-			this.renderCountTypeSetting(containerEl, {
+			this.renderCountTypeSetting(containerEl, FOLDER_COUNT_TYPES, {
 				name: "3rd data type to show",
 				oldCountType: this.plugin.settings.folderCountType3,
 				setNewCountType: (value) => {
@@ -869,6 +888,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 	private renderCountTypeSetting(
 		containerEl: HTMLElement,
+		countTypes: CountType[],
 		config: {
 			name: string;
 			oldCountType: CountType;
@@ -879,7 +899,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			.setName(config.name)
 			.setDesc(getDescription(config.oldCountType))
 			.addDropdown((drop) => {
-				for (const countType of COUNT_TYPES) {
+				for (const countType of countTypes) {
 					drop.addOption(countType, COUNT_TYPE_DISPLAY_STRINGS[countType]);
 				}
 
