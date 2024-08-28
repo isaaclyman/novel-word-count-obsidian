@@ -16,7 +16,7 @@ import { moment } from "obsidian";
 interface CountTypeWithSuffix {
 	countType: CountType;
 	overrideSuffix: string | null;
-	customKey?: string
+	frontmatterKey?: string
 }
 
 export class NodeLabelHelper {
@@ -50,18 +50,18 @@ export class NodeLabelHelper {
 						this.getCountTypeWithSuffix(
 							this.settings.countType,
 							this.settings.countTypeSuffix,
-							this.settings.customKey,
+							this.settings.frontmatterKey,
 						),
 						this.getCountTypeWithSuffix(
 							this.settings.countType2,
 							this.settings.countType2Suffix,
-							this.settings.customKey2,
+							this.settings.frontmatterKey2,
 
 						),
 						this.getCountTypeWithSuffix(
 							this.settings.countType3,
 							this.settings.countType3Suffix,
-							this.settings.customKey3,
+							this.settings.frontmatterKey3,
 						),
 				  ];
 
@@ -84,7 +84,7 @@ export class NodeLabelHelper {
 					ct.countType,
 					abbreviateDescriptions,
 					ct.overrideSuffix,
-					ct.customKey
+					ct.frontmatterKey
 				)
 			)
 			.filter((display) => display !== null)
@@ -94,12 +94,12 @@ export class NodeLabelHelper {
 	private getCountTypeWithSuffix(
 		countType: CountType,
 		customSuffix: string,
-		customKey?: string
+		frontmatterKey?: string
 	): CountTypeWithSuffix {
 		return {
 			countType,
 			overrideSuffix: this.settings.useAdvancedFormatting ? customSuffix : null,
-			customKey
+			frontmatterKey
 		};
 	}
 
@@ -129,7 +129,7 @@ export class NodeLabelHelper {
 		countType: CountType,
 		abbreviateDescriptions: boolean,
 		overrideSuffix: string | null,
-		customKey?: string
+		frontmatterKey?: string
 	): string | null {
 		if (!counts || typeof counts.wordCount !== "number") {
 			return null;
@@ -274,21 +274,18 @@ export class NodeLabelHelper {
 					counts.sizeInBytes,
 					abbreviateDescriptions
 				);
-			case CountType.CustomKey:
-				if (!customKey) {
+			case CountType.FrontmatterKey:
+				if (!frontmatterKey) {
 					return null;
 				}
-				const value = counts?.frontmatter?.[customKey];
-				if (!value) {
+				const value = counts?.frontmatter?.[frontmatterKey];
+				if (value === undefined || value === null) {
 					return null;
 				}
-				const isValidNumber = !isNaN(Number(value))
-				const date = moment(value);
-				const text = !isValidNumber && date.isValid() ? date.format('YYYY/MM/DD') : value;
 				if (overrideSuffix !== null) {
-					return `${text}${overrideSuffix}`;
+					return `${value}${overrideSuffix}`;
 				}
-				return text
+				return value
 		}
 
 		return null;

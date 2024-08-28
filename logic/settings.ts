@@ -22,7 +22,7 @@ export enum CountType {
 	Created = "created",
 	Modified = "modified",
 	FileSize = "filesize",
-	CustomKey = "customkey",
+	FrontmatterKey = "frontmatterKey",
 }
 
 export const COUNT_TYPE_DISPLAY_STRINGS: { [countType: string]: string } = {
@@ -40,7 +40,7 @@ export const COUNT_TYPE_DISPLAY_STRINGS: { [countType: string]: string } = {
 	[CountType.Created]: "Created Date",
 	[CountType.Modified]: "Last Updated Date",
 	[CountType.FileSize]: "File Size",
-	[CountType.CustomKey]: "Custom Key",
+	[CountType.FrontmatterKey]: "Frontmatter Key",
 };
 
 export const COUNT_TYPE_DESCRIPTIONS: { [countType: string]: string } = {
@@ -63,7 +63,7 @@ export const COUNT_TYPE_DESCRIPTIONS: { [countType: string]: string } = {
 	[CountType.Modified]:
 		"Date of last edit. (On folders: latest edit date of any note.)",
 	[CountType.FileSize]: "Total size on hard drive.",
-	[CountType.CustomKey]: "Key in the front matter block.",
+	[CountType.FrontmatterKey]: "Key in the frontmatter block.",
 };
 
 export const UNFORMATTABLE_COUNT_TYPES = [
@@ -91,7 +91,7 @@ export function getDescription(countType: CountType): string {
 	return `[${COUNT_TYPE_DISPLAY_STRINGS[countType]}] ${COUNT_TYPE_DESCRIPTIONS[countType]}`;
 }
 
-const FOLDER_COUNT_TYPES = [
+export const COUNT_TYPES = [
 	CountType.None,
 	CountType.Word,
 	CountType.Page,
@@ -106,27 +106,8 @@ const FOLDER_COUNT_TYPES = [
 	CountType.Created,
 	CountType.Modified,
 	CountType.FileSize,
+	CountType.FrontmatterKey,
 ];
-
-const NOTE_COUNT_TYPES = [
-	CountType.None,
-	CountType.Word,
-	CountType.Page,
-	CountType.PageDecimal,
-	CountType.ReadTime,
-	CountType.PercentGoal,
-	CountType.Note,
-	CountType.Character,
-	CountType.Link,
-	CountType.Embed,
-	CountType.Alias,
-	CountType.Created,
-	CountType.Modified,
-	CountType.FileSize,
-	CountType.CustomKey,
-];
-
-export const COUNT_TYPES = [...new Set([...FOLDER_COUNT_TYPES, ...NOTE_COUNT_TYPES])];
 
 export enum AlignmentType {
 	Inline = "inline",
@@ -156,13 +137,13 @@ export interface NovelWordCountSettings {
 	// NOTES
 	countType: CountType;
 	countTypeSuffix: string;
-	customKey: string;
+	frontmatterKey: string;
 	countType2: CountType;
 	countType2Suffix: string;
-	customKey2: string;
+	frontmatterKey2: string;
 	countType3: CountType;
 	countType3Suffix: string;
-	customKey3: string;
+	frontmatterKey3: string;
 	pipeSeparator: string;
 	abbreviateDescriptions: boolean;
 	alignment: AlignmentType;
@@ -200,13 +181,13 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	// NOTES
 	countType: CountType.Word,
 	countTypeSuffix: "w",
-	customKey: "",
+	frontmatterKey: "",
 	countType2: CountType.None,
 	countType2Suffix: "",
-	customKey2: "",
+	frontmatterKey2: "",
 	countType3: CountType.None,
 	countType3Suffix: "",
-	customKey3: "",
+	frontmatterKey3: "",
 	pipeSeparator: "|",
 	abbreviateDescriptions: false,
 	alignment: AlignmentType.Inline,
@@ -291,7 +272,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 		// NOTE - DATA TYPE 1
 
-		this.renderCountTypeSetting(containerEl, NOTE_COUNT_TYPES, {
+		this.renderCountTypeSetting(containerEl, {
 			name: "1st data type to show",
 			oldCountType: this.plugin.settings.countType,
 			setNewCountType: (value) => {
@@ -301,10 +282,10 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			},
 		});
 
-		this.renderCustomKeySetting(containerEl, {
+		this.renderFrontmatterKeySetting(containerEl, {
 			countType: this.plugin.settings.countType,
-			oldKey: this.plugin.settings.customKey,
-			setNewKey: (value) => (this.plugin.settings.customKey = value)
+			oldKey: this.plugin.settings.frontmatterKey,
+			setNewKey: (value) => (this.plugin.settings.frontmatterKey = value)
 		});
 
 		this.renderCustomFormatSetting(containerEl, {
@@ -315,7 +296,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 		// NOTE - DATA TYPE 2
 
-		this.renderCountTypeSetting(containerEl, NOTE_COUNT_TYPES, {
+		this.renderCountTypeSetting(containerEl, {
 			name: "2nd data type to show",
 			oldCountType: this.plugin.settings.countType2,
 			setNewCountType: (value) => {
@@ -325,10 +306,10 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			},
 		});
 
-		this.renderCustomKeySetting(containerEl, {
+		this.renderFrontmatterKeySetting(containerEl, {
 			countType: this.plugin.settings.countType2,
-			oldKey: this.plugin.settings.customKey2,
-			setNewKey: (value) => (this.plugin.settings.customKey2 = value)
+			oldKey: this.plugin.settings.frontmatterKey2,
+			setNewKey: (value) => (this.plugin.settings.frontmatterKey2 = value)
 		});
 
 		this.renderCustomFormatSetting(containerEl, {
@@ -339,7 +320,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 		// NOTE - DATA TYPE 3
 
-		this.renderCountTypeSetting(containerEl, NOTE_COUNT_TYPES, {
+		this.renderCountTypeSetting(containerEl, {
 			name: "3rd data type to show",
 			oldCountType: this.plugin.settings.countType3,
 			setNewCountType: (value) => {
@@ -349,10 +330,10 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			},
 		});
 
-		this.renderCustomKeySetting(containerEl, {
+		this.renderFrontmatterKeySetting(containerEl, {
 			countType: this.plugin.settings.countType3,
-			oldKey: this.plugin.settings.customKey3,
-			setNewKey: (value) => (this.plugin.settings.customKey3 = value)
+			oldKey: this.plugin.settings.frontmatterKey3,
+			setNewKey: (value) => (this.plugin.settings.frontmatterKey3 = value)
 		});
 
 		this.renderCustomFormatSetting(containerEl, {
@@ -435,7 +416,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 		if (!this.plugin.settings.showSameCountsOnFolders) {
 			// FOLDER - DATA TYPE 1
 
-			this.renderCountTypeSetting(containerEl, FOLDER_COUNT_TYPES, {
+			this.renderCountTypeSetting(containerEl, {
 				name: "1st data type to show",
 				oldCountType: this.plugin.settings.folderCountType,
 				setNewCountType: (value) => {
@@ -456,7 +437,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 			// FOLDER - DATA TYPE 2
 
-			this.renderCountTypeSetting(containerEl, FOLDER_COUNT_TYPES, {
+			this.renderCountTypeSetting(containerEl, {
 				name: "2nd data type to show",
 				oldCountType: this.plugin.settings.folderCountType2,
 				setNewCountType: (value) => {
@@ -477,7 +458,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 			// FOLDER - DATA TYPE 3
 
-			this.renderCountTypeSetting(containerEl, FOLDER_COUNT_TYPES, {
+			this.renderCountTypeSetting(containerEl, {
 				name: "3rd data type to show",
 				oldCountType: this.plugin.settings.folderCountType3,
 				setNewCountType: (value) => {
@@ -888,7 +869,6 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 	private renderCountTypeSetting(
 		containerEl: HTMLElement,
-		countTypes: CountType[],
 		config: {
 			name: string;
 			oldCountType: CountType;
@@ -899,7 +879,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			.setName(config.name)
 			.setDesc(getDescription(config.oldCountType))
 			.addDropdown((drop) => {
-				for (const countType of countTypes) {
+				for (const countType of COUNT_TYPES) {
 					drop.addOption(countType, COUNT_TYPE_DISPLAY_STRINGS[countType]);
 				}
 
@@ -949,7 +929,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 		}
 	}
 
-	private renderCustomKeySetting(
+	private renderFrontmatterKeySetting(
 		containerEl: HTMLElement,
 		config: {
 			countType: CountType;
@@ -958,14 +938,14 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 		}
 	): void {
 		if (
-			config.countType !== CountType.CustomKey
+			config.countType !== CountType.FrontmatterKey
 		) {
 			return;
 		}
 
 		new Setting(containerEl)
 			.setDesc(
-				`[${COUNT_TYPE_DISPLAY_STRINGS[CountType.CustomKey]}] Specific key`
+				`[${COUNT_TYPE_DISPLAY_STRINGS[CountType.FrontmatterKey]}] Specific key`
 			)
 			.addText((text) =>
 				text.setValue(config.oldKey).onChange(async (value) => {
