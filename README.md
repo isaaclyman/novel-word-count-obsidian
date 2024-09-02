@@ -23,6 +23,7 @@ This plugin displays statistics of your choice next to every file, folder, and v
 | **Created date** | The date the note was created. | On a folder, this shows the earliest creation date of all notes in the folder. |
 | **Last updated date** | The date the note was last updated. | On a folder, this shows the latest edit date of all notes in the folder. |
 | **File size** | Total size on your hard drive. | |
+| **Frontmatter key** | Any specified key in a note's [Properties](https://help.obsidian.md/Editing+and+formatting/Properties). | No automatic prefix, suffix, abbreviation, or formatting exists for this data type. You can format your frontmatter however you like, or [consider using a plugin](https://obsidian.md/plugins?search=frontmatter) to generate it. |
 
 **Abbreviate descriptions.** Enable to show shortened counts:
 
