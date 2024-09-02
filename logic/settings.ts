@@ -85,6 +85,7 @@ export const COUNT_TYPE_DEFAULT_SHORT_SUFFIXES: {
 	[CountType.Embed]: "em",
 	[CountType.Created]: "/c",
 	[CountType.Modified]: "/u",
+	[CountType.FrontmatterKey]: ""
 };
 
 export function getDescription(countType: CountType): string {
