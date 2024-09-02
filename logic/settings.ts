@@ -22,6 +22,7 @@ export enum CountType {
 	Created = "created",
 	Modified = "modified",
 	FileSize = "filesize",
+	FrontmatterKey = "frontmatterKey",
 }
 
 export const COUNT_TYPE_DISPLAY_STRINGS: { [countType: string]: string } = {
@@ -39,6 +40,7 @@ export const COUNT_TYPE_DISPLAY_STRINGS: { [countType: string]: string } = {
 	[CountType.Created]: "Created Date",
 	[CountType.Modified]: "Last Updated Date",
 	[CountType.FileSize]: "File Size",
+	[CountType.FrontmatterKey]: "Frontmatter Key",
 };
 
 export const COUNT_TYPE_DESCRIPTIONS: { [countType: string]: string } = {
@@ -61,6 +63,7 @@ export const COUNT_TYPE_DESCRIPTIONS: { [countType: string]: string } = {
 	[CountType.Modified]:
 		"Date of last edit. (On folders: latest edit date of any note.)",
 	[CountType.FileSize]: "Total size on hard drive.",
+	[CountType.FrontmatterKey]: "Key in the frontmatter block.",
 };
 
 export const UNFORMATTABLE_COUNT_TYPES = [
@@ -103,6 +106,7 @@ export const COUNT_TYPES = [
 	CountType.Created,
 	CountType.Modified,
 	CountType.FileSize,
+	CountType.FrontmatterKey,
 ];
 
 export enum AlignmentType {
@@ -133,10 +137,13 @@ export interface NovelWordCountSettings {
 	// NOTES
 	countType: CountType;
 	countTypeSuffix: string;
+	frontmatterKey: string;
 	countType2: CountType;
 	countType2Suffix: string;
+	frontmatterKey2: string;
 	countType3: CountType;
 	countType3Suffix: string;
+	frontmatterKey3: string;
 	pipeSeparator: string;
 	abbreviateDescriptions: boolean;
 	alignment: AlignmentType;
@@ -174,10 +181,13 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	// NOTES
 	countType: CountType.Word,
 	countTypeSuffix: "w",
+	frontmatterKey: "",
 	countType2: CountType.None,
 	countType2Suffix: "",
+	frontmatterKey2: "",
 	countType3: CountType.None,
 	countType3Suffix: "",
+	frontmatterKey3: "",
 	pipeSeparator: "|",
 	abbreviateDescriptions: false,
 	alignment: AlignmentType.Inline,
@@ -272,6 +282,12 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			},
 		});
 
+		this.renderFrontmatterKeySetting(containerEl, {
+			countType: this.plugin.settings.countType,
+			oldKey: this.plugin.settings.frontmatterKey,
+			setNewKey: (value) => (this.plugin.settings.frontmatterKey = value)
+		});
+
 		this.renderCustomFormatSetting(containerEl, {
 			countType: this.plugin.settings.countType,
 			oldSuffix: this.plugin.settings.countTypeSuffix,
@@ -290,6 +306,12 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			},
 		});
 
+		this.renderFrontmatterKeySetting(containerEl, {
+			countType: this.plugin.settings.countType2,
+			oldKey: this.plugin.settings.frontmatterKey2,
+			setNewKey: (value) => (this.plugin.settings.frontmatterKey2 = value)
+		});
+
 		this.renderCustomFormatSetting(containerEl, {
 			countType: this.plugin.settings.countType2,
 			oldSuffix: this.plugin.settings.countType2Suffix,
@@ -306,6 +328,12 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				this.plugin.settings.countType3Suffix =
 					COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[this.plugin.settings.countType3];
 			},
+		});
+
+		this.renderFrontmatterKeySetting(containerEl, {
+			countType: this.plugin.settings.countType3,
+			oldKey: this.plugin.settings.frontmatterKey3,
+			setNewKey: (value) => (this.plugin.settings.frontmatterKey3 = value)
 		});
 
 		this.renderCustomFormatSetting(containerEl, {
@@ -899,6 +927,33 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					})
 				);
 		}
+	}
+
+	private renderFrontmatterKeySetting(
+		containerEl: HTMLElement,
+		config: {
+			countType: CountType;
+			oldKey: string;
+			setNewKey: (newKey: string) => void;
+		}
+	): void {
+		if (
+			config.countType !== CountType.FrontmatterKey
+		) {
+			return;
+		}
+
+		new Setting(containerEl)
+			.setDesc(
+				`[${COUNT_TYPE_DISPLAY_STRINGS[CountType.FrontmatterKey]}] Specific key`
+			)
+			.addText((text) =>
+				text.setValue(config.oldKey).onChange(async (value) => {
+					config.setNewKey(value);
+					await this.plugin.saveSettings();
+					await this.plugin.updateDisplayedCounts();
+				})
+			);
 	}
 
 	private renderSeparator(containerEl: HTMLElement) {

@@ -16,6 +16,7 @@ import { moment } from "obsidian";
 interface CountTypeWithSuffix {
 	countType: CountType;
 	overrideSuffix: string | null;
+	frontmatterKey?: string
 }
 
 export class NodeLabelHelper {
@@ -48,15 +49,19 @@ export class NodeLabelHelper {
 				: [
 						this.getCountTypeWithSuffix(
 							this.settings.countType,
-							this.settings.countTypeSuffix
+							this.settings.countTypeSuffix,
+							this.settings.frontmatterKey,
 						),
 						this.getCountTypeWithSuffix(
 							this.settings.countType2,
-							this.settings.countType2Suffix
+							this.settings.countType2Suffix,
+							this.settings.frontmatterKey2,
+
 						),
 						this.getCountTypeWithSuffix(
 							this.settings.countType3,
-							this.settings.countType3Suffix
+							this.settings.countType3Suffix,
+							this.settings.frontmatterKey3,
 						),
 				  ];
 
@@ -78,7 +83,8 @@ export class NodeLabelHelper {
 					counts,
 					ct.countType,
 					abbreviateDescriptions,
-					ct.overrideSuffix
+					ct.overrideSuffix,
+					ct.frontmatterKey
 				)
 			)
 			.filter((display) => display !== null)
@@ -87,11 +93,13 @@ export class NodeLabelHelper {
 
 	private getCountTypeWithSuffix(
 		countType: CountType,
-		customSuffix: string
+		customSuffix: string,
+		frontmatterKey?: string
 	): CountTypeWithSuffix {
 		return {
 			countType,
 			overrideSuffix: this.settings.useAdvancedFormatting ? customSuffix : null,
+			frontmatterKey
 		};
 	}
 
@@ -120,7 +128,8 @@ export class NodeLabelHelper {
 		counts: CountData,
 		countType: CountType,
 		abbreviateDescriptions: boolean,
-		overrideSuffix: string | null
+		overrideSuffix: string | null,
+		frontmatterKey?: string
 	): string | null {
 		if (!counts || typeof counts.wordCount !== "number") {
 			return null;
@@ -265,6 +274,18 @@ export class NodeLabelHelper {
 					counts.sizeInBytes,
 					abbreviateDescriptions
 				);
+			case CountType.FrontmatterKey:
+				if (!frontmatterKey) {
+					return null;
+				}
+				const value = counts?.frontmatter?.[frontmatterKey];
+				if (value === undefined || value === null) {
+					return null;
+				}
+				if (overrideSuffix !== null) {
+					return `${value}${overrideSuffix}`;
+				}
+				return value
 		}
 
 		return null;
