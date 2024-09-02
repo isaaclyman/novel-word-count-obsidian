@@ -945,7 +945,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setDesc(
-				`[${COUNT_TYPE_DISPLAY_STRINGS[CountType.FrontmatterKey]}] Specific key`
+				`[${COUNT_TYPE_DISPLAY_STRINGS[CountType.FrontmatterKey]}] Key name`
 			)
 			.addText((text) =>
 				text.setValue(config.oldKey).onChange(async (value) => {
