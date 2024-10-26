@@ -18,7 +18,7 @@ import { CanvasHelper } from "./canvas";
 
 export interface CountData {
 	isCountable: boolean;
-	isDirectory: boolean;
+	targetNodeType: TargetNode;
 	noteCount: number;
 	pageCount: number;
 	wordCount: number;
@@ -34,6 +34,12 @@ export interface CountData {
 	createdDate: number;
 	modifiedDate: number;
 	frontmatter?: FrontMatterCache
+}
+
+export enum TargetNode {
+	Root,
+	Directory,
+	File
 }
 
 export type CountsByFile = {
@@ -60,7 +66,7 @@ export class FileHelper {
 	): Promise<CountsByFile> {
 		const debugEnd = this.debugHelper.debugStart("getAllFileCounts");
 
-		let files: TFile[] = this.vault.getFiles();
+		const files: TFile[] = this.vault.getFiles();
 		if (
 			typeof this.plugin.settings.includeDirectories === "string" &&
 			this.plugin.settings.includeDirectories.trim() !== "*" &&
@@ -120,7 +126,7 @@ export class FileHelper {
 
 		const directoryDefault: CountData = {
 			isCountable: false,
-			isDirectory: true,
+			targetNodeType: this.isRoot(path) ? TargetNode.Root : TargetNode.Directory,
 			noteCount: 0,
 			wordCount: 0,
 			wordCountTowardGoal: 0,
@@ -141,7 +147,7 @@ export class FileHelper {
 			const childCount = this.getCachedDataForPath(counts, childPath);
 			return {
 				isCountable: total.isCountable || childCount.isCountable,
-				isDirectory: true,
+				targetNodeType: this.isRoot(childPath) ? TargetNode.Root : TargetNode.Directory,
 				noteCount: total.noteCount + childCount.noteCount,
 				linkCount: total.linkCount + childCount.linkCount,
 				embedCount: total.embedCount + childCount.embedCount,
@@ -211,6 +217,10 @@ export class FileHelper {
 		return childPaths;
 	}
 
+	private isRoot(path: string): boolean {
+		return !path || path === '/';
+	}
+
 	private removeCounts(counts: CountsByFile, path: string): void {
 		delete counts[path];
 	}
@@ -223,7 +233,7 @@ export class FileHelper {
 
 		counts[file.path] = {
 			isCountable: shouldCountFile,
-			isDirectory: false,
+			targetNodeType: TargetNode.File,
 			noteCount: 0,
 			wordCount: 0,
 			wordCountTowardGoal: 0,
@@ -330,7 +340,7 @@ export class FileHelper {
 			meaningfulContent =
 				frontmatterPos && frontmatterPos.start && frontmatterPos.end
 					? meaningfulContent.slice(0, frontmatterPos.start.offset) +
-					  meaningfulContent.slice(frontmatterPos.end.offset)
+						meaningfulContent.slice(frontmatterPos.end.offset)
 					: meaningfulContent;
 		}
 

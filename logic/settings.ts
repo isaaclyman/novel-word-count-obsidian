@@ -159,6 +159,16 @@ export interface NovelWordCountSettings {
 	folderPipeSeparator: string;
 	folderAbbreviateDescriptions: boolean;
 	folderAlignment: AlignmentType;
+	// ROOT
+	showSameCountsOnRoot: boolean;
+	rootCountType: CountType;
+	rootCountTypeSuffix: string;
+	rootCountType2: CountType;
+	rootCountType2Suffix: string;
+	rootCountType3: CountType;
+	rootCountType3Suffix: string;
+	rootPipeSeparator: string;
+	rootAbbreviateDescriptions: boolean;
 	// ADVANCED
 	showAdvanced: boolean;
 	wordsPerMinute: number;
@@ -203,6 +213,16 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	folderPipeSeparator: "|",
 	folderAbbreviateDescriptions: false,
 	folderAlignment: AlignmentType.Inline,
+	// ROOT
+	showSameCountsOnRoot: true,
+	rootCountType: CountType.Word,
+	rootCountTypeSuffix: "w",
+	rootCountType2: CountType.None,
+	rootCountType2Suffix: "",
+	rootCountType3: CountType.None,
+	rootCountType3Suffix: "",
+	rootPipeSeparator: "|",
+	rootAbbreviateDescriptions: false,
 	// ADVANCED
 	showAdvanced: false,
 	wordsPerMinute: 265,
@@ -235,6 +255,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 		this.renderNoteSettings(containerEl);
 		this.renderFolderSettings(containerEl);
+		this.renderRootSettings(containerEl);
 		this.renderAdvancedSettings(containerEl);
 		this.renderReanalyzeButton(containerEl);
 		this.renderDonationButton(containerEl);
@@ -523,6 +544,123 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						await this.plugin.updateDisplayedCounts();
 					});
 			});
+		}
+	}
+
+	private renderRootSettings(containerEl: HTMLElement): void {
+		this.renderSeparator(containerEl);
+
+		// SHOW SAME DATA ON ROOT
+
+		new Setting(containerEl)
+			.setHeading()
+			.setName("Root: Same data as Notes")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.showSameCountsOnRoot)
+					.onChange(async (value) => {
+						this.plugin.settings.showSameCountsOnRoot = value;
+						await this.plugin.saveSettings();
+						this.display();
+
+						await this.plugin.updateDisplayedCounts();
+					})
+			);
+
+		if (!this.plugin.settings.showSameCountsOnRoot) {
+			// ROOT - DATA TYPE 1
+
+			this.renderCountTypeSetting(containerEl, {
+				name: "1st data type to show",
+				oldCountType: this.plugin.settings.rootCountType,
+				setNewCountType: (value) => {
+					this.plugin.settings.rootCountType = value;
+					this.plugin.settings.rootCountTypeSuffix =
+						COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[
+							this.plugin.settings.rootCountType
+						];
+				},
+			});
+
+			this.renderCustomFormatSetting(containerEl, {
+				countType: this.plugin.settings.rootCountType,
+				oldSuffix: this.plugin.settings.rootCountTypeSuffix,
+				setNewSuffix: (value) =>
+					(this.plugin.settings.rootCountTypeSuffix = value),
+			});
+
+			// ROOT - DATA TYPE 2
+
+			this.renderCountTypeSetting(containerEl, {
+				name: "2nd data type to show",
+				oldCountType: this.plugin.settings.rootCountType2,
+				setNewCountType: (value) => {
+					this.plugin.settings.rootCountType2 = value;
+					this.plugin.settings.rootCountType2Suffix =
+						COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[
+							this.plugin.settings.rootCountType2
+						];
+				},
+			});
+
+			this.renderCustomFormatSetting(containerEl, {
+				countType: this.plugin.settings.rootCountType2,
+				oldSuffix: this.plugin.settings.rootCountType2Suffix,
+				setNewSuffix: (value) =>
+					(this.plugin.settings.rootCountType2Suffix = value),
+			});
+
+			// ROOT - DATA TYPE 3
+
+			this.renderCountTypeSetting(containerEl, {
+				name: "3rd data type to show",
+				oldCountType: this.plugin.settings.rootCountType3,
+				setNewCountType: (value) => {
+					this.plugin.settings.rootCountType3 = value;
+					this.plugin.settings.rootCountType3Suffix =
+						COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[
+							this.plugin.settings.rootCountType3
+						];
+				},
+			});
+
+			this.renderCustomFormatSetting(containerEl, {
+				countType: this.plugin.settings.rootCountType3,
+				oldSuffix: this.plugin.settings.rootCountType3Suffix,
+				setNewSuffix: (value) =>
+					(this.plugin.settings.rootCountType3Suffix = value),
+			});
+
+			// ROOT - SEPARATOR
+			if (this.plugin.settings.useAdvancedFormatting) {
+				new Setting(containerEl)
+					.setName("Data type separator")
+					.addText((text) =>
+						text
+							.setValue(this.plugin.settings.rootPipeSeparator)
+							.onChange(async (value) => {
+								this.plugin.settings.rootPipeSeparator = value;
+								await this.plugin.saveSettings();
+								await this.plugin.updateDisplayedCounts();
+							})
+					);
+			}
+
+			// ROOT - ABBREVIATE DESCRIPTIONS
+
+			if (!this.plugin.settings.useAdvancedFormatting) {
+				new Setting(containerEl)
+					.setName("Abbreviate descriptions")
+					.addToggle((toggle) =>
+						toggle
+							.setValue(this.plugin.settings.rootAbbreviateDescriptions)
+							.onChange(async (value) => {
+								this.plugin.settings.rootAbbreviateDescriptions = value;
+								await this.plugin.saveSettings();
+								await this.plugin.updateDisplayedCounts();
+							})
+					);
+			}
 		}
 	}
 

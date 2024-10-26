@@ -1,5 +1,5 @@
 import type NovelWordCountPlugin from "main";
-import { CountData } from "./file";
+import { CountData, TargetNode } from "./file";
 import {
 	CharacterCountType,
 	CountType,
@@ -7,16 +7,13 @@ import {
 } from "./settings";
 import { FileSizeHelper } from "./filesize";
 import { ReadTimeHelper } from "./readtime";
-import {
-	NumberFormatDecimal,
-	NumberFormatDefault,
-} from "./locale_format";
+import { NumberFormatDecimal, NumberFormatDefault } from "./locale_format";
 import { moment } from "obsidian";
 
 interface CountTypeWithSuffix {
 	countType: CountType;
 	overrideSuffix: string | null;
-	frontmatterKey?: string
+	frontmatterKey?: string;
 }
 
 export class NodeLabelHelper {
@@ -30,51 +27,91 @@ export class NodeLabelHelper {
 	constructor(private plugin: NovelWordCountPlugin) {}
 
 	getNodeLabel(counts: CountData): string {
-		const countTypes: CountTypeWithSuffix[] =
-			counts.isDirectory && !this.settings.showSameCountsOnFolders
-				? [
-						this.getCountTypeWithSuffix(
-							this.settings.folderCountType,
-							this.settings.folderCountTypeSuffix
-						),
-						this.getCountTypeWithSuffix(
-							this.settings.folderCountType2,
-							this.settings.folderCountType2Suffix
-						),
-						this.getCountTypeWithSuffix(
-							this.settings.folderCountType3,
-							this.settings.folderCountType3Suffix
-						),
-				  ]
-				: [
-						this.getCountTypeWithSuffix(
-							this.settings.countType,
-							this.settings.countTypeSuffix,
-							this.settings.frontmatterKey,
-						),
-						this.getCountTypeWithSuffix(
-							this.settings.countType2,
-							this.settings.countType2Suffix,
-							this.settings.frontmatterKey2,
+		let countTypes: CountTypeWithSuffix[];
+		let abbreviateDescriptions: boolean;
+		let separator: string;
 
-						),
-						this.getCountTypeWithSuffix(
-							this.settings.countType3,
-							this.settings.countType3Suffix,
-							this.settings.frontmatterKey3,
-						),
-				  ];
+		const noteCountTypes = [
+			this.getCountTypeWithSuffix(
+				this.settings.countType,
+				this.settings.countTypeSuffix,
+				this.settings.frontmatterKey
+			),
+			this.getCountTypeWithSuffix(
+				this.settings.countType2,
+				this.settings.countType2Suffix,
+				this.settings.frontmatterKey2
+			),
+			this.getCountTypeWithSuffix(
+				this.settings.countType3,
+				this.settings.countType3Suffix,
+				this.settings.frontmatterKey3
+			),
+		];
+		const noteAbbreviateDescriptions = this.settings.abbreviateDescriptions;
+		const noteSeparator = this.settings.useAdvancedFormatting
+			? this.settings.pipeSeparator
+			: "|";
 
-		const abbreviateDescriptions =
-			counts.isDirectory && !this.settings.showSameCountsOnFolders
-				? this.settings.folderAbbreviateDescriptions
-				: this.settings.abbreviateDescriptions;
+		switch (counts.targetNodeType) {
+			case TargetNode.Root:
+				if (this.settings.showSameCountsOnRoot) {
+					countTypes = noteCountTypes;
+					abbreviateDescriptions = noteAbbreviateDescriptions;
+					separator = noteSeparator;
+					break;
+				}
 
-		const separator = !this.settings.useAdvancedFormatting
-			? "|"
-			: counts.isDirectory && !this.settings.showSameCountsOnFolders
-			? this.settings.folderPipeSeparator
-			: this.settings.pipeSeparator;
+				countTypes = [
+					this.getCountTypeWithSuffix(
+						this.settings.rootCountType,
+						this.settings.rootCountTypeSuffix
+					),
+					this.getCountTypeWithSuffix(
+						this.settings.rootCountType2,
+						this.settings.rootCountType2Suffix
+					),
+					this.getCountTypeWithSuffix(
+						this.settings.rootCountType3,
+						this.settings.rootCountType3Suffix
+					),
+				];
+				abbreviateDescriptions = this.settings.rootAbbreviateDescriptions;
+				separator = this.settings.useAdvancedFormatting ? this.settings.rootPipeSeparator : noteSeparator;
+
+				break;
+			case TargetNode.Directory:
+				if (this.settings.showSameCountsOnFolders) {
+					countTypes = noteCountTypes;
+					abbreviateDescriptions = noteAbbreviateDescriptions;
+					separator = noteSeparator;
+					break;
+				}
+
+				countTypes = [
+					this.getCountTypeWithSuffix(
+						this.settings.folderCountType,
+						this.settings.folderCountTypeSuffix
+					),
+					this.getCountTypeWithSuffix(
+						this.settings.folderCountType2,
+						this.settings.folderCountType2Suffix
+					),
+					this.getCountTypeWithSuffix(
+						this.settings.folderCountType3,
+						this.settings.folderCountType3Suffix
+					),
+				];
+				abbreviateDescriptions = this.settings.folderAbbreviateDescriptions;
+				separator = this.settings.useAdvancedFormatting ? this.settings.folderPipeSeparator : noteSeparator;
+
+				break;
+			default:
+				countTypes = noteCountTypes;
+				abbreviateDescriptions = noteAbbreviateDescriptions;
+				separator = noteSeparator;
+				break;
+		}
 
 		return countTypes
 			.filter((ct) => ct.countType !== CountType.None)
@@ -99,7 +136,7 @@ export class NodeLabelHelper {
 		return {
 			countType,
 			overrideSuffix: this.settings.useAdvancedFormatting ? customSuffix : null,
-			frontmatterKey
+			frontmatterKey,
 		};
 	}
 
@@ -169,7 +206,7 @@ export class NodeLabelHelper {
 					abbreviateDescriptions,
 					overrideSuffix,
 				});
-			case CountType.PercentGoal:
+			case CountType.PercentGoal: {
 				if (counts.wordGoal <= 0) {
 					return null;
 				}
@@ -182,6 +219,7 @@ export class NodeLabelHelper {
 				const suffix = overrideSuffix ?? defaultSuffix;
 
 				return `${percent}${suffix}`;
+			}
 			case CountType.Note:
 				return this.getBasicCountString({
 					count: NumberFormatDefault.format(counts.noteCount),
@@ -190,7 +228,7 @@ export class NodeLabelHelper {
 					abbreviateDescriptions,
 					overrideSuffix,
 				});
-			case CountType.Character:
+			case CountType.Character: {
 				const characterCount =
 					this.settings.characterCountType ===
 					CharacterCountType.ExcludeWhitespace
@@ -204,6 +242,7 @@ export class NodeLabelHelper {
 					abbreviateDescriptions,
 					overrideSuffix,
 				});
+			}
 			case CountType.ReadTime:
 				return this.readTimeHelper.formatReadTime(
 					counts.readingTimeInMinutes,
@@ -246,35 +285,37 @@ export class NodeLabelHelper {
 					? `${counts.aliases[0]}`
 					: `alias: ${counts.aliases[0]}${
 							counts.aliases.length > 1 ? ` +${counts.aliases.length - 1}` : ""
-					  }`;
-			case CountType.Created:
+					}`;
+			case CountType.Created: {
 				if (counts.createdDate === 0) {
 					return null;
 				}
 
-				const cDate = moment(counts.createdDate).format('YYYY/MM/DD');
+				const cDate = moment(counts.createdDate).format("YYYY/MM/DD");
 				if (overrideSuffix !== null) {
 					return `${cDate}${overrideSuffix}`;
 				}
 
 				return abbreviateDescriptions ? `${cDate}/c` : `Created ${cDate}`;
-			case CountType.Modified:
+			}
+			case CountType.Modified: {
 				if (counts.modifiedDate === 0) {
 					return null;
 				}
 
-				const uDate = moment(counts.modifiedDate).format('YYYY/MM/DD');
+				const uDate = moment(counts.modifiedDate).format("YYYY/MM/DD");
 				if (overrideSuffix !== null) {
 					return `${uDate}${overrideSuffix}`;
 				}
 
 				return abbreviateDescriptions ? `${uDate}/u` : `Updated ${uDate}`;
+			}
 			case CountType.FileSize:
 				return this.fileSizeHelper.formatFileSize(
 					counts.sizeInBytes,
 					abbreviateDescriptions
 				);
-			case CountType.FrontmatterKey:
+			case CountType.FrontmatterKey: {
 				if (!frontmatterKey) {
 					return null;
 				}
@@ -285,7 +326,8 @@ export class NodeLabelHelper {
 				if (overrideSuffix !== null) {
 					return `${value}${overrideSuffix}`;
 				}
-				return value
+				return value;
+			}
 		}
 
 		return null;
