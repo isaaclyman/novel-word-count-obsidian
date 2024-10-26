@@ -37,9 +37,9 @@ export interface CountData {
 }
 
 export enum TargetNode {
-	Root,
-	Directory,
-	File
+	Root = "root",
+	Directory = "directory",
+	File = "file"
 }
 
 export type CountsByFile = {
@@ -147,7 +147,7 @@ export class FileHelper {
 			const childCount = this.getCachedDataForPath(counts, childPath);
 			return {
 				isCountable: total.isCountable || childCount.isCountable,
-				targetNodeType: this.isRoot(childPath) ? TargetNode.Root : TargetNode.Directory,
+				targetNodeType: total.targetNodeType,
 				noteCount: total.noteCount + childCount.noteCount,
 				linkCount: total.linkCount + childCount.linkCount,
 				embedCount: total.embedCount + childCount.embedCount,
@@ -218,7 +218,7 @@ export class FileHelper {
 	}
 
 	private isRoot(path: string): boolean {
-		return !path || path === '/';
+		return !path || path === "/";
 	}
 
 	private removeCounts(counts: CountsByFile, path: string): void {

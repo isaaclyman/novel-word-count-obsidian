@@ -1097,7 +1097,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 	private renderSeparator(containerEl: HTMLElement) {
 		containerEl.createEl("hr", {
-			cls: "novel-word-count-hr"
+			cls: "novel-word-count-hr",
 		});
 	}
 }
