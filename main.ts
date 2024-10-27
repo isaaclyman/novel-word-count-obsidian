@@ -206,8 +206,6 @@ export default class NovelWordCountPlugin extends Plugin {
 				"/"
 			);
 
-			console.log(counts);
-
 			fileExplorerView.headerDom.navButtonsEl.setAttribute(
 				"data-novel-word-count-plugin",
 				this.nodeLabelHelper.getNodeLabel(counts)
