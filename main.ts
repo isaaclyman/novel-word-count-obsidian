@@ -1,16 +1,15 @@
 import { DebugHelper } from "logic/debug";
 import { EventHelper } from "logic/event";
-import { CountsByFile, FileHelper } from "logic/file";
+import { FileHelper } from "logic/file";
 import { NodeLabelHelper } from "logic/node_label";
+import { NovelWordCountSavedData, SavedDataHelper } from "logic/saved_data";
 import {
 	ALIGNMENT_TYPES,
-	CountType,
 	COUNT_TYPE_DISPLAY_STRINGS,
 	COUNT_TYPES,
-	DEFAULT_SETTINGS,
 	NovelWordCountSettings,
-	NovelWordCountSettingTab,
 } from "logic/settings";
+import { NovelWordCountSettingTab } from "logic/settings.tab";
 import {
 	App,
 	Plugin,
@@ -18,11 +17,6 @@ import {
 	WorkspaceLeaf,
 	TAbstractFile,
 } from "obsidian";
-
-interface NovelWordCountSavedData {
-	cachedCounts: CountsByFile;
-	settings: NovelWordCountSettings;
-}
 
 interface FileItem {
 	titleEl?: HTMLElement;
@@ -38,6 +32,7 @@ export default class NovelWordCountPlugin extends Plugin {
 	eventHelper: EventHelper;
 	nodeLabelHelper: NodeLabelHelper;
 	debugHelper = new DebugHelper();
+	savedDataHelper: SavedDataHelper;
 
 	constructor(app: App, manifest: PluginManifest) {
 		super(app, manifest);
@@ -49,12 +44,13 @@ export default class NovelWordCountPlugin extends Plugin {
 			this.fileHelper
 		);
 		this.nodeLabelHelper = new NodeLabelHelper(this);
+		this.savedDataHelper = new SavedDataHelper(this)
 	}
 
 	// LIFECYCLE
 
 	async onload() {
-		await this.loadSettings();
+		this.savedData = await this.savedDataHelper.getSavedData();
 
 		this.fileHelper.setDebugMode(this.savedData.settings.debugMode);
 		this.debugHelper.setDebugMode(this.savedData.settings.debugMode);
@@ -126,39 +122,22 @@ export default class NovelWordCountPlugin extends Plugin {
 
 	// SETTINGS
 
-	async loadSettings() {
-		const loaded: NovelWordCountSavedData = await this.loadData();
-
-		if (
-			loaded &&
-			loaded.settings &&
-			loaded.settings.countType &&
-			!COUNT_TYPES.includes(loaded.settings.countType)
-		) {
-			loaded.settings.countType = CountType.Word;
-		}
-
-		this.savedData = Object.assign({}, loaded);
-
-		this.savedData.settings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			this.savedData.settings
-		);
-	}
-
 	async saveSettings() {
 		await this.saveData(this.savedData);
 	}
 
 	// PUBLIC
 
-	public async initialize(refreshAllCounts = true) {
+	/**
+		Called with (true) when the plugin initializes or the user clicks Reanalyze.
+		Called with (false) every second while waiting for the file explorer to load.
+	*/
+	public async initialize(reinitializeAllCounts = true) {
 		this.debugHelper.debug("initialize");
 
 		this.app.workspace.onLayoutReady(async () => {
-			if (refreshAllCounts) {
-				await this.eventHelper.refreshAllCounts();
+			if (reinitializeAllCounts) {
+				await this.eventHelper.reinitializeAllCounts();
 			}
 
 			try {

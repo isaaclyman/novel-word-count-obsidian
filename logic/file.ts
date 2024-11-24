@@ -33,13 +33,22 @@ export interface CountData {
 	sizeInBytes: number;
 	createdDate: number;
 	modifiedDate: number;
-	frontmatter?: FrontMatterCache
+	frontmatter?: FrontMatterCache;
+	sessionStart: SessionCountData;
+}
+
+export interface SessionCountData {
+	noteCount: number;
+	pageCount: number;
+	wordCount: number;
+	characterCount: number;
+	nonWhitespaceCharacterCount: number;
 }
 
 export enum TargetNode {
 	Root = "root",
 	Directory = "directory",
-	File = "file"
+	File = "file",
 }
 
 export type CountsByFile = {
@@ -61,7 +70,7 @@ export class FileHelper {
 
 	constructor(private app: App, private plugin: NovelWordCountPlugin) {}
 
-	public async getAllFileCounts(
+	public async initializeAllFileCounts(
 		cancellationToken: CancellationToken
 	): Promise<CountsByFile> {
 		const debugEnd = this.debugHelper.debugStart("getAllFileCounts");
@@ -110,7 +119,7 @@ export class FileHelper {
 				break;
 			}
 
-			this.setCounts(counts, file);
+			this.setCounts(counts, file, true);
 		}
 
 		debugEnd();
@@ -126,7 +135,9 @@ export class FileHelper {
 
 		const directoryDefault: CountData = {
 			isCountable: false,
-			targetNodeType: this.isRoot(path) ? TargetNode.Root : TargetNode.Directory,
+			targetNodeType: this.isRoot(path)
+				? TargetNode.Root
+				: TargetNode.Directory,
 			noteCount: 0,
 			wordCount: 0,
 			wordCountTowardGoal: 0,
@@ -141,6 +152,13 @@ export class FileHelper {
 			createdDate: 0,
 			modifiedDate: 0,
 			sizeInBytes: 0,
+			sessionStart: {
+				noteCount: 0,
+				pageCount: 0,
+				wordCount: 0,
+				characterCount: 0,
+				nonWhitespaceCharacterCount: 0,
+			},
 		};
 
 		return childPaths.reduce((total, childPath): CountData => {
@@ -169,6 +187,20 @@ export class FileHelper {
 						: Math.min(total.createdDate, childCount.createdDate),
 				modifiedDate: Math.max(total.modifiedDate, childCount.modifiedDate),
 				sizeInBytes: total.sizeInBytes + childCount.sizeInBytes,
+				sessionStart: {
+					noteCount:
+						total.sessionStart.noteCount + childCount.sessionStart.noteCount,
+					pageCount:
+						total.sessionStart.pageCount + childCount.sessionStart.pageCount,
+					wordCount:
+						total.sessionStart.wordCount + childCount.sessionStart.wordCount,
+					characterCount:
+						total.sessionStart.characterCount +
+						childCount.sessionStart.characterCount,
+					nonWhitespaceCharacterCount:
+						total.sessionStart.nonWhitespaceCharacterCount +
+						childCount.sessionStart.nonWhitespaceCharacterCount,
+				},
 			};
 		}, directoryDefault);
 	}
@@ -198,7 +230,7 @@ export class FileHelper {
 		}
 
 		if (abstractFile instanceof TFile) {
-			await this.setCounts(counts, abstractFile);
+			await this.setCounts(counts, abstractFile, false);
 		}
 	}
 
@@ -225,12 +257,13 @@ export class FileHelper {
 		delete counts[path];
 	}
 
-	private async setCounts(counts: CountsByFile, file: TFile): Promise<void> {
+	private async setCounts(counts: CountsByFile, file: TFile, startNewSession: boolean): Promise<void> {
 		const metadata = this.app.metadataCache.getFileCache(
 			file
 		) as CachedMetadata | null;
 		const shouldCountFile = this.shouldCountFile(file, metadata);
 
+		const existingSession = counts[file.path]?.sessionStart;
 		counts[file.path] = {
 			isCountable: shouldCountFile,
 			targetNodeType: TargetNode.File,
@@ -248,6 +281,13 @@ export class FileHelper {
 			createdDate: file.stat.ctime,
 			modifiedDate: file.stat.mtime,
 			sizeInBytes: file.stat.size,
+			sessionStart: startNewSession || !existingSession ? {
+				noteCount: 0,
+				pageCount: 0,
+				wordCount: 0,
+				characterCount: 0,
+				nonWhitespaceCharacterCount: 0,
+			} : existingSession,
 		};
 
 		if (!shouldCountFile) {
@@ -316,7 +356,18 @@ export class FileHelper {
 			linkCount: this.countLinks(metadata),
 			embedCount: this.countEmbeds(metadata),
 			aliases: parseFrontMatterAliases(metadata?.frontmatter),
-			frontmatter: metadata?.frontmatter
+			frontmatter: metadata?.frontmatter,
+			sessionStart: {
+				...counts[file.path]?.sessionStart,
+				...(startNewSession ? {
+					noteCount: 1,
+					pageCount,
+					wordCount: combinedWordCount,
+					characterCount: countResult.charCount,
+					nonWhitespaceCharacterCount: countResult.nonWhitespaceCharCount,
+				} : {}),
+				noteCount: 1
+			}
 		} as CountData);
 	}
 

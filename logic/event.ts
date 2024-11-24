@@ -137,12 +137,12 @@ export class EventHelper {
 		return container.className.includes("novel-word-count--");
 	}
 
-	public async refreshAllCounts() {
+	public async reinitializeAllCounts() {
 		this.cancelAllCountTokens();
 		const countToken = this.registerNewCountToken();
 
 		this.debugHelper.debug("refreshAllCounts");
-		this.plugin.savedData.cachedCounts = await this.fileHelper.getAllFileCounts(
+		this.plugin.savedData.cachedCounts = await this.fileHelper.initializeAllFileCounts(
 			countToken.token
 		);
 		this.cancelToken(countToken);

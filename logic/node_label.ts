@@ -2,7 +2,7 @@ import type NovelWordCountPlugin from "main";
 import { CountData, TargetNode } from "./file";
 import {
 	CharacterCountType,
-	CountType,
+	$CountType,
 	NovelWordCountSettings,
 } from "./settings";
 import { FileSizeHelper } from "./filesize";
@@ -11,7 +11,7 @@ import { NumberFormatDecimal, NumberFormatDefault } from "./locale_format";
 import { moment } from "obsidian";
 
 interface CountTypeWithSuffix {
-	countType: CountType;
+	countType: $CountType;
 	overrideSuffix: string | null;
 	frontmatterKey?: string;
 }
@@ -114,7 +114,7 @@ export class NodeLabelHelper {
 		}
 
 		return countTypes
-			.filter((ct) => ct.countType !== CountType.None)
+			.filter((ct) => ct.countType !== $CountType.None)
 			.map((ct) =>
 				this.getDataTypeLabel(
 					counts,
@@ -129,7 +129,7 @@ export class NodeLabelHelper {
 	}
 
 	private getCountTypeWithSuffix(
-		countType: CountType,
+		countType: $CountType,
 		customSuffix: string,
 		frontmatterKey?: string
 	): CountTypeWithSuffix {
@@ -155,15 +155,15 @@ export class NodeLabelHelper {
 		return `${config.count}${suffix}`;
 	}
 
-	private readonly unconditionalCountTypes: CountType[] = [
-		CountType.Created,
-		CountType.FileSize,
-		CountType.Modified,
+	private readonly unconditionalCountTypes: $CountType[] = [
+		$CountType.Created,
+		$CountType.FileSize,
+		$CountType.Modified,
 	];
 
 	private getDataTypeLabel(
 		counts: CountData,
-		countType: CountType,
+		countType: $CountType,
 		abbreviateDescriptions: boolean,
 		overrideSuffix: string | null,
 		frontmatterKey?: string
@@ -180,9 +180,9 @@ export class NodeLabelHelper {
 		}
 
 		switch (countType) {
-			case CountType.None:
+			case $CountType.None:
 				return null;
-			case CountType.Word:
+			case $CountType.Word:
 				return this.getBasicCountString({
 					count: NumberFormatDefault.format(Math.ceil(counts.wordCount)),
 					noun: "word",
@@ -190,7 +190,7 @@ export class NodeLabelHelper {
 					abbreviateDescriptions,
 					overrideSuffix,
 				});
-			case CountType.Page:
+			case $CountType.Page:
 				return this.getBasicCountString({
 					count: NumberFormatDefault.format(Math.ceil(counts.pageCount)),
 					noun: "page",
@@ -198,7 +198,7 @@ export class NodeLabelHelper {
 					abbreviateDescriptions,
 					overrideSuffix,
 				});
-			case CountType.PageDecimal:
+			case $CountType.PageDecimal:
 				return this.getBasicCountString({
 					count: NumberFormatDecimal.format(counts.pageCount),
 					noun: "page",
@@ -206,7 +206,7 @@ export class NodeLabelHelper {
 					abbreviateDescriptions,
 					overrideSuffix,
 				});
-			case CountType.PercentGoal: {
+			case $CountType.PercentGoal: {
 				if (counts.wordGoal <= 0) {
 					return null;
 				}
@@ -220,7 +220,7 @@ export class NodeLabelHelper {
 
 				return `${percent}${suffix}`;
 			}
-			case CountType.Note:
+			case $CountType.Note:
 				return this.getBasicCountString({
 					count: NumberFormatDefault.format(counts.noteCount),
 					noun: "note",
@@ -228,7 +228,7 @@ export class NodeLabelHelper {
 					abbreviateDescriptions,
 					overrideSuffix,
 				});
-			case CountType.Character: {
+			case $CountType.Character: {
 				const characterCount =
 					this.settings.characterCountType ===
 					CharacterCountType.ExcludeWhitespace
@@ -243,12 +243,12 @@ export class NodeLabelHelper {
 					overrideSuffix,
 				});
 			}
-			case CountType.ReadTime:
+			case $CountType.ReadTime:
 				return this.readTimeHelper.formatReadTime(
 					counts.readingTimeInMinutes,
 					abbreviateDescriptions
 				);
-			case CountType.Link:
+			case $CountType.Link:
 				if (counts.linkCount === 0) {
 					return null;
 				}
@@ -260,7 +260,7 @@ export class NodeLabelHelper {
 					abbreviateDescriptions,
 					overrideSuffix,
 				});
-			case CountType.Embed:
+			case $CountType.Embed:
 				if (counts.embedCount === 0) {
 					return null;
 				}
@@ -272,7 +272,7 @@ export class NodeLabelHelper {
 					abbreviateDescriptions,
 					overrideSuffix,
 				});
-			case CountType.Alias:
+			case $CountType.Alias:
 				if (
 					!counts.aliases ||
 					!Array.isArray(counts.aliases) ||
@@ -286,7 +286,7 @@ export class NodeLabelHelper {
 					: `alias: ${counts.aliases[0]}${
 							counts.aliases.length > 1 ? ` +${counts.aliases.length - 1}` : ""
 					}`;
-			case CountType.Created: {
+			case $CountType.Created: {
 				if (counts.createdDate === 0) {
 					return null;
 				}
@@ -298,7 +298,7 @@ export class NodeLabelHelper {
 
 				return abbreviateDescriptions ? `${cDate}/c` : `Created ${cDate}`;
 			}
-			case CountType.Modified: {
+			case $CountType.Modified: {
 				if (counts.modifiedDate === 0) {
 					return null;
 				}
@@ -310,12 +310,12 @@ export class NodeLabelHelper {
 
 				return abbreviateDescriptions ? `${uDate}/u` : `Updated ${uDate}`;
 			}
-			case CountType.FileSize:
+			case $CountType.FileSize:
 				return this.fileSizeHelper.formatFileSize(
 					counts.sizeInBytes,
 					abbreviateDescriptions
 				);
-			case CountType.FrontmatterKey: {
+			case $CountType.FrontmatterKey: {
 				if (!frontmatterKey) {
 					return null;
 				}
