@@ -1,7 +1,7 @@
-.nav-header .nav-buttons-container {
+.novel-word-count--active .nav-header .nav-buttons-container {
   flex-wrap: wrap !important;
 }
-.nav-header .nav-buttons-container::after {
+.novel-word-count--active .nav-header .nav-buttons-container::after {
   content: attr(data-novel-word-count-plugin);
   display: block;
   font-size: 0.8em;
@@ -17,10 +17,10 @@
   width: 100%;
 }
 
-.nav-files-container .nav-file-title {
+.novel-word-count--active .nav-files-container .nav-file-title {
   align-items: baseline;
 }
-.nav-files-container .nav-file-title::after {
+.novel-word-count--active .nav-files-container .nav-file-title::after {
   content: attr(data-novel-word-count-plugin);
   flex: 1 0 auto;
   font-size: 0.8em;
@@ -34,7 +34,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.nav-files-container .nav-file-title-content {
+.novel-word-count--active .nav-files-container .nav-file-title-content {
   min-width: 20px;
 }
 .novel-word-count--note-right .nav-files-container .nav-file-title-content {
@@ -60,10 +60,10 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.nav-files-container .nav-folder-title {
+.novel-word-count--active .nav-files-container .nav-folder-title {
   align-items: baseline;
 }
-.nav-files-container .nav-folder-title::after {
+.novel-word-count--active .nav-files-container .nav-folder-title::after {
   content: attr(data-novel-word-count-plugin);
   flex: 1 0 auto;
   font-size: 0.8em;
@@ -77,7 +77,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.nav-files-container .nav-folder-title-content {
+.novel-word-count--active .nav-files-container .nav-folder-title-content {
   min-width: 20px;
 }
 .novel-word-count--folder-right .nav-files-container .nav-folder-title-content {
@@ -116,6 +116,6 @@
 }
 
 .novel-word-count-hr {
-  border-color: #CCC;
+  border-color: #ccc;
   margin: 1rem 0;
 }
