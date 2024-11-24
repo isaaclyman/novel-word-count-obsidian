@@ -4,16 +4,16 @@ import {
 	CharacterCountType,
 	$CountType,
 	NovelWordCountSettings,
+	CountTypeConfiguration,
+	$SessionCountType,
 } from "./settings";
 import { FileSizeHelper } from "./filesize";
 import { ReadTimeHelper } from "./readtime";
 import { NumberFormatDecimal, NumberFormatDefault } from "./locale_format";
 import { moment } from "obsidian";
 
-interface CountTypeWithSuffix {
-	countType: $CountType;
-	overrideSuffix: string | null;
-	frontmatterKey?: string;
+interface CountTypeWithOverrides extends CountTypeConfiguration {
+	$countType: $CountType;
 }
 
 export class NodeLabelHelper {
@@ -27,25 +27,22 @@ export class NodeLabelHelper {
 	constructor(private plugin: NovelWordCountPlugin) {}
 
 	getNodeLabel(counts: CountData): string {
-		let countTypes: CountTypeWithSuffix[];
+		let countTypes: CountTypeWithOverrides[];
 		let abbreviateDescriptions: boolean;
 		let separator: string;
 
 		const noteCountTypes = [
 			this.getCountTypeWithSuffix(
 				this.settings.countType,
-				this.settings.countTypeSuffix,
-				this.settings.frontmatterKey
+				this.settings.countConfig,
 			),
 			this.getCountTypeWithSuffix(
 				this.settings.countType2,
-				this.settings.countType2Suffix,
-				this.settings.frontmatterKey2
+				this.settings.countConfig2,
 			),
 			this.getCountTypeWithSuffix(
 				this.settings.countType3,
-				this.settings.countType3Suffix,
-				this.settings.frontmatterKey3
+				this.settings.countConfig3,
 			),
 		];
 		const noteAbbreviateDescriptions = this.settings.abbreviateDescriptions;
@@ -65,15 +62,15 @@ export class NodeLabelHelper {
 				countTypes = [
 					this.getCountTypeWithSuffix(
 						this.settings.rootCountType,
-						this.settings.rootCountTypeSuffix
+						this.settings.rootCountConfig,
 					),
 					this.getCountTypeWithSuffix(
 						this.settings.rootCountType2,
-						this.settings.rootCountType2Suffix
+						this.settings.rootCountConfig2,
 					),
 					this.getCountTypeWithSuffix(
 						this.settings.rootCountType3,
-						this.settings.rootCountType3Suffix
+						this.settings.rootCountConfig3,
 					),
 				];
 				abbreviateDescriptions = this.settings.rootAbbreviateDescriptions;
@@ -91,15 +88,15 @@ export class NodeLabelHelper {
 				countTypes = [
 					this.getCountTypeWithSuffix(
 						this.settings.folderCountType,
-						this.settings.folderCountTypeSuffix
+						this.settings.folderCountConfig,
 					),
 					this.getCountTypeWithSuffix(
 						this.settings.folderCountType2,
-						this.settings.folderCountType2Suffix
+						this.settings.folderCountConfig2,
 					),
 					this.getCountTypeWithSuffix(
 						this.settings.folderCountType3,
-						this.settings.folderCountType3Suffix
+						this.settings.folderCountConfig3,
 					),
 				];
 				abbreviateDescriptions = this.settings.folderAbbreviateDescriptions;
@@ -114,14 +111,12 @@ export class NodeLabelHelper {
 		}
 
 		return countTypes
-			.filter((ct) => ct.countType !== $CountType.None)
+			.filter((ct) => ct.$countType !== $CountType.None)
 			.map((ct) =>
 				this.getDataTypeLabel(
 					counts,
-					ct.countType,
+					ct,
 					abbreviateDescriptions,
-					ct.overrideSuffix,
-					ct.frontmatterKey
 				)
 			)
 			.filter((display) => display !== null)
@@ -129,14 +124,14 @@ export class NodeLabelHelper {
 	}
 
 	private getCountTypeWithSuffix(
-		countType: $CountType,
-		customSuffix: string,
-		frontmatterKey?: string
-	): CountTypeWithSuffix {
+		$countType: $CountType,
+		countConfig: CountTypeConfiguration,
+	): CountTypeWithOverrides {
 		return {
-			countType,
-			overrideSuffix: this.settings.useAdvancedFormatting ? customSuffix : null,
-			frontmatterKey,
+			$countType,
+			customSuffix: this.settings.useAdvancedFormatting ? countConfig.customSuffix : null,
+			frontmatterKey: countConfig.frontmatterKey,
+			$sessionCountType: countConfig.$sessionCountType
 		};
 	}
 
@@ -145,12 +140,12 @@ export class NodeLabelHelper {
 		noun: string;
 		abbreviatedNoun: string;
 		abbreviateDescriptions: boolean;
-		overrideSuffix: string | null;
+		customSuffix: string | null;
 	}): string {
 		const defaultSuffix = config.abbreviateDescriptions
 			? config.abbreviatedNoun
 			: ` ${config.noun}${config.count == "1" ? "" : "s"}`;
-		const suffix = config.overrideSuffix ?? defaultSuffix;
+		const suffix = config.customSuffix ?? defaultSuffix;
 
 		return `${config.count}${suffix}`;
 	}
@@ -163,10 +158,8 @@ export class NodeLabelHelper {
 
 	private getDataTypeLabel(
 		counts: CountData,
-		countType: $CountType,
+		config: CountTypeWithOverrides,
 		abbreviateDescriptions: boolean,
-		overrideSuffix: string | null,
-		frontmatterKey?: string
 	): string | null {
 		if (!counts || typeof counts.wordCount !== "number") {
 			return null;
@@ -174,12 +167,12 @@ export class NodeLabelHelper {
 
 		if (
 			!counts.isCountable &&
-			!this.unconditionalCountTypes.includes(countType)
+			!this.unconditionalCountTypes.includes(config.$countType)
 		) {
 			return null;
 		}
 
-		switch (countType) {
+		switch (config.$countType) {
 			case $CountType.None:
 				return null;
 			case $CountType.Word:
@@ -188,7 +181,7 @@ export class NodeLabelHelper {
 					noun: "word",
 					abbreviatedNoun: "w",
 					abbreviateDescriptions,
-					overrideSuffix,
+					customSuffix: config.customSuffix,
 				});
 			case $CountType.Page:
 				return this.getBasicCountString({
@@ -196,7 +189,7 @@ export class NodeLabelHelper {
 					noun: "page",
 					abbreviatedNoun: "p",
 					abbreviateDescriptions,
-					overrideSuffix,
+					customSuffix: config.customSuffix,
 				});
 			case $CountType.PageDecimal:
 				return this.getBasicCountString({
@@ -204,7 +197,7 @@ export class NodeLabelHelper {
 					noun: "page",
 					abbreviatedNoun: "p",
 					abbreviateDescriptions,
-					overrideSuffix,
+					customSuffix: config.customSuffix,
 				});
 			case $CountType.PercentGoal: {
 				if (counts.wordGoal <= 0) {
@@ -216,7 +209,7 @@ export class NodeLabelHelper {
 				const defaultSuffix = abbreviateDescriptions
 					? "%"
 					: `% of ${NumberFormatDefault.format(counts.wordGoal)}`;
-				const suffix = overrideSuffix ?? defaultSuffix;
+				const suffix = config.customSuffix ?? defaultSuffix;
 
 				return `${percent}${suffix}`;
 			}
@@ -226,7 +219,7 @@ export class NodeLabelHelper {
 					noun: "note",
 					abbreviatedNoun: "n",
 					abbreviateDescriptions,
-					overrideSuffix,
+					customSuffix: config.customSuffix,
 				});
 			case $CountType.Character: {
 				const characterCount =
@@ -240,7 +233,7 @@ export class NodeLabelHelper {
 					noun: "character",
 					abbreviatedNoun: "ch",
 					abbreviateDescriptions,
-					overrideSuffix,
+					customSuffix: config.customSuffix,
 				});
 			}
 			case $CountType.ReadTime:
@@ -258,7 +251,7 @@ export class NodeLabelHelper {
 					noun: "link",
 					abbreviatedNoun: "x",
 					abbreviateDescriptions,
-					overrideSuffix,
+					customSuffix: config.customSuffix,
 				});
 			case $CountType.Embed:
 				if (counts.embedCount === 0) {
@@ -270,7 +263,7 @@ export class NodeLabelHelper {
 					noun: "embed",
 					abbreviatedNoun: "em",
 					abbreviateDescriptions,
-					overrideSuffix,
+					customSuffix: config.customSuffix,
 				});
 			case $CountType.Alias:
 				if (
@@ -292,8 +285,8 @@ export class NodeLabelHelper {
 				}
 
 				const cDate = moment(counts.createdDate).format("YYYY/MM/DD");
-				if (overrideSuffix !== null) {
-					return `${cDate}${overrideSuffix}`;
+				if (config.customSuffix !== null) {
+					return `${cDate}${config.customSuffix}`;
 				}
 
 				return abbreviateDescriptions ? `${cDate}/c` : `Created ${cDate}`;
@@ -304,8 +297,8 @@ export class NodeLabelHelper {
 				}
 
 				const uDate = moment(counts.modifiedDate).format("YYYY/MM/DD");
-				if (overrideSuffix !== null) {
-					return `${uDate}${overrideSuffix}`;
+				if (config.customSuffix !== null) {
+					return `${uDate}${config.customSuffix}`;
 				}
 
 				return abbreviateDescriptions ? `${uDate}/u` : `Updated ${uDate}`;
@@ -316,20 +309,63 @@ export class NodeLabelHelper {
 					abbreviateDescriptions
 				);
 			case $CountType.FrontmatterKey: {
-				if (!frontmatterKey) {
+				if (!config.frontmatterKey) {
 					return null;
 				}
-				const value = counts?.frontmatter?.[frontmatterKey];
+
+				const value = counts?.frontmatter?.[config.frontmatterKey];
 				if (value === undefined || value === null) {
 					return null;
 				}
-				if (overrideSuffix !== null) {
-					return `${value}${overrideSuffix}`;
+
+				if (config.customSuffix !== null) {
+					return `${value}${config.customSuffix}`;
 				}
+
 				return value;
+			}
+			case $CountType.TrackSession: {
+				if (!config.$sessionCountType) {
+					return null;
+				}
+
+				const quantity = this.getSessionQuantity(counts, config.$sessionCountType);
+
+				if (config.customSuffix !== null) {
+					return `${quantity}${config.customSuffix}`;
+				}
+
+				return abbreviateDescriptions ? `${quantity}/s` : `Session: ${quantity}`;
 			}
 		}
 
 		return null;
+	}
+
+	private getSessionQuantity(counts: CountData, $countType: $SessionCountType): string {
+		switch ($countType) {
+			case $CountType.Word:
+				return NumberFormatDefault.format(Math.ceil(counts.wordCount - counts.sessionStart.wordCount));
+			case $CountType.Page:
+				return NumberFormatDefault.format(Math.ceil(counts.pageCount - counts.sessionStart.pageCount));
+			case $CountType.PageDecimal:
+				return NumberFormatDecimal.format(counts.pageCount - counts.sessionStart.pageCount);
+			case $CountType.Note:
+				return NumberFormatDefault.format(counts.noteCount - counts.sessionStart.noteCount);
+			case $CountType.Character: {
+				const characterCount =
+					this.settings.characterCountType ===
+					CharacterCountType.ExcludeWhitespace
+						? counts.nonWhitespaceCharacterCount
+						: counts.characterCount;
+				const startingCharacterCount =
+					this.settings.characterCountType ===
+					CharacterCountType.ExcludeWhitespace
+						? counts.sessionStart.nonWhitespaceCharacterCount
+						: counts.sessionStart.characterCount;
+
+				return NumberFormatDefault.format(characterCount - startingCharacterCount);
+			}
+		}
 	}
 }

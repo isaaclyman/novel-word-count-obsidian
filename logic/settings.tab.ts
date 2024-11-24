@@ -905,8 +905,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
     }
     
     new Setting(containerEl)
-      .setName("Session count type")
-      .setDesc(getDescription(config.oldCountType))
+      .setDesc("[Track session] Session count type")
       .addDropdown((drop) => {
         for (const countType of SESSION_COUNT_TYPES) {
           drop.addOption(countType, COUNT_TYPE_DISPLAY_STRINGS[countType]);

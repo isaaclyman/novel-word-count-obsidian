@@ -83,7 +83,7 @@ export const COUNT_TYPE_DESCRIPTIONS: { [countType: string]: string } = {
 	[$CountType.FileSize]: "Total size on hard drive.",
 	[$CountType.FrontmatterKey]: "Key in the frontmatter block.",
 	[$CountType.TrackSession]:
-		"Track progress this session (since the last Obsidian startup or plugin initialization)",
+		"Track progress since last Obsidian startup, plugin init, or reanalysis",
 };
 
 export const UNFORMATTABLE_COUNT_TYPES = [
@@ -107,7 +107,7 @@ export const COUNT_TYPE_DEFAULT_SHORT_SUFFIXES: {
 	[$CountType.Created]: "/c",
 	[$CountType.Modified]: "/u",
 	[$CountType.FrontmatterKey]: "",
-	[$CountType.TrackSession]: "ts"
+	[$CountType.TrackSession]: "/s"
 };
 
 export function getDescription(countType: $CountType): string {

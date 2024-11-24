@@ -366,7 +366,6 @@ export class FileHelper {
 					characterCount: countResult.charCount,
 					nonWhitespaceCharacterCount: countResult.nonWhitespaceCharCount,
 				} : {}),
-				noteCount: 1
 			}
 		} as CountData);
 	}
