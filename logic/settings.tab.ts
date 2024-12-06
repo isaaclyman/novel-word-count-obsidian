@@ -823,13 +823,13 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setHeading()
-			.setName("Reanalyze all documents")
+			.setName("Recount all documents")
 			.setDesc(
-				"If changes have occurred outside of Obsidian, you may need to trigger a manual analysis"
+				"If changes have occurred outside of Obsidian, you may need to trigger a manual recount"
 			)
 			.addButton((button) =>
 				button
-					.setButtonText("Reanalyze")
+					.setButtonText("Recount")
 					.setCta()
 					.onClick(async () => {
 						button.disabled = true;
@@ -838,7 +838,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						button.removeCta();
 
 						setTimeout(() => {
-							button.setButtonText("Reanalyze");
+							button.setButtonText("Recount");
 							button.setCta();
 							button.disabled = false;
 						}, 1000);

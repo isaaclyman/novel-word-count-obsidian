@@ -61,9 +61,9 @@ export default class NovelWordCountPlugin extends Plugin {
 
 		this.addCommand({
 			id: "recount-vault",
-			name: "Reanalyze (recount) all documents in vault",
+			name: "Recount all notes / Reset session",
 			callback: async () => {
-				this.debugHelper.debug("[Reanalyze] command triggered");
+				this.debugHelper.debug("[Recount] command triggered");
 				await this.initialize();
 			},
 		});
