@@ -284,7 +284,7 @@ export class NodeLabelHelper {
 					return null;
 				}
 
-				const cDate = moment(counts.createdDate).format("YYYY/MM/DD");
+				const cDate = moment(counts.createdDate).format(this.settings.momentDateFormat || "YYYY/MM/DD");
 				if (config.customSuffix !== null) {
 					return `${cDate}${config.customSuffix}`;
 				}
@@ -296,7 +296,7 @@ export class NodeLabelHelper {
 					return null;
 				}
 
-				const uDate = moment(counts.modifiedDate).format("YYYY/MM/DD");
+				const uDate = moment(counts.modifiedDate).format(this.settings.momentDateFormat || "YYYY/MM/DD");
 				if (config.customSuffix !== null) {
 					return `${uDate}${config.customSuffix}`;
 				}

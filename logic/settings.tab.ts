@@ -798,6 +798,27 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					});
 			}
 
+			// MOMENT DATE FORMAT
+			const dateFormatChanged = async (
+				txt: TextComponent,
+				value: string
+			) => {
+				const isValid = typeof value === 'string' && !!value.trim();
+
+				this.plugin.settings.momentDateFormat = isValid ? value : '';
+				await this.plugin.saveSettings();
+				await this.plugin.initialize();
+			};
+			new Setting(containerEl)
+				.setName("Date format")
+				.setDesc("MomentJS date format to use for date strings")
+				.addText((txt) => {
+					txt
+						.setPlaceholder("YYYY/MM/DD")
+						.setValue(this.plugin.settings.momentDateFormat)
+						.onChange(debounce(dateFormatChanged.bind(this, txt), 1000));
+				});
+
 			// DEBUG MODE
 
 			new Setting(containerEl)

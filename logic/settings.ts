@@ -83,7 +83,7 @@ export const COUNT_TYPE_DESCRIPTIONS: { [countType: string]: string } = {
 	[$CountType.FileSize]: "Total size on hard drive.",
 	[$CountType.FrontmatterKey]: "Key in the frontmatter block.",
 	[$CountType.TrackSession]:
-		"Track progress since last Obsidian startup, plugin init, or reanalysis",
+		"Track progress since last Obsidian startup, plugin init, settings change, or recount",
 };
 
 export const UNFORMATTABLE_COUNT_TYPES = [
@@ -196,6 +196,7 @@ export interface NovelWordCountSettings {
 	excludeCodeBlocks: boolean;
 	excludeNonVisibleLinkPortions: boolean;
 	excludeFootnotes: boolean;
+	momentDateFormat: string;
 	debugMode: boolean;
 }
 
@@ -268,5 +269,6 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	excludeCodeBlocks: false,
 	excludeNonVisibleLinkPortions: false,
 	excludeFootnotes: false,
+	momentDateFormat: '',
 	debugMode: false,
 };
