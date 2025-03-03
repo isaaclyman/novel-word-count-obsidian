@@ -24,7 +24,7 @@ export class EventHelper {
 			);
 			this.cancelToken(countToken);
 			await this.plugin.updateDisplayedCounts(file);
-			await this.plugin.saveSettings();
+			this.plugin.saveSettingsDebounced();
 		}, 500);
 
 		this.plugin.registerEvent(

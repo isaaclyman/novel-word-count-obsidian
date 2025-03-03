@@ -16,6 +16,7 @@ import {
 	PluginManifest,
 	WorkspaceLeaf,
 	TAbstractFile,
+	debounce
 } from "obsidian";
 
 interface FileItem {
@@ -123,8 +124,12 @@ export default class NovelWordCountPlugin extends Plugin {
 	// SETTINGS
 
 	async saveSettings() {
+		this.debugHelper.debug("Saving to data.json.");
 		await this.saveData(this.savedData);
 	}
+
+	FIVE_MINUTES = 5 * 60 * 1000;
+	saveSettingsDebounced = debounce(this.saveSettings, this.FIVE_MINUTES, false);
 
 	// PUBLIC
 
