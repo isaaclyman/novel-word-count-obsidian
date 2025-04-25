@@ -420,6 +420,8 @@ export class FileHelper {
 		"rmd",
 		// MD for screenwriters
 		"fountain",
+		// LaTeX files
+		"tex"
 	]);
 
 	private shouldCountFile(file: TFile, metadata?: CachedMetadata): boolean {
