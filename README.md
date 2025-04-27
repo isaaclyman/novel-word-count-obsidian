@@ -17,6 +17,7 @@ This plugin displays statistics of your choice next to every file, folder, and v
 | **% of Word Goal** | Percent of word goal for each note. | See [*Setting goals*](#setting-goals) below. |
 | **Character count** | Total characters (letters, symbols, and numbers). | By default, whitespace characters are included. To change this, see Advanced > Character Count Method. |
 | **Note count** | Total notes. | Many people prefer to show this information on folders only; to do so, untoggle "Show same data on folders" and configure it as a data type there. |
+| **Line break count** | Total lines. | Counted by line breaks, or lines of Markdown code; not equivalent to the way you'd count lines in a book. |
 | **Link count** | Total [links](https://help.obsidian.md/Getting+started/Link+notes) to other notes. | Only internal links are counted; Obsidian doesn't count links to web pages. |
 | **Embed count** | Total [embedded](https://help.obsidian.md/Linking+notes+and+files/Embedding+files) images, files, and notes. | |
 | **First alias** | The first [alias](https://help.obsidian.md/Linking+notes+and+files/Aliases) of each note. | If a note has no alias, nothing is shown. Since folders don't have aliases, they also show nothing. |
@@ -34,6 +35,7 @@ This plugin displays statistics of your choice next to every file, folder, and v
 | 45% of 2,000 | 45% |
 | 23,800 characters | 23,800ch |
 | 12 notes | 12n |
+| 18 lines | 18¶ |
 | 25s read | 25s |
 | 5m read | 5m |
 | 2h5m read | 2h5m |
