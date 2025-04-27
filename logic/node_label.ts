@@ -6,6 +6,7 @@ import {
 	NovelWordCountSettings,
 	CountTypeConfiguration,
 	$SessionCountType,
+	COUNT_TYPE_DEFAULT_SHORT_SUFFIXES,
 } from "./settings";
 import { FileSizeHelper } from "./filesize";
 import { ReadTimeHelper } from "./readtime";
@@ -179,7 +180,7 @@ export class NodeLabelHelper {
 				return this.getBasicCountString({
 					count: NumberFormatDefault.format(Math.ceil(counts.wordCount)),
 					noun: "word",
-					abbreviatedNoun: "w",
+					abbreviatedNoun: COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[$CountType.Word],
 					abbreviateDescriptions,
 					customSuffix: config.customSuffix,
 				});
@@ -187,7 +188,7 @@ export class NodeLabelHelper {
 				return this.getBasicCountString({
 					count: NumberFormatDefault.format(Math.ceil(counts.pageCount)),
 					noun: "page",
-					abbreviatedNoun: "p",
+					abbreviatedNoun: COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[$CountType.Page],
 					abbreviateDescriptions,
 					customSuffix: config.customSuffix,
 				});
@@ -195,7 +196,15 @@ export class NodeLabelHelper {
 				return this.getBasicCountString({
 					count: NumberFormatDecimal.format(counts.pageCount),
 					noun: "page",
-					abbreviatedNoun: "p",
+					abbreviatedNoun: COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[$CountType.PageDecimal],
+					abbreviateDescriptions,
+					customSuffix: config.customSuffix,
+				});
+			case $CountType.Linebreak:
+				return this.getBasicCountString({
+					count: NumberFormatDefault.format(counts.newlineCount),
+					noun: "line",
+					abbreviatedNoun: COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[$CountType.Linebreak],
 					abbreviateDescriptions,
 					customSuffix: config.customSuffix,
 				});
@@ -217,7 +226,7 @@ export class NodeLabelHelper {
 				return this.getBasicCountString({
 					count: NumberFormatDefault.format(counts.noteCount),
 					noun: "note",
-					abbreviatedNoun: "n",
+					abbreviatedNoun: COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[$CountType.Note],
 					abbreviateDescriptions,
 					customSuffix: config.customSuffix,
 				});
@@ -231,7 +240,7 @@ export class NodeLabelHelper {
 				return this.getBasicCountString({
 					count: NumberFormatDefault.format(characterCount),
 					noun: "character",
-					abbreviatedNoun: "ch",
+					abbreviatedNoun: COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[$CountType.Character],
 					abbreviateDescriptions,
 					customSuffix: config.customSuffix,
 				});
@@ -249,7 +258,7 @@ export class NodeLabelHelper {
 				return this.getBasicCountString({
 					count: NumberFormatDefault.format(counts.linkCount),
 					noun: "link",
-					abbreviatedNoun: "x",
+					abbreviatedNoun: COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[$CountType.Link],
 					abbreviateDescriptions,
 					customSuffix: config.customSuffix,
 				});
@@ -261,7 +270,7 @@ export class NodeLabelHelper {
 				return this.getBasicCountString({
 					count: NumberFormatDefault.format(counts.embedCount),
 					noun: "embed",
-					abbreviatedNoun: "em",
+					abbreviatedNoun: COUNT_TYPE_DEFAULT_SHORT_SUFFIXES[$CountType.Embed],
 					abbreviateDescriptions,
 					customSuffix: config.customSuffix,
 				});
@@ -350,6 +359,8 @@ export class NodeLabelHelper {
 				return NumberFormatDefault.format(Math.ceil(counts.pageCount - counts.sessionStart.pageCount));
 			case $CountType.PageDecimal:
 				return NumberFormatDecimal.format(counts.pageCount - counts.sessionStart.pageCount);
+			case $CountType.Linebreak:
+				return NumberFormatDefault.format(counts.newlineCount - counts.sessionStart.newlineCount);
 			case $CountType.Note:
 				return NumberFormatDefault.format(counts.noteCount - counts.sessionStart.noteCount);
 			case $CountType.Character: {

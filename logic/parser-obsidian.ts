@@ -15,6 +15,7 @@ export function countMarkdownObsidian(content: string): MarkdownParseResult {
 		nonWhitespaceCharCount: countNonWhitespaceCharacters(content),
 		spaceDelimitedWordCount: (content.match(obsidianWordRx) || []).length,
 		cjkWordCount: 0,
+    newlineCount: content.split('\n').length  - 1,
 	};
 
   return result;

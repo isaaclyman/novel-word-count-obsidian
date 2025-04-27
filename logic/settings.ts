@@ -3,6 +3,7 @@ export enum $CountType {
 	Word = "word",
 	Page = "page",
 	PageDecimal = "pagedecimal",
+	Linebreak = "linebreak",
 	ReadTime = "readtime",
 	PercentGoal = "percentgoal",
 	Note = "note",
@@ -24,6 +25,7 @@ export type $SessionCountType = Extract<
 	| $CountType.Word
 	| $CountType.Page
 	| $CountType.PageDecimal
+	| $CountType.Linebreak
 	| $CountType.Note
 	| $CountType.Character
 >;
@@ -32,6 +34,7 @@ export const SESSION_COUNT_TYPES: $SessionCountType[] = [
 	$CountType.Word,
 	$CountType.Page,
 	$CountType.PageDecimal,
+	$CountType.Linebreak,
 	$CountType.Note,
 	$CountType.Character,
 ];
@@ -47,6 +50,7 @@ export const COUNT_TYPE_DISPLAY_STRINGS: { [countType: string]: string } = {
 	[$CountType.Word]: "Word Count",
 	[$CountType.Page]: "Page Count",
 	[$CountType.PageDecimal]: "Page Count (decimal)",
+	[$CountType.Linebreak]: "Line Break Count",
 	[$CountType.ReadTime]: "Reading Time",
 	[$CountType.PercentGoal]: "% of Word Goal",
 	[$CountType.Note]: "Note Count",
@@ -67,6 +71,7 @@ export const COUNT_TYPE_DESCRIPTIONS: { [countType: string]: string } = {
 	[$CountType.Page]: "Total pages, rounded up.",
 	[$CountType.PageDecimal]:
 		"Total pages, precise to 2 digits after the decimal.",
+	[$CountType.Linebreak]: "Newlines (¶), including empty lines.",
 	[$CountType.ReadTime]: "Estimated time to read the note.",
 	[$CountType.PercentGoal]:
 		"Set a word goal by adding the 'word-goal' property to a note.",
@@ -99,6 +104,7 @@ export const COUNT_TYPE_DEFAULT_SHORT_SUFFIXES: {
 	[$CountType.Word]: "w",
 	[$CountType.Page]: "p",
 	[$CountType.PageDecimal]: "p",
+	[$CountType.Linebreak]: "¶",
 	[$CountType.PercentGoal]: "%",
 	[$CountType.Note]: "n",
 	[$CountType.Character]: "ch",
@@ -107,7 +113,7 @@ export const COUNT_TYPE_DEFAULT_SHORT_SUFFIXES: {
 	[$CountType.Created]: "/c",
 	[$CountType.Modified]: "/u",
 	[$CountType.FrontmatterKey]: "",
-	[$CountType.TrackSession]: "/s"
+	[$CountType.TrackSession]: "/s",
 };
 
 export function getDescription(countType: $CountType): string {
@@ -269,6 +275,6 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	excludeCodeBlocks: false,
 	excludeNonVisibleLinkPortions: false,
 	excludeFootnotes: false,
-	momentDateFormat: '',
+	momentDateFormat: "",
 	debugMode: false,
 };

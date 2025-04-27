@@ -11,7 +11,8 @@ export function countMarkdownObsolete(content: string): MarkdownParseResult {
     charCount: content.length,
     nonWhitespaceCharCount: countNonWhitespaceCharacters(content),
     spaceDelimitedWordCount: content.split(wordRegex).length,
-    cjkWordCount: (content.match(cjkRegex) || []).length
+    cjkWordCount: (content.match(cjkRegex) || []).length,
+    newlineCount: content.split('\n').length - 1,
   };
 }
 

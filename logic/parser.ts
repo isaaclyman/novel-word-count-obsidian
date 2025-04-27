@@ -10,6 +10,7 @@ export interface MarkdownParseResult {
 	nonWhitespaceCharCount: number;
 	spaceDelimitedWordCount: number;
 	cjkWordCount: number;
+	newlineCount: number;
 }
 
 const cjkRegex =
@@ -33,11 +34,18 @@ export function countMarkdown(
 		wordSequences = [];
 	}
 
+	let lineSequences = content.split('\n');
+
+	if (lineSequences.length === 1 && lineSequences[0] === "") {
+		lineSequences = [];
+	}
+
 	const result: MarkdownParseResult = {
 		charCount: content.length,
 		nonWhitespaceCharCount: countNonWhitespaceCharacters(content),
 		spaceDelimitedWordCount: wordSequences.length,
 		cjkWordCount: (content.match(cjkRegex) || []).length,
+		newlineCount: lineSequences.length,
 	};
 
 	return result;
