@@ -1,6 +1,6 @@
 {
 	"name": "novel-word-count",
-	"version": "4.3.1",
+	"version": "4.4.0",
 	"description": "Displays a word count, page count, and/or other statistics for each file, folder and vault in the File Explorer pane.",
 	"main": "main.js",
 	"scripts": {
