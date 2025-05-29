@@ -190,6 +190,7 @@ export interface NovelWordCountSettings {
 	rootAbbreviateDescriptions: boolean;
 	// ADVANCED
 	showAdvanced: boolean;
+	labelOpacity: number;
 	wordsPerMinute: number;
 	charsPerMinute: number;
 	wordsPerPage: number;
@@ -263,6 +264,7 @@ export const DEFAULT_SETTINGS: NovelWordCountSettings = {
 	rootAbbreviateDescriptions: false,
 	// ADVANCED
 	showAdvanced: false,
+	labelOpacity: 0.75,
 	wordsPerMinute: 265,
 	charsPerMinute: 500,
 	wordsPerPage: 300,

@@ -194,6 +194,7 @@ export default class NovelWordCountPlugin extends Plugin {
 				"data-novel-word-count-plugin",
 				this.nodeLabelHelper.getNodeLabel(counts)
 			)
+			document.documentElement.style.setProperty("--novel-word-count-opacity", `${this.settings.labelOpacity}`)
 		}
 
 		if (file) {

@@ -540,6 +540,25 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			);
 
 		if (this.plugin.settings.showAdvanced) {
+			// COUNT LABEL TRANSPARENCY
+
+			const opacityChanged = async (value: number) => {
+				this.plugin.settings.labelOpacity = Math.clamp(value, 0, 1);
+				await this.plugin.saveSettings();
+				await this.plugin.updateDisplayedCounts();
+			}
+
+			new Setting(containerEl)
+				.setName("Label opacity")
+				.setDesc("Increase this value to make all count labels in the File Explorer more visible.")
+				.addSlider((slider) => {
+					slider
+						.setLimits(0, 1, 0.05)
+						.setDynamicTooltip()
+						.setValue(this.plugin.settings.labelOpacity)
+						.onChange(debounce(opacityChanged.bind(this), 500));
+				});
+
 			// INCLUDE FILE/FOLDER NAMES
 
 			const includePathsChanged = async (txt: TextComponent, value: string) => {

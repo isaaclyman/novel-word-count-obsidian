@@ -50,7 +50,11 @@ This plugin displays statistics of your choice next to every file, folder, and v
 
 **Alignment.** Choose where data is displayed relative to file/folder names: Inline, Right-aligned, or Below. All alignments work well with vanilla Obsidian, but Inline has the greatest compatibility with custom themes and plugins.
 
-**Show same data on folders.** By default, the same data types are shown on notes and folders. You can toggle this setting off to choose different data types to show on folders only.
+**Folders: Same data as Notes.** By default, the same data types are shown on notes and folders. You can toggle this setting off to choose different data types to show on folders only.
+
+**Root: Same data as Notes.** By default, the same data types are shown on notes and the vault itself. You can toggle this setting off to choose different data types to who on the vault only.
+
+**Label opacity.** By default, count data is shown with an opacity value of 0.75 (meaning 25% transparent). You can raise or lower this value to make labels in the File Explorer more or less visible, respectively.
 
 **Include file/folder names.** Only counts the text of notes with paths matching the indicated terms. This setting is case-sensitive and comma-separated. Any term starting with `!` will be _excluded_ instead of included. At least one file must be matched or the setting will be ignored. _For example:_ If you set this to `Included, CountMe`, it will match folders called `Included`, `Included Folder`, `CountMe Please`, `My Included CountMe`, etc., and notes called `Included.md`, `CountMe Note.md`, etc., but _not_ folders or notes called `included` or `countme` or `somethingelse`. If there are no folders or notes in your vault with the terms `Included` or `CountMe`, the setting will be ignored and all notes will be counted. If you set this to `!Excluded, CountMe`, it will match folders and files with the term `CountMe` _unless_ they also contain the term `Excluded` in their path.
 

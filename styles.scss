@@ -9,7 +9,7 @@
 		font-size: 0.8em;
 		max-width: calc(100% - 20px);
 		min-width: 0;
-		opacity: 0.75;
+		opacity: var(--novel-word-count-opacity);
 		overflow: hidden;
 		padding: 0 4px;
 		position: relative;
@@ -32,7 +32,7 @@
 			font-size: 0.8em;
 			max-width: calc(100% - 20px);
 			min-width: 0;
-			opacity: 0.75;
+			opacity: var(--novel-word-count-opacity);
 			order: 1;
 			overflow: hidden;
 			padding: 0 4px;
@@ -85,7 +85,7 @@
 			font-size: 0.8em;
 			max-width: calc(100% - 20px);
 			min-width: 0;
-			opacity: 0.75;
+			opacity: var(--novel-word-count-opacity);
 			order: 1;
 			overflow: hidden;
 			padding: 0 4px;
