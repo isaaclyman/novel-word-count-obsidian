@@ -108,6 +108,7 @@
 
 		.novel-word-count--active &-content {
 			min-width: 20px;
+			unicode-bidi: isolate;
 		}
 
 		.novel-word-count--folder-right &-content {
