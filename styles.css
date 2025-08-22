@@ -19,6 +19,7 @@
 
 .novel-word-count--active .nav-files-container .nav-file-title {
   align-items: baseline;
+  unicode-bidi: isolate;
 }
 .novel-word-count--active .nav-files-container .nav-file-title::after {
   content: attr(data-novel-word-count-plugin);
@@ -33,9 +34,12 @@
   position: relative;
   text-overflow: ellipsis;
   white-space: nowrap;
+  unicode-bidi: isolate;
+  direction: ltr;
 }
 .novel-word-count--active .nav-files-container .nav-file-title-content {
   min-width: 20px;
+  unicode-bidi: isolate;
 }
 .novel-word-count--note-right .nav-files-container .nav-file-title-content {
   flex: 1 1 0;
@@ -62,6 +66,7 @@
 }
 .novel-word-count--active .nav-files-container .nav-folder-title {
   align-items: baseline;
+  unicode-bidi: isolate;
 }
 .novel-word-count--active .nav-files-container .nav-folder-title::after {
   content: attr(data-novel-word-count-plugin);
@@ -76,9 +81,12 @@
   position: relative;
   text-overflow: ellipsis;
   white-space: nowrap;
+  unicode-bidi: isolate;
+  direction: ltr;
 }
 .novel-word-count--active .nav-files-container .nav-folder-title-content {
   min-width: 20px;
+  unicode-bidi: isolate;
 }
 .novel-word-count--folder-right .nav-files-container .nav-folder-title-content {
   flex: 1 1 0;

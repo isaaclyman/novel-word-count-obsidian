@@ -24,6 +24,8 @@
 	.nav-file-title {
     .novel-word-count--active & {
       align-items: baseline;
+      // Ensure proper text direction handling
+      unicode-bidi: isolate;
     }
 
 		.novel-word-count--active &::after {
@@ -39,10 +41,15 @@
 			position: relative;
 			text-overflow: ellipsis;
 			white-space: nowrap;
+			// Isolate the word count from RTL text influence
+			unicode-bidi: isolate;
+			direction: ltr;
 		}
 
 		.novel-word-count--active &-content {
 			min-width: 20px;
+			// Isolate file name from word count
+			unicode-bidi: isolate;
 		}
 
 		.novel-word-count--note-right &-content {
@@ -76,7 +83,9 @@
 
 	.nav-folder-title {
 		.novel-word-count--active & {
-			align-items: baseline;			
+			align-items: baseline;
+			// Ensure proper text direction handling
+			unicode-bidi: isolate;
 		}
 
 		.novel-word-count--active &::after {
@@ -92,6 +101,9 @@
 			position: relative;
 			text-overflow: ellipsis;
 			white-space: nowrap;
+			// Isolate the word count from RTL text influence
+			unicode-bidi: isolate;
+			direction: ltr;
 		}
 
 		.novel-word-count--active &-content {
