@@ -16,7 +16,7 @@ import {
 	PluginManifest,
 	WorkspaceLeaf,
 	TAbstractFile,
-	debounce
+	debounce,
 } from "obsidian";
 
 interface FileItem {
@@ -150,7 +150,7 @@ export default class NovelWordCountPlugin extends Plugin {
 				await this.updateDisplayedCounts();
 			} catch (err) {
 				this.debugHelper.debug("Error while updating displayed counts");
-				this.debugHelper.error(err);
+				this.debugHelper.debug(err);
 
 				// File Explorer pane may not be loaded yet
 				setTimeout(() => {
@@ -178,23 +178,39 @@ export default class NovelWordCountPlugin extends Plugin {
 			return;
 		}
 
-		this.setContainerClass(fileExplorerLeaf);
+		const vaultCount = this.fileHelper.getCachedDataForPath(
+			this.savedData.cachedCounts,
+			"/"
+		);
+
+		document.documentElement.style.setProperty("--novel-word-count-opacity", `${this.settings.labelOpacity}`);
+		
+		const drawers = [this.app.workspace.leftSplit as any, this.app.workspace.rightSplit as any];
+		let hasMobileDrawer = false;
+		for (const drawer of drawers) {
+			this.setContainerClass(drawer.containerEl);
+
+			if (!drawer?.fileCountEl) {
+				continue;
+			}
+			
+			drawer.fileCountEl.setAttribute(
+				"data-novel-word-count-plugin",
+				this.nodeLabelHelper.getNodeLabel(vaultCount),
+			);
+			hasMobileDrawer = true;
+		}
+
 		const fileExplorerView = fileExplorerLeaf.view as any;
 		const fileItems: { [path: string]: FileItem } = (
 			fileExplorerView
 		).fileItems;
 
-		if (fileExplorerView?.headerDom?.navButtonsEl) {
-			const counts = this.fileHelper.getCachedDataForPath(
-				this.savedData.cachedCounts,
-				"/"
-			);
-
+		if (!hasMobileDrawer && fileExplorerView?.headerDom?.navButtonsEl) {
 			fileExplorerView.headerDom.navButtonsEl.setAttribute(
 				"data-novel-word-count-plugin",
-				this.nodeLabelHelper.getNodeLabel(counts)
+				this.nodeLabelHelper.getNodeLabel(vaultCount)
 			)
-			document.documentElement.style.setProperty("--novel-word-count-opacity", `${this.settings.labelOpacity}`)
 		}
 
 		if (file) {
@@ -238,7 +254,7 @@ export default class NovelWordCountPlugin extends Plugin {
 	public async getFileExplorerLeaf(): Promise<WorkspaceLeaf> {
 		return new Promise((resolve, reject) => {
 			let foundLeaf: WorkspaceLeaf | null = null;
-			this.app.workspace.iterateAllLeaves((leaf) => {
+			this.app.workspace.getLeavesOfType('file-explorer').forEach((leaf) => {
 				if (foundLeaf) {
 					return;
 				}
@@ -258,8 +274,12 @@ export default class NovelWordCountPlugin extends Plugin {
 		});
 	}
 
-	private setContainerClass(leaf: WorkspaceLeaf) {
-		const container = leaf.view.containerEl;
+	private setContainerClass(container: HTMLElement) {
+		if (!container) {
+			this.debugHelper.debug('No container was passed to setContainerClass');
+			return;
+		}
+
 		container.toggleClass(`novel-word-count--active`, true);
 
 		const notePrefix = `novel-word-count--note-`;
