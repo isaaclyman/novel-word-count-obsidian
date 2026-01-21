@@ -2,7 +2,6 @@ import type NovelWordCountPlugin from "main";
 import {
 	App,
 	CachedMetadata,
-	FrontMatterCache,
 	TAbstractFile,
 	TFile,
 	TFolder,
@@ -15,47 +14,7 @@ import { NovelWordCountSettings, PageCountType } from "./settings";
 import { CancellationToken } from "./cancellation";
 import { countMarkdown } from "./parser";
 import { CanvasHelper } from "./canvas";
-
-export interface CountData {
-	isCountable: boolean;
-	targetNodeType: TargetNode;
-	noteCount: number;
-	pageCount: number;
-	wordCount: number;
-	wordCountTowardGoal: number;
-	wordGoal: number | null;
-	characterCount: number;
-	nonWhitespaceCharacterCount: number;
-	newlineCount: number;
-	readingTimeInMinutes: number;
-	linkCount: number;
-	embedCount: number;
-	aliases: string[] | null;
-	sizeInBytes: number;
-	createdDate: number;
-	modifiedDate: number;
-	frontmatter?: FrontMatterCache;
-	sessionStart: SessionCountData;
-}
-
-export interface SessionCountData {
-	noteCount: number;
-	pageCount: number;
-	wordCount: number;
-	characterCount: number;
-	nonWhitespaceCharacterCount: number;
-	newlineCount: number;
-}
-
-export enum TargetNode {
-	Root = "root",
-	Directory = "directory",
-	File = "file",
-}
-
-export type CountsByFile = {
-	[path: string]: CountData;
-};
+import { CountData, CountsByFile, TargetNode } from "./count_data";
 
 export class FileHelper {
 	private debugHelper = new DebugHelper();
@@ -129,6 +88,7 @@ export class FileHelper {
 	}
 
 	public getCachedDataForPath(counts: CountsByFile, path: string): CountData {
+		// Only files are cached; folders are calculated dynamically
 		if (counts.hasOwnProperty(path)) {
 			return counts[path];
 		}
