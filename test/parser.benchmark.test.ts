@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { countMarkdown } from "logic/parser";
 import { countMarkdownObsidian } from "logic/parser-obsidian";
 import { countMarkdownObsolete } from "logic/parser-old";
