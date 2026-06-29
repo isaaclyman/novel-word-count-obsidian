@@ -1,5 +1,4 @@
 import type NovelWordCountPlugin from "main";
-import { CountData, TargetNode } from "./file";
 import {
 	CharacterCountType,
 	$CountType,
@@ -12,6 +11,7 @@ import { FileSizeHelper } from "./filesize";
 import { ReadTimeHelper } from "./readtime";
 import { NumberFormatDecimal, NumberFormatDefault } from "./locale_format";
 import { moment } from "obsidian";
+import { CountData, TargetNode } from "./count_data";
 
 interface CountTypeWithOverrides extends CountTypeConfiguration {
 	$countType: $CountType;
