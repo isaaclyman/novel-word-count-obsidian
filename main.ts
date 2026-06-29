@@ -213,7 +213,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			)
 		}
 
-		if (file) {
+		if (file && this.debugHelper.isDebugging()) {
 			const relevantItems = Object.keys(fileItems).filter((path) =>
 				file.path.includes(path)
 			);

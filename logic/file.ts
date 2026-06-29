@@ -29,10 +29,13 @@ export class FileHelper {
 	private pathIncludeMatchers: string[] = [];
 	private pathExcludeMatchers: string[] = [];
 
-	constructor(private app: App, private plugin: NovelWordCountPlugin) {}
+	constructor(
+		private app: App,
+		private plugin: NovelWordCountPlugin,
+	) {}
 
 	public async initializeAllFileCounts(
-		cancellationToken: CancellationToken
+		cancellationToken: CancellationToken,
 	): Promise<CountsByFile> {
 		const debugEnd = this.debugHelper.debugStart("getAllFileCounts");
 
@@ -47,7 +50,7 @@ export class FileHelper {
 				.split(",")
 				.map((matcher) => matcher.trim());
 			const includeMatchers = allMatchers.filter(
-				(matcher) => !matcher.startsWith("!")
+				(matcher) => !matcher.startsWith("!"),
 			);
 			const excludeMatchers = allMatchers
 				.filter((matcher) => matcher.startsWith("!"))
@@ -58,7 +61,7 @@ export class FileHelper {
 					(includeMatchers.length === 0
 						? true
 						: includeMatchers.some((matcher) => file.path.includes(matcher))) &&
-					!excludeMatchers.some((matcher) => file.path.includes(matcher))
+					!excludeMatchers.some((matcher) => file.path.includes(matcher)),
 			);
 
 			if (matchedFiles.length > 0) {
@@ -68,7 +71,7 @@ export class FileHelper {
 				this.pathIncludeMatchers = [];
 				this.pathExcludeMatchers = [];
 				this.debugHelper.debug(
-					"No files matched by includeDirectories setting. Defaulting to all files."
+					"No files matched by includeDirectories setting. Defaulting to all files.",
 				);
 			}
 		}
@@ -166,7 +169,8 @@ export class FileHelper {
 						total.sessionStart.nonWhitespaceCharacterCount +
 						childCount.sessionStart.nonWhitespaceCharacterCount,
 					newlineCount:
-						total.sessionStart.newlineCount + childCount.sessionStart.newlineCount,
+						total.sessionStart.newlineCount +
+						childCount.sessionStart.newlineCount,
 				},
 			};
 		}, directoryDefault);
@@ -187,7 +191,7 @@ export class FileHelper {
 	public async updateFileCounts(
 		abstractFile: TAbstractFile,
 		counts: CountsByFile,
-		cancellationToken: CancellationToken
+		cancellationToken: CancellationToken,
 	): Promise<void> {
 		if (abstractFile instanceof TFolder) {
 			for (const child of abstractFile.children) {
@@ -211,7 +215,7 @@ export class FileHelper {
 
 	private getChildPaths(counts: CountsByFile, path: string): string[] {
 		const childPaths = Object.keys(counts).filter(
-			(countPath) => path === "/" || countPath.startsWith(path + "/")
+			(countPath) => path === "/" || countPath.startsWith(path + "/"),
 		);
 		return childPaths;
 	}
@@ -224,9 +228,13 @@ export class FileHelper {
 		delete counts[path];
 	}
 
-	private async setCounts(counts: CountsByFile, file: TFile, startNewSession: boolean): Promise<void> {
+	private async setCounts(
+		counts: CountsByFile,
+		file: TFile,
+		startNewSession: boolean,
+	): Promise<void> {
 		const metadata = this.app.metadataCache.getFileCache(
-			file
+			file,
 		) as CachedMetadata | null;
 		const shouldCountFile = this.shouldCountFile(file, metadata);
 
@@ -249,14 +257,17 @@ export class FileHelper {
 			createdDate: file.stat.ctime,
 			modifiedDate: file.stat.mtime,
 			sizeInBytes: file.stat.size,
-			sessionStart: startNewSession || !existingSession ? {
-				noteCount: 0,
-				pageCount: 0,
-				wordCount: 0,
-				characterCount: 0,
-				nonWhitespaceCharacterCount: 0,
-				newlineCount: 0,
-			} : existingSession,
+			sessionStart:
+				startNewSession || !existingSession
+					? {
+							noteCount: 0,
+							pageCount: 0,
+							wordCount: 0,
+							characterCount: 0,
+							nonWhitespaceCharacterCount: 0,
+							newlineCount: 0,
+						}
+					: existingSession,
 		};
 
 		if (!shouldCountFile) {
@@ -329,15 +340,17 @@ export class FileHelper {
 			frontmatter: metadata?.frontmatter,
 			sessionStart: {
 				...counts[file.path]?.sessionStart,
-				...(startNewSession ? {
-					noteCount: 1,
-					pageCount,
-					wordCount: combinedWordCount,
-					characterCount: countResult.charCount,
-					nonWhitespaceCharacterCount: countResult.nonWhitespaceCharCount,
-					newlineCount: countResult.newlineCount
-				} : {}),
-			}
+				...(startNewSession
+					? {
+							noteCount: 1,
+							pageCount,
+							wordCount: combinedWordCount,
+							characterCount: countResult.charCount,
+							nonWhitespaceCharacterCount: countResult.nonWhitespaceCharCount,
+							newlineCount: countResult.newlineCount,
+						}
+					: {}),
+			},
 		} as CountData);
 	}
 
@@ -392,7 +405,7 @@ export class FileHelper {
 		// MD for screenwriters
 		"fountain",
 		// LaTeX files
-		"tex"
+		"tex",
 	]);
 
 	private shouldCountFile(file: TFile, metadata?: CachedMetadata): boolean {

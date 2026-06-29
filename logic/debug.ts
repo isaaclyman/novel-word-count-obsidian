@@ -2,6 +2,8 @@ export class DebugHelper {
   private debugMode = false;
 	private idCounter = 0;
 
+	public isDebugging(): boolean { return this.debugMode; } 
+
   public setDebugMode(debug: boolean): void {
     this.debugMode = debug;
   }
