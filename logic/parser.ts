@@ -15,6 +15,7 @@ export interface MarkdownParseResult {
 
 const cjkRegex =
 	/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu;
+const allDashes = /[\p{Pd}]+/gu;
 const allSymbolsRegex = /[\p{S}\p{P}]/gu;
 
 export function countMarkdown(
@@ -25,6 +26,7 @@ export function countMarkdown(
 
 	let wordSequences = content
 		.replace(cjkRegex, " ")
+		.replace(allDashes, " ")
 		.replace(allSymbolsRegex, "")
 		.trim()
 		.split(/\s+/);

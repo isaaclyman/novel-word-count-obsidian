@@ -108,8 +108,24 @@ It has mixed-language content.`;
 
 			expect(result.charCount).toBe(89);
 			expect(result.nonWhitespaceCharCount).toBe(77);
-			expect(result.spaceDelimitedWordCount).toBe(9);
+			expect(result.spaceDelimitedWordCount).toBe(10);
 			expect(result.cjkWordCount).toBe(30);
+		});
+
+		it("parses a file with multiple types of dashes", () => {
+			const content = `
+This is my-first-note.
+
+---
+
+Hello—what were you doing between 1972–1980?`;
+
+			const result = countMarkdown(content);
+
+			expect(result.charCount).toBe(74);
+			expect(result.nonWhitespaceCharCount).toBe(62);
+			expect(result.spaceDelimitedWordCount).toBe(13);
+			expect(result.cjkWordCount).toBe(0);
 		});
 	});
 
