@@ -8,22 +8,28 @@ export interface DirectoryTrie {
 //  but benchmarks have it performing 10x to 20x slower.
 export class DirectoryTrieHelper {
 	static buildTrie(counts: CountsByFile): DirectoryTrie {
-		const root: DirectoryTrie = {children: {}};
+		const root: DirectoryTrie = { children: {} };
 		return Object.keys(counts).reduce((trie, fullPath) => {
-			this.traverse(trie, fullPath, () => ({children: {}}));
+			this.traverse(trie, fullPath, () => ({ children: {} }));
 			return trie;
 		}, root);
 	}
 
-	static getAllLeaves = function*(rootTrie: DirectoryTrie, rootPrefix: string): Generator<string> {
-		if (this.isLeaf(rootTrie)) {
+	static getAllLeaves = function* (
+		rootTrie: DirectoryTrie,
+		rootPrefix: string,
+	): Generator<string> {
+		if (DirectoryTrieHelper.isLeaf(rootTrie)) {
 			yield rootPrefix;
 		}
 
 		for (const key in rootTrie.children) {
-			yield* this.getAllLeaves(rootTrie.children[key], this.join(rootPrefix, key));
+			yield* DirectoryTrieHelper.getAllLeaves(
+				rootTrie.children[key],
+				DirectoryTrieHelper.join(rootPrefix, key),
+			);
 		}
-	}
+	};
 
 	static getLeavesByPrefix(rootTrie: DirectoryTrie, prefix: string): string[] {
 		const node = this.traverse(rootTrie, prefix);
@@ -68,7 +74,7 @@ export class DirectoryTrieHelper {
 	}
 
 	private static join(prefix: string, childName: string): string {
-		if (prefix.endsWith('/') || childName.startsWith('/')) {
+		if (prefix.endsWith("/") || childName.startsWith("/")) {
 			return prefix + childName;
 		}
 
