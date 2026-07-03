@@ -108,7 +108,7 @@ It has mixed-language content.`;
 
 			expect(result.charCount).toBe(89);
 			expect(result.nonWhitespaceCharCount).toBe(77);
-			expect(result.spaceDelimitedWordCount).toBe(10);
+			expect(result.spaceDelimitedWordCount).toBe(9);
 			expect(result.cjkWordCount).toBe(30);
 		});
 
@@ -124,7 +124,7 @@ Hello—what were you doing between 1972–1980?`;
 
 			expect(result.charCount).toBe(74);
 			expect(result.nonWhitespaceCharCount).toBe(62);
-			expect(result.spaceDelimitedWordCount).toBe(13);
+			expect(result.spaceDelimitedWordCount).toBe(11);
 			expect(result.cjkWordCount).toBe(0);
 		});
 	});

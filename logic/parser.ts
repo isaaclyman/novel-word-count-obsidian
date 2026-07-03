@@ -15,7 +15,8 @@ export interface MarkdownParseResult {
 
 const cjkRegex =
 	/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu;
-const allDashes = /[\p{Pd}]+/gu;
+const allHyphens = /[-‐‑־]+/gu; // hyphen-minus, hyphen, nonbreaking hyphen, maqaf
+const allDashes = /[\p{Pd}]/gu;
 const allSymbolsRegex = /[\p{S}\p{P}]/gu;
 
 export function countMarkdown(
@@ -26,6 +27,7 @@ export function countMarkdown(
 
 	let wordSequences = content
 		.replace(cjkRegex, " ")
+		.replace(allHyphens, "")
 		.replace(allDashes, " ")
 		.replace(allSymbolsRegex, "")
 		.trim()
