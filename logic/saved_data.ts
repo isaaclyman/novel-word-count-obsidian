@@ -1,11 +1,11 @@
 import type NovelWordCountPlugin from "main";
-import { CountsByFile } from "./file";
 import {
 	$CountType,
 	COUNT_TYPES,
 	DEFAULT_SETTINGS,
 	NovelWordCountSettings,
 } from "./settings";
+import { CountsByFile } from "./count_data";
 
 export interface NovelWordCountSavedData {
 	cachedCounts: CountsByFile;
@@ -54,7 +54,7 @@ type KeysOfType<T, TProp> = {
 
 const overwriteInvalidCountTypes: MigrationFunction = (saved) => {
 	if (!saved?.settings?.countType) {
-		return;
+		return saved;
 	}
 
 	const fieldsToCheck: KeysOfType<NovelWordCountSettings, $CountType>[] = [
