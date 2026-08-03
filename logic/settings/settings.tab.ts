@@ -7,18 +7,20 @@ import {
 	debounce,
 } from "obsidian";
 import {
-	$CountType,
-	$SessionCountType,
+	COUNT_TYPE_DEFAULT_SHORT_SUFFIXES,
+	getDescription,
+	COUNT_TYPE_DISPLAY_STRINGS,
+} from "./settings.display";
+import {
 	AlignmentType,
 	CharacterCountType,
-	COUNT_TYPE_DEFAULT_SHORT_SUFFIXES,
-	COUNT_TYPE_DISPLAY_STRINGS,
-	COUNT_TYPES,
-	getDescription,
 	PageCountType,
+	$CountType,
+	COUNT_TYPES,
+	$SessionCountType,
 	SESSION_COUNT_TYPES,
 	UNFORMATTABLE_COUNT_TYPES,
-} from "./settings";
+} from "./settings.enum";
 
 export class NovelWordCountSettingTab extends PluginSettingTab {
 	plugin: NovelWordCountPlugin;
@@ -69,7 +71,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 						this.display();
-					})
+					}),
 			);
 
 		// NOTE - DATA TYPE 1
@@ -84,13 +86,13 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			},
 		});
 
-    this.renderSessionCountTypeSetting(containerEl, {
-      parentCountType: this.plugin.settings.countType,
-      oldCountType: this.plugin.settings.countConfig.$sessionCountType,
-      setNewCountType: (value) => {
-        this.plugin.settings.countConfig.$sessionCountType = value;
-      },
-    });
+		this.renderSessionCountTypeSetting(containerEl, {
+			parentCountType: this.plugin.settings.countType,
+			oldCountType: this.plugin.settings.countConfig.$sessionCountType,
+			setNewCountType: (value) => {
+				this.plugin.settings.countConfig.$sessionCountType = value;
+			},
+		});
 
 		this.renderFrontmatterKeySetting(containerEl, {
 			countType: this.plugin.settings.countType,
@@ -118,13 +120,13 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			},
 		});
 
-    this.renderSessionCountTypeSetting(containerEl, {
-      parentCountType: this.plugin.settings.countType2,
-      oldCountType: this.plugin.settings.countConfig2.$sessionCountType,
-      setNewCountType: (value) => {
-        this.plugin.settings.countConfig2.$sessionCountType = value;
-      },
-    });
+		this.renderSessionCountTypeSetting(containerEl, {
+			parentCountType: this.plugin.settings.countType2,
+			oldCountType: this.plugin.settings.countConfig2.$sessionCountType,
+			setNewCountType: (value) => {
+				this.plugin.settings.countConfig2.$sessionCountType = value;
+			},
+		});
 
 		this.renderFrontmatterKeySetting(containerEl, {
 			countType: this.plugin.settings.countType2,
@@ -152,13 +154,13 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			},
 		});
 
-    this.renderSessionCountTypeSetting(containerEl, {
-      parentCountType: this.plugin.settings.countType3,
-      oldCountType: this.plugin.settings.countConfig3.$sessionCountType,
-      setNewCountType: (value) => {
-        this.plugin.settings.countConfig3.$sessionCountType = value;
-      },
-    });
+		this.renderSessionCountTypeSetting(containerEl, {
+			parentCountType: this.plugin.settings.countType3,
+			oldCountType: this.plugin.settings.countConfig3.$sessionCountType,
+			setNewCountType: (value) => {
+				this.plugin.settings.countConfig3.$sessionCountType = value;
+			},
+		});
 
 		this.renderFrontmatterKeySetting(containerEl, {
 			countType: this.plugin.settings.countType3,
@@ -183,7 +185,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						this.plugin.settings.pipeSeparator = value;
 						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
-					})
+					}),
 			);
 		}
 
@@ -200,7 +202,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 							this.plugin.settings.abbreviateDescriptions = value;
 							await this.plugin.saveSettings();
 							await this.plugin.updateDisplayedCounts();
-						})
+						}),
 				);
 		}
 
@@ -209,7 +211,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Alignment")
 			.setDesc(
-				"Show data inline with file/folder names, right-aligned, or underneath"
+				"Show data inline with file/folder names, right-aligned, or underneath",
 			)
 			.addDropdown((drop) => {
 				drop
@@ -217,8 +219,8 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					.addOption(AlignmentType.Right, "Right-aligned")
 					.addOption(AlignmentType.Below, "Below")
 					.setValue(this.plugin.settings.alignment)
-					.onChange(async (value: AlignmentType) => {
-						this.plugin.settings.alignment = value;
+					.onChange(async (value: string) => {
+						this.plugin.settings.alignment = value as AlignmentType;
 						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 					});
@@ -242,7 +244,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						this.display();
 
 						await this.plugin.updateDisplayedCounts();
-					})
+					}),
 			);
 
 		if (!this.plugin.settings.showSameCountsOnFolders) {
@@ -260,13 +262,13 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				},
 			});
 
-      this.renderSessionCountTypeSetting(containerEl, {
-        parentCountType: this.plugin.settings.folderCountType,
-        oldCountType: this.plugin.settings.folderCountConfig.$sessionCountType,
-        setNewCountType: (value) => {
-          this.plugin.settings.folderCountConfig.$sessionCountType = value;
-        },
-      });
+			this.renderSessionCountTypeSetting(containerEl, {
+				parentCountType: this.plugin.settings.folderCountType,
+				oldCountType: this.plugin.settings.folderCountConfig.$sessionCountType,
+				setNewCountType: (value) => {
+					this.plugin.settings.folderCountConfig.$sessionCountType = value;
+				},
+			});
 
 			this.renderCustomFormatSetting(containerEl, {
 				countType: this.plugin.settings.folderCountType,
@@ -289,13 +291,13 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				},
 			});
 
-      this.renderSessionCountTypeSetting(containerEl, {
-        parentCountType: this.plugin.settings.folderCountType2,
-        oldCountType: this.plugin.settings.folderCountConfig2.$sessionCountType,
-        setNewCountType: (value) => {
-          this.plugin.settings.folderCountConfig2.$sessionCountType = value;
-        },
-      });
+			this.renderSessionCountTypeSetting(containerEl, {
+				parentCountType: this.plugin.settings.folderCountType2,
+				oldCountType: this.plugin.settings.folderCountConfig2.$sessionCountType,
+				setNewCountType: (value) => {
+					this.plugin.settings.folderCountConfig2.$sessionCountType = value;
+				},
+			});
 
 			this.renderCustomFormatSetting(containerEl, {
 				countType: this.plugin.settings.folderCountType2,
@@ -318,13 +320,13 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				},
 			});
 
-      this.renderSessionCountTypeSetting(containerEl, {
-        parentCountType: this.plugin.settings.folderCountType3,
-        oldCountType: this.plugin.settings.folderCountConfig3.$sessionCountType,
-        setNewCountType: (value) => {
-          this.plugin.settings.folderCountConfig3.$sessionCountType = value;
-        },
-      });
+			this.renderSessionCountTypeSetting(containerEl, {
+				parentCountType: this.plugin.settings.folderCountType3,
+				oldCountType: this.plugin.settings.folderCountConfig3.$sessionCountType,
+				setNewCountType: (value) => {
+					this.plugin.settings.folderCountConfig3.$sessionCountType = value;
+				},
+			});
 
 			this.renderCustomFormatSetting(containerEl, {
 				countType: this.plugin.settings.folderCountType3,
@@ -344,7 +346,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 								this.plugin.settings.folderPipeSeparator = value;
 								await this.plugin.saveSettings();
 								await this.plugin.updateDisplayedCounts();
-							})
+							}),
 					);
 			}
 
@@ -360,7 +362,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 								this.plugin.settings.folderAbbreviateDescriptions = value;
 								await this.plugin.saveSettings();
 								await this.plugin.updateDisplayedCounts();
-							})
+							}),
 					);
 			}
 
@@ -372,8 +374,8 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					.addOption(AlignmentType.Right, "Right-aligned")
 					.addOption(AlignmentType.Below, "Below")
 					.setValue(this.plugin.settings.folderAlignment)
-					.onChange(async (value: AlignmentType) => {
-						this.plugin.settings.folderAlignment = value;
+					.onChange(async (value: string) => {
+						this.plugin.settings.folderAlignment = value as AlignmentType;
 						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
 					});
@@ -398,7 +400,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						this.display();
 
 						await this.plugin.updateDisplayedCounts();
-					})
+					}),
 			);
 
 		if (!this.plugin.settings.showSameCountsOnRoot) {
@@ -416,13 +418,13 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				},
 			});
 
-      this.renderSessionCountTypeSetting(containerEl, {
-        parentCountType: this.plugin.settings.rootCountType,
-        oldCountType: this.plugin.settings.rootCountConfig.$sessionCountType,
-        setNewCountType: (value) => {
-          this.plugin.settings.rootCountConfig.$sessionCountType = value;
-        },
-      });
+			this.renderSessionCountTypeSetting(containerEl, {
+				parentCountType: this.plugin.settings.rootCountType,
+				oldCountType: this.plugin.settings.rootCountConfig.$sessionCountType,
+				setNewCountType: (value) => {
+					this.plugin.settings.rootCountConfig.$sessionCountType = value;
+				},
+			});
 
 			this.renderCustomFormatSetting(containerEl, {
 				countType: this.plugin.settings.rootCountType,
@@ -445,13 +447,13 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				},
 			});
 
-      this.renderSessionCountTypeSetting(containerEl, {
-        parentCountType: this.plugin.settings.rootCountType2,
-        oldCountType: this.plugin.settings.rootCountConfig2.$sessionCountType,
-        setNewCountType: (value) => {
-          this.plugin.settings.rootCountConfig2.$sessionCountType = value;
-        },
-      });
+			this.renderSessionCountTypeSetting(containerEl, {
+				parentCountType: this.plugin.settings.rootCountType2,
+				oldCountType: this.plugin.settings.rootCountConfig2.$sessionCountType,
+				setNewCountType: (value) => {
+					this.plugin.settings.rootCountConfig2.$sessionCountType = value;
+				},
+			});
 
 			this.renderCustomFormatSetting(containerEl, {
 				countType: this.plugin.settings.rootCountType2,
@@ -474,13 +476,13 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				},
 			});
 
-      this.renderSessionCountTypeSetting(containerEl, {
-        parentCountType: this.plugin.settings.rootCountType3,
-        oldCountType: this.plugin.settings.rootCountConfig3.$sessionCountType,
-        setNewCountType: (value) => {
-          this.plugin.settings.rootCountConfig3.$sessionCountType = value;
-        },
-      });
+			this.renderSessionCountTypeSetting(containerEl, {
+				parentCountType: this.plugin.settings.rootCountType3,
+				oldCountType: this.plugin.settings.rootCountConfig3.$sessionCountType,
+				setNewCountType: (value) => {
+					this.plugin.settings.rootCountConfig3.$sessionCountType = value;
+				},
+			});
 
 			this.renderCustomFormatSetting(containerEl, {
 				countType: this.plugin.settings.rootCountType3,
@@ -500,7 +502,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 								this.plugin.settings.rootPipeSeparator = value;
 								await this.plugin.saveSettings();
 								await this.plugin.updateDisplayedCounts();
-							})
+							}),
 					);
 			}
 
@@ -516,7 +518,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 								this.plugin.settings.rootAbbreviateDescriptions = value;
 								await this.plugin.saveSettings();
 								await this.plugin.updateDisplayedCounts();
-							})
+							}),
 					);
 			}
 		}
@@ -536,7 +538,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						this.plugin.settings.showAdvanced = value;
 						await this.plugin.saveSettings();
 						this.display();
-					})
+					}),
 			);
 
 		if (this.plugin.settings.showAdvanced) {
@@ -546,11 +548,13 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				this.plugin.settings.labelOpacity = Math.clamp(value, 0, 1);
 				await this.plugin.saveSettings();
 				await this.plugin.updateDisplayedCounts();
-			}
+			};
 
 			new Setting(containerEl)
 				.setName("Label opacity")
-				.setDesc("Increase this value to make all count labels in the File Explorer more visible.")
+				.setDesc(
+					"Increase this value to make all count labels in the File Explorer more visible.",
+				)
 				.addSlider((slider) => {
 					slider
 						.setLimits(0, 1, 0.05)
@@ -571,7 +575,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				.setName("Include file/folder names")
 				.setDesc(
 					"Only count paths matching the indicated term(s). Case-sensitive, comma-separated. Defaults to all files. " +
-						"Any term starting with ! will be excluded instead of included."
+						"Any term starting with ! will be excluded instead of included.",
 				)
 				.addText((txt) => {
 					txt
@@ -585,7 +589,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			new Setting(containerEl)
 				.setName("Exclude comments")
 				.setDesc(
-					"Exclude %%Obsidian%% and <!--HTML--> comments from counts. May affect performance on large vaults."
+					"Exclude %%Obsidian%% and <!--HTML--> comments from counts. May affect performance on large vaults.",
 				)
 				.addToggle((toggle) =>
 					toggle
@@ -594,7 +598,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 							this.plugin.settings.excludeComments = value;
 							await this.plugin.saveSettings();
 							await this.plugin.initialize();
-						})
+						}),
 				);
 
 			// EXCLUDE CODE BLOCKS
@@ -602,7 +606,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			new Setting(containerEl)
 				.setName("Exclude code blocks")
 				.setDesc(
-					"Exclude ```code blocks``` (e.g. DataView snippets) from all counts. May affect performance on large vaults."
+					"Exclude ```code blocks``` (e.g. DataView snippets) from all counts. May affect performance on large vaults.",
 				)
 				.addToggle((toggle) =>
 					toggle
@@ -611,14 +615,14 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 							this.plugin.settings.excludeCodeBlocks = value;
 							await this.plugin.saveSettings();
 							await this.plugin.initialize();
-						})
+						}),
 				);
 
 			new Setting(containerEl)
 				.setName("Exclude non-visible portions of links")
 				.setDesc(
 					"For external links, exclude the URI from all counts. For internal links with aliases, only count the alias. " +
-						"May affect performance on large vaults."
+						"May affect performance on large vaults.",
 				)
 				.addToggle((toggle) =>
 					toggle
@@ -627,13 +631,13 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 							this.plugin.settings.excludeNonVisibleLinkPortions = value;
 							await this.plugin.saveSettings();
 							await this.plugin.initialize();
-						})
+						}),
 				);
 
 			new Setting(containerEl)
 				.setName("Exclude footnotes")
 				.setDesc(
-					"Exclude footnotes[^1] from counts. May affect performance on large vaults."
+					"Exclude footnotes[^1] from counts. May affect performance on large vaults.",
 				)
 				.addToggle((toggle) =>
 					toggle
@@ -642,7 +646,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 							this.plugin.settings.excludeFootnotes = value;
 							await this.plugin.saveSettings();
 							await this.plugin.initialize();
-						})
+						}),
 				);
 
 			// CHARACTER COUNT METHOD
@@ -655,11 +659,12 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						.addOption(CharacterCountType.StringLength, "All characters")
 						.addOption(
 							CharacterCountType.ExcludeWhitespace,
-							"Exclude whitespace"
+							"Exclude whitespace",
 						)
 						.setValue(this.plugin.settings.characterCountType)
-						.onChange(async (value: CharacterCountType) => {
-							this.plugin.settings.characterCountType = value;
+						.onChange(async (value: string) => {
+							this.plugin.settings.characterCountType =
+								value as CharacterCountType;
 							await this.plugin.saveSettings();
 							await this.plugin.initialize();
 						});
@@ -675,8 +680,8 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 						.addOption(PageCountType.ByWords, "Words per page")
 						.addOption(PageCountType.ByChars, "Characters per page")
 						.setValue(this.plugin.settings.pageCountType)
-						.onChange(async (value: PageCountType) => {
-							this.plugin.settings.pageCountType = value;
+						.onChange(async (value: string) => {
+							this.plugin.settings.pageCountType = value as PageCountType;
 							await this.plugin.saveSettings();
 							this.display();
 
@@ -688,12 +693,12 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 			const wordsPerMinuteChanged = async (
 				txt: TextComponent,
-				value: string
+				value: string,
 			) => {
 				const asNumber = Number(value);
 				const isValid = !isNaN(asNumber) && asNumber > 0;
 
-				txt.inputEl.style.borderColor = isValid ? null : "red";
+				txt.inputEl.style.borderColor = isValid ? "" : "red";
 
 				this.plugin.settings.wordsPerMinute = isValid ? Number(value) : 265;
 				await this.plugin.saveSettings();
@@ -702,7 +707,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			new Setting(containerEl)
 				.setName("Words per minute")
 				.setDesc(
-					"Used to calculate Reading Time. 265 is the average speed of an English-speaking adult."
+					"Used to calculate Reading Time. 265 is the average speed of an English-speaking adult.",
 				)
 				.addText((txt) => {
 					txt
@@ -713,12 +718,12 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 			const charsPerMinuteChanged = async (
 				txt: TextComponent,
-				value: string
+				value: string,
 			) => {
 				const asNumber = Number(value);
 				const isValid = !isNaN(asNumber) && asNumber > 0;
 
-				txt.inputEl.style.borderColor = isValid ? null : "red";
+				txt.inputEl.style.borderColor = isValid ? "" : "red";
 
 				this.plugin.settings.charsPerMinute = isValid ? Number(value) : 500;
 				await this.plugin.saveSettings();
@@ -727,7 +732,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			new Setting(containerEl)
 				.setName("CJK characters per minute")
 				.setDesc(
-					"Used to calculate Reading Time. 500 is the average speed for CJK texts."
+					"Used to calculate Reading Time. 500 is the average speed for CJK texts.",
 				)
 				.addText((txt) => {
 					txt
@@ -741,12 +746,12 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			if (this.plugin.settings.pageCountType === PageCountType.ByWords) {
 				const wordsPerPageChanged = async (
 					txt: TextComponent,
-					value: string
+					value: string,
 				) => {
 					const asNumber = Number(value);
 					const isValid = !isNaN(asNumber) && asNumber > 0;
 
-					txt.inputEl.style.borderColor = isValid ? null : "red";
+					txt.inputEl.style.borderColor = isValid ? "" : "red";
 
 					this.plugin.settings.wordsPerPage = isValid ? Number(value) : 300;
 					await this.plugin.saveSettings();
@@ -755,7 +760,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 				new Setting(containerEl)
 					.setName("Words per page")
 					.setDesc(
-						"Used for page count. 300 is standard in English language publishing."
+						"Used for page count. 300 is standard in English language publishing.",
 					)
 					.addText((txt) => {
 						txt
@@ -779,19 +784,19 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 								this.display();
 
 								await this.plugin.initialize();
-							})
+							}),
 					);
 
 				// CHARACTERS PER PAGE
 
 				const charsPerPageChanged = async (
 					txt: TextComponent,
-					value: string
+					value: string,
 				) => {
 					const asNumber = Number(value);
 					const isValid = !isNaN(asNumber) && asNumber > 0;
 
-					txt.inputEl.style.borderColor = isValid ? null : "red";
+					txt.inputEl.style.borderColor = isValid ? "" : "red";
 
 					const defaultCharsPerPage = 1500;
 					this.plugin.settings.charsPerPage = isValid
@@ -807,7 +812,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 							this.plugin.settings.charsPerPageIncludesWhitespace
 								? "2400 is common in Danish."
 								: "1500 is common in German (Normseite)."
-						}`
+						}`,
 					)
 					.addText((txt) => {
 						txt
@@ -818,13 +823,10 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			}
 
 			// MOMENT DATE FORMAT
-			const dateFormatChanged = async (
-				txt: TextComponent,
-				value: string
-			) => {
-				const isValid = typeof value === 'string' && !!value.trim();
+			const dateFormatChanged = async (txt: TextComponent, value: string) => {
+				const isValid = typeof value === "string" && !!value.trim();
 
-				this.plugin.settings.momentDateFormat = isValid ? value : '';
+				this.plugin.settings.momentDateFormat = isValid ? value : "";
 				await this.plugin.saveSettings();
 				await this.plugin.initialize();
 			};
@@ -851,7 +853,24 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 							this.plugin.debugHelper.setDebugMode(value);
 							this.plugin.fileHelper.setDebugMode(value);
 							await this.plugin.saveSettings();
-						})
+						}),
+				);
+
+			// WRITE COUNTS TO FILE
+
+			new Setting(containerEl)
+				.setName("Save counts on disk")
+				.setDesc(
+					"Store all count data in the plugin's data.json file. " +
+						"This can cause performance and sync issues on large vaults.",
+				)
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.writeCountsToFile)
+						.onChange(async (value) => {
+							this.plugin.settings.writeCountsToFile = value;
+							await this.plugin.saveSettings();
+						}),
 				);
 		}
 	}
@@ -865,7 +884,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			.setHeading()
 			.setName("Recount all documents")
 			.setDesc(
-				"If changes have occurred outside of Obsidian, you may need to trigger a manual recount"
+				"If changes have occurred outside of Obsidian, you may need to trigger a manual recount",
 			)
 			.addButton((button) =>
 				button
@@ -882,7 +901,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 							button.setCta();
 							button.disabled = false;
 						}, 1000);
-					})
+					}),
 			);
 	}
 
@@ -910,7 +929,7 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			name: string;
 			oldCountType: $CountType;
 			setNewCountType: (newCountType: $CountType) => void;
-		}
+		},
 	): void {
 		new Setting(containerEl)
 			.setName(config.name)
@@ -920,10 +939,39 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 					drop.addOption(countType, COUNT_TYPE_DISPLAY_STRINGS[countType]);
 				}
 
+				drop.setValue(config.oldCountType).onChange(async (value: string) => {
+					config.setNewCountType(value as $CountType);
+					await this.plugin.saveSettings();
+					this.display();
+
+					await this.plugin.updateDisplayedCounts();
+				});
+			});
+	}
+
+	private renderSessionCountTypeSetting(
+		containerEl: HTMLElement,
+		config: {
+			parentCountType: $CountType;
+			oldCountType?: $SessionCountType;
+			setNewCountType: (newCountType: $SessionCountType) => void;
+		},
+	): void {
+		if (config.parentCountType !== $CountType.TrackSession) {
+			return;
+		}
+
+		new Setting(containerEl)
+			.setDesc("[Track Session] Session count type")
+			.addDropdown((drop) => {
+				for (const countType of SESSION_COUNT_TYPES) {
+					drop.addOption(countType, COUNT_TYPE_DISPLAY_STRINGS[countType]);
+				}
+
 				drop
-					.setValue(config.oldCountType)
-					.onChange(async (value: $CountType) => {
-						config.setNewCountType(value);
+					.setValue(config.oldCountType || $CountType.Word)
+					.onChange(async (value: string) => {
+						config.setNewCountType(value as $SessionCountType);
 						await this.plugin.saveSettings();
 						this.display();
 
@@ -932,44 +980,13 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 			});
 	}
 
-  private renderSessionCountTypeSetting(
-    containerEl: HTMLElement,
-    config: {
-      parentCountType: $CountType,
-      oldCountType: $SessionCountType;
-      setNewCountType: (newCountType: $SessionCountType) => void;
-    }
-  ): void {
-    if (config.parentCountType !== $CountType.TrackSession) {
-      return;
-    }
-    
-    new Setting(containerEl)
-      .setDesc("[Track Session] Session count type")
-      .addDropdown((drop) => {
-        for (const countType of SESSION_COUNT_TYPES) {
-          drop.addOption(countType, COUNT_TYPE_DISPLAY_STRINGS[countType]);
-        }
-
-        drop
-          .setValue(config.oldCountType)
-          .onChange(async (value: $SessionCountType) => {
-            config.setNewCountType(value);
-            await this.plugin.saveSettings();
-            this.display();
-
-            await this.plugin.updateDisplayedCounts();
-          })
-      })
-  }
-
 	private renderCustomFormatSetting(
 		containerEl: HTMLElement,
 		config: {
 			countType: $CountType;
-			oldSuffix: string;
+			oldSuffix?: string;
 			setNewSuffix: (newSuffix: string) => void;
-		}
+		},
 	): void {
 		if (
 			!this.plugin.settings.useAdvancedFormatting ||
@@ -980,19 +997,19 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 		if (UNFORMATTABLE_COUNT_TYPES.includes(config.countType)) {
 			new Setting(containerEl).setDesc(
-				`[${COUNT_TYPE_DISPLAY_STRINGS[config.countType]}] can't be formatted.`
+				`[${COUNT_TYPE_DISPLAY_STRINGS[config.countType]}] can't be formatted.`,
 			);
 		} else {
 			new Setting(containerEl)
 				.setDesc(
-					`[${COUNT_TYPE_DISPLAY_STRINGS[config.countType]}] Custom suffix`
+					`[${COUNT_TYPE_DISPLAY_STRINGS[config.countType]}] Custom suffix`,
 				)
 				.addText((text) =>
-					text.setValue(config.oldSuffix).onChange(async (value) => {
+					text.setValue(config.oldSuffix || "").onChange(async (value) => {
 						config.setNewSuffix(value);
 						await this.plugin.saveSettings();
 						await this.plugin.updateDisplayedCounts();
-					})
+					}),
 				);
 		}
 	}
@@ -1001,9 +1018,9 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 		containerEl: HTMLElement,
 		config: {
 			countType: $CountType;
-			oldKey: string;
+			oldKey?: string;
 			setNewKey: (newKey: string) => void;
-		}
+		},
 	): void {
 		if (config.countType !== $CountType.FrontmatterKey) {
 			return;
@@ -1011,14 +1028,14 @@ export class NovelWordCountSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setDesc(
-				`[${COUNT_TYPE_DISPLAY_STRINGS[$CountType.FrontmatterKey]}] Key name`
+				`[${COUNT_TYPE_DISPLAY_STRINGS[$CountType.FrontmatterKey]}] Key name`,
 			)
 			.addText((text) =>
-				text.setValue(config.oldKey).onChange(async (value) => {
+				text.setValue(config.oldKey || "").onChange(async (value) => {
 					config.setNewKey(value);
 					await this.plugin.saveSettings();
 					await this.plugin.updateDisplayedCounts();
-				})
+				}),
 			);
 	}
 
