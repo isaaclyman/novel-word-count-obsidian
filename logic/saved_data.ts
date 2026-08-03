@@ -1,11 +1,9 @@
 import type NovelWordCountPlugin from "main";
-import {
-	$CountType,
-	COUNT_TYPES,
-	DEFAULT_SETTINGS,
-	NovelWordCountSettings,
-} from "./settings";
+import { DEFAULT_SETTINGS, NovelWordCountSettings } from "./settings/settings";
 import { CountsByFile } from "./count_data";
+import { $CountType, COUNT_TYPES } from "./settings/settings.enum";
+import { DebugHelper } from "./debug";
+import { debounce } from "obsidian";
 
 export interface NovelWordCountSavedData {
 	cachedCounts: CountsByFile;
@@ -13,7 +11,10 @@ export interface NovelWordCountSavedData {
 }
 
 export class SavedDataHelper {
-	constructor(private plugin: NovelWordCountPlugin) {}
+	constructor(
+		private plugin: NovelWordCountPlugin,
+		private debugHelper: DebugHelper,
+	) {}
 
 	async getSavedData(): Promise<NovelWordCountSavedData> {
 		const loaded: NovelWordCountSavedData = await this.plugin.loadData();
@@ -25,12 +26,26 @@ export class SavedDataHelper {
 
 		return migrated;
 	}
+
+	async saveSettings(): Promise<void> {
+		const savedData = this.plugin.savedData;
+		this.debugHelper.debug("Saving to data.json.");
+		await this.plugin.saveData({
+			cachedCounts: this.plugin.settings.writeCountsToFile
+				? savedData.cachedCounts
+				: {},
+			settings: savedData.settings,
+		} as NovelWordCountSavedData);
+	}
+
+	FIVE_MINUTES = 5 * 60 * 1000;
+	saveSettingsDebounced = debounce(this.saveSettings, this.FIVE_MINUTES, false);
 }
 
 // SAVED DATA MIGRATIONS
 
 export function migrateSavedData(
-	saved: NovelWordCountSavedData
+	saved: NovelWordCountSavedData,
 ): NovelWordCountSavedData {
 	const migrations: MigrationFunction[] = [
 		overwriteInvalidCountTypes,
@@ -45,7 +60,7 @@ export function migrateSavedData(
 }
 
 type MigrationFunction = (
-	saved: NovelWordCountSavedData
+	saved: NovelWordCountSavedData,
 ) => NovelWordCountSavedData;
 
 type KeysOfType<T, TProp> = {

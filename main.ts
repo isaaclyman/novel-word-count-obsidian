@@ -3,20 +3,16 @@ import { EventHelper } from "logic/event";
 import { FileHelper } from "logic/file";
 import { NodeLabelHelper } from "logic/node_label";
 import { NovelWordCountSavedData, SavedDataHelper } from "logic/saved_data";
-import {
-	ALIGNMENT_TYPES,
-	COUNT_TYPE_DISPLAY_STRINGS,
-	COUNT_TYPES,
-	NovelWordCountSettings,
-} from "logic/settings";
-import { NovelWordCountSettingTab } from "logic/settings.tab";
+import { NovelWordCountSettings } from "logic/settings/settings";
+import { COUNT_TYPE_DISPLAY_STRINGS } from "logic/settings/settings.display";
+import { COUNT_TYPES, ALIGNMENT_TYPES } from "logic/settings/settings.enum";
+import { NovelWordCountSettingTab } from "logic/settings/settings.tab";
 import {
 	App,
 	Plugin,
 	PluginManifest,
 	WorkspaceLeaf,
 	TAbstractFile,
-	debounce,
 } from "obsidian";
 
 interface FileItem {
@@ -25,7 +21,10 @@ interface FileItem {
 }
 
 export default class NovelWordCountPlugin extends Plugin {
-	savedData: NovelWordCountSavedData;
+	savedData: NovelWordCountSavedData = {
+		cachedCounts: {},
+		settings: {} as NovelWordCountSettings
+	};
 	get settings(): NovelWordCountSettings {
 		return this.savedData.settings;
 	}
@@ -33,7 +32,14 @@ export default class NovelWordCountPlugin extends Plugin {
 	eventHelper: EventHelper;
 	nodeLabelHelper: NodeLabelHelper;
 	debugHelper = new DebugHelper();
+	
 	savedDataHelper: SavedDataHelper;
+	saveSettings() {
+		return this.savedDataHelper.saveSettings();
+	}
+	saveSettingsDebounced() {
+		return this.savedDataHelper.saveSettingsDebounced();
+	}
 
 	constructor(app: App, manifest: PluginManifest) {
 		super(app, manifest);
@@ -45,7 +51,7 @@ export default class NovelWordCountPlugin extends Plugin {
 			this.fileHelper
 		);
 		this.nodeLabelHelper = new NodeLabelHelper(this);
-		this.savedDataHelper = new SavedDataHelper(this)
+		this.savedDataHelper = new SavedDataHelper(this, this.debugHelper);
 	}
 
 	// LIFECYCLE
@@ -120,16 +126,6 @@ export default class NovelWordCountPlugin extends Plugin {
 	async onunload() {
 		await this.saveSettings();
 	}
-
-	// SETTINGS
-
-	async saveSettings() {
-		this.debugHelper.debug("Saving to data.json.");
-		await this.saveData(this.savedData);
-	}
-
-	FIVE_MINUTES = 5 * 60 * 1000;
-	saveSettingsDebounced = debounce(this.saveSettings, this.FIVE_MINUTES, false);
 
 	// PUBLIC
 
