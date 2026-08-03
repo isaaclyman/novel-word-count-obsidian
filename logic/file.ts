@@ -10,11 +10,12 @@ import {
 	parseFrontMatterAliases,
 } from "obsidian";
 import { DebugHelper } from "./debug";
-import { NovelWordCountSettings, PageCountType } from "./settings";
 import { CancellationToken } from "./cancellation";
 import { countMarkdown } from "./parser";
 import { CanvasHelper } from "./canvas";
 import { CountData, CountsByFile, TargetNode } from "./count_data";
+import { NovelWordCountSettings } from "./settings/settings";
+import { PageCountType } from "./settings/settings.enum";
 
 export class FileHelper {
 	private debugHelper = new DebugHelper();
@@ -140,7 +141,7 @@ export class FileHelper {
 				wordCount: total.wordCount + childCount.wordCount,
 				wordCountTowardGoal:
 					total.wordCountTowardGoal + childCount.wordCountTowardGoal,
-				wordGoal: total.wordGoal + childCount.wordGoal,
+				wordGoal: (total.wordGoal || 0) + (childCount.wordGoal || 0),
 				pageCount: total.pageCount + childCount.pageCount,
 				characterCount: total.characterCount + childCount.characterCount,
 				nonWhitespaceCharacterCount:
@@ -205,11 +206,11 @@ export class FileHelper {
 		}
 	}
 
-	private countEmbeds(metadata?: CachedMetadata): number {
+	private countEmbeds(metadata: CachedMetadata | null): number {
 		return metadata?.embeds?.length ?? 0;
 	}
 
-	private countLinks(metadata?: CachedMetadata): number {
+	private countLinks(metadata: CachedMetadata | null): number {
 		return metadata?.links?.length ?? 0;
 	}
 
@@ -291,7 +292,7 @@ export class FileHelper {
 		});
 		const combinedWordCount =
 			countResult.cjkWordCount + countResult.spaceDelimitedWordCount;
-		const wordGoal: number = this.getWordGoal(metadata);
+		const wordGoal: number = this.getWordGoal(metadata) || 0;
 
 		const cjkReadingTime =
 			countResult.cjkWordCount / (this.settings.charsPerMinute || 500);
@@ -354,7 +355,7 @@ export class FileHelper {
 		} as CountData);
 	}
 
-	private getWordGoal(metadata?: CachedMetadata): number | null {
+	private getWordGoal(metadata: CachedMetadata | null): number | null {
 		const goal =
 			metadata && metadata.frontmatter && metadata.frontmatter["word-goal"];
 		if (!goal || isNaN(Number(goal))) {
@@ -364,13 +365,13 @@ export class FileHelper {
 		return Number(goal);
 	}
 
-	private trimFrontmatter(content: string, metadata?: CachedMetadata): string {
+	private trimFrontmatter(content: string, metadata: CachedMetadata | null): string {
 		let meaningfulContent = content;
 
 		const hasFrontmatter = !!metadata && !!metadata.frontmatter;
 		if (hasFrontmatter) {
 			const frontmatterPos =
-				(metadata as any).frontmatterPosition || metadata.frontmatter.position;
+				(metadata as any).frontmatterPosition || metadata.frontmatter?.position;
 			meaningfulContent =
 				frontmatterPos && frontmatterPos.start && frontmatterPos.end
 					? meaningfulContent.slice(0, frontmatterPos.start.offset) +
@@ -408,7 +409,7 @@ export class FileHelper {
 		"tex",
 	]);
 
-	private shouldCountFile(file: TFile, metadata?: CachedMetadata): boolean {
+	private shouldCountFile(file: TFile, metadata: CachedMetadata | null): boolean {
 		if (
 			this.pathIncludeMatchers.length > 0 &&
 			!this.pathIncludeMatchers.some((matcher) => file.path.includes(matcher))
@@ -441,8 +442,9 @@ export class FileHelper {
 			return false;
 		}
 
-		const tags = getAllTags(metadata).map((tag) => tag.toLowerCase());
+		const tags = getAllTags(metadata)?.map((tag) => tag.toLowerCase());
 		if (
+			tags &&
 			tags.length &&
 			(tags.includes("#excalidraw") ||
 				tags

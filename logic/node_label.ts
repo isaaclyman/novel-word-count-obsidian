@@ -1,17 +1,12 @@
 import type NovelWordCountPlugin from "main";
-import {
-	CharacterCountType,
-	$CountType,
-	NovelWordCountSettings,
-	CountTypeConfiguration,
-	$SessionCountType,
-	COUNT_TYPE_DEFAULT_SHORT_SUFFIXES,
-} from "./settings";
 import { FileSizeHelper } from "./filesize";
 import { ReadTimeHelper } from "./readtime";
 import { NumberFormatDecimal, NumberFormatDefault } from "./locale_format";
 import { moment } from "obsidian";
 import { CountData, TargetNode } from "./count_data";
+import { CountTypeConfiguration, NovelWordCountSettings } from "./settings/settings";
+import { COUNT_TYPE_DEFAULT_SHORT_SUFFIXES } from "./settings/settings.display";
+import { $CountType, CharacterCountType, $SessionCountType } from "./settings/settings.enum";
 
 interface CountTypeWithOverrides extends CountTypeConfiguration {
 	$countType: $CountType;
@@ -130,7 +125,7 @@ export class NodeLabelHelper {
 	): CountTypeWithOverrides {
 		return {
 			$countType,
-			customSuffix: this.settings.useAdvancedFormatting ? countConfig.customSuffix : null,
+			customSuffix: this.settings.useAdvancedFormatting ? countConfig.customSuffix : undefined,
 			frontmatterKey: countConfig.frontmatterKey,
 			$sessionCountType: countConfig.$sessionCountType
 		};
@@ -141,7 +136,7 @@ export class NodeLabelHelper {
 		noun: string;
 		abbreviatedNoun: string;
 		abbreviateDescriptions: boolean;
-		customSuffix: string | null;
+		customSuffix: string | undefined;
 	}): string {
 		const defaultSuffix = config.abbreviateDescriptions
 			? config.abbreviatedNoun
@@ -209,7 +204,7 @@ export class NodeLabelHelper {
 					customSuffix: config.customSuffix,
 				});
 			case $CountType.PercentGoal: {
-				if (counts.wordGoal <= 0) {
+				if (!counts.wordGoal || counts.wordGoal <= 0) {
 					return null;
 				}
 
@@ -295,7 +290,7 @@ export class NodeLabelHelper {
 
 				const cDate = moment(counts.createdDate).format(this.settings.momentDateFormat || "YYYY/MM/DD");
 				if (config.customSuffix !== null) {
-					return `${cDate}${config.customSuffix}`;
+					return `${cDate}${config.customSuffix || ''}`;
 				}
 
 				return abbreviateDescriptions ? `${cDate}/c` : `Created ${cDate}`;
@@ -307,7 +302,7 @@ export class NodeLabelHelper {
 
 				const uDate = moment(counts.modifiedDate).format(this.settings.momentDateFormat || "YYYY/MM/DD");
 				if (config.customSuffix !== null) {
-					return `${uDate}${config.customSuffix}`;
+					return `${uDate}${config.customSuffix || ''}`;
 				}
 
 				return abbreviateDescriptions ? `${uDate}/u` : `Updated ${uDate}`;
